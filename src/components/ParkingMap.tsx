@@ -45,8 +45,8 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
         const color = getMarkerColor(spot);
         
         // Calculate marker position based on spot's relative position
-        const scaleY = 0.0000020; // Adjusted scale for more precise positioning
-        const scaleX = 0.0000020;
+        const scaleY = 0.0000015; // Adjusted scale for more precise positioning
+        const scaleX = 0.0000015;
         
         const latitude = CENTER_COORDINATES.latitude + (spot.position.y - 50) * scaleY;
         const longitude = CENTER_COORDINATES.longitude + (spot.position.x - 50) * scaleX;
