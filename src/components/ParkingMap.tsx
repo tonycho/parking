@@ -2,6 +2,8 @@ import React from 'react';
 import { ParkingSpot as ParkingSpotType } from '../types';
 import ParkingSpotComponent from './ParkingSpot';
 
+const parkingLotImage = 'https://images.pexels.com/photos/1756957/pexels-photo-1756957.jpeg';
+
 interface ParkingMapProps {
   spots: ParkingSpotType[];
   onSpotClick: (spot: ParkingSpotType) => void;
