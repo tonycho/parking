@@ -1,0 +1,272 @@
+import React, { useState } from 'react';
+import { Car, Map as MapIcon, Menu, X, RotateCcw } from 'lucide-react';
+import { useParking } from './hooks/useParking';
+import ParkingMap from './components/ParkingMap';
+import VehicleForm from './components/VehicleForm';
+import Stats from './components/Stats';
+import SearchBar from './components/SearchBar';
+import VehicleList from './components/VehicleList';
+
+function App() {
+  const {
+    parkingLot,
+    selectedSpot,
+    setSelectedSpot,
+    updateVehicle,
+    removeVehicle,
+    getVehicleBySpotId,
+    searchQuery,
+    setSearchQuery,
+    filteredResults,
+    availableSpots,
+    occupiedSpots,
+    resetParking,
+    knownVehicles,
+  } = useParking();
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  const { spots, filteredVehicles } = filteredResults();
+
+  const handleSpotClick = (spot: typeof spots[0]) => {
+    setSelectedSpot(spot);
+  };
+
+  const handleVehicleUpdate = (
+    vehicleData: any,
+    spotId: string
+  ) => {
+    updateVehicle(vehicleData, spotId);
+    setSelectedSpot(null);
+  };
+
+  const handleVehicleRemove = (spotId: string) => {
+    removeVehicle(spotId);
+    setSelectedSpot(null);
+  };
+
+  const handleCancel = () => {
+    setSelectedSpot(null);
+  };
+
+  const handleReset = () => {
+    resetParking();
+    setShowResetConfirm(false);
+  };
+
+  const getDriverName = (spotId: string) => {
+    const vehicle = getVehicleBySpotId(spotId);
+    return vehicle?.driverName;
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      {/* Header */}
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16 items-center">
+            <div className="flex items-center">
+              <Car className="h-8 w-8 text-blue-500" />
+              <h1 className="ml-2 text-xl font-semibold text-gray-900">ParkSmart</h1>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setShowResetConfirm(true)}
+                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Reset All
+              </button>
+              
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+              >
+                {sidebarOpen ? (
+                  <X className="block h-6 w-6" aria-hidden="true" />
+                ) : (
+                  <Menu className="block h-6 w-6" aria-hidden="true" />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-grow flex overflow-hidden">
+        {/* Sidebar for mobile */}
+        <div
+          className={`fixed inset-0 z-40 md:hidden transition-opacity duration-300 ${
+            sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+        >
+          <div className="absolute inset-0 bg-gray-600 opacity-75" onClick={() => setSidebarOpen(false)}></div>
+          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white h-full">
+            <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+              <div className="px-4">
+                <div className="flex items-center">
+                  <Car className="h-8 w-8 text-blue-500" />
+                  <h1 className="ml-2 text-xl font-semibold text-gray-900">ParkSmart</h1>
+                </div>
+              </div>
+              <div className="mt-5 px-2 space-y-4">
+                <div className="px-2">
+                  <SearchBar 
+                    value={searchQuery} 
+                    onChange={setSearchQuery}
+                  />
+                </div>
+                <div className="px-2">
+                  <h2 className="text-lg font-medium text-gray-900 mb-4">Vehicles</h2>
+                  <div className="space-y-2">
+                    <VehicleList 
+                      vehicles={filteredVehicles} 
+                      onVehicleClick={(spotId) => {
+                        const spot = parkingLot.spots.find(s => s.id === spotId);
+                        if (spot) {
+                          setSelectedSpot(spot);
+                          setSidebarOpen(false);
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main content */}
+        <div className="flex-1 flex flex-col md:flex-row">
+          {/* Left column (map) */}
+          <div className="flex-1 p-4 flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-gray-900 flex items-center">
+                <MapIcon className="mr-2 h-5 w-5 text-blue-500" />
+                Parking Map
+              </h2>
+              <div className="text-sm text-gray-500">
+                Click on a spot to manage vehicle information
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <Stats 
+                totalSpots={parkingLot.spots.length} 
+                availableSpots={availableSpots} 
+                occupiedSpots={occupiedSpots}
+              />
+            </div>
+            
+            <div className="flex-1 relative h-0">
+              <div className="absolute inset-0">
+                <ParkingMap 
+                  spots={spots} 
+                  onSpotClick={handleSpotClick} 
+                  selectedSpotId={selectedSpot?.id}
+                  getDriverName={getDriverName}
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Right column (sidebar) - Hidden on mobile */}
+          <div className="hidden md:block md:w-96 bg-gray-50 p-4 overflow-y-auto border-l border-gray-200">
+            <SearchBar 
+              value={searchQuery} 
+              onChange={setSearchQuery}
+            />
+            
+            <div className="mt-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Vehicles</h2>
+              <VehicleList 
+                vehicles={filteredVehicles} 
+                onVehicleClick={(spotId) => {
+                  const spot = parkingLot.spots.find(s => s.id === spotId);
+                  if (spot) {
+                    setSelectedSpot(spot);
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Modal for vehicle form */}
+      {selectedSpot && (
+        <div className="fixed z-50 inset-0 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75" onClick={handleCancel}></div>
+            </div>
+
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <VehicleForm
+                spot={selectedSpot}
+                existingVehicle={getVehicleBySpotId(selectedSpot.id)}
+                onSave={handleVehicleUpdate}
+                onCancel={handleCancel}
+                onRemove={handleVehicleRemove}
+                knownVehicles={knownVehicles}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset confirmation modal */}
+      {showResetConfirm && (
+        <div className="fixed z-50 inset-0 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <RotateCcw className="h-6 w-6 text-red-600" />
+                  </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">Reset Parking Lot</h3>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">
+                        Are you sure you want to reset all parking spots? This will remove all current vehicles but keep the vehicle history for autocomplete.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowResetConfirm(false)}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
