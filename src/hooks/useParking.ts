@@ -1,36 +1,59 @@
 import { useState, useEffect } from 'react';
 import { ParkingLot, ParkingSpot, Vehicle } from '../types';
 
-// Initial parking lot configuration based on the satellite view of Cumberland Presbyterian Church
+// Initial parking lot configuration based on the provided layout image
 const initialParkingLot: ParkingLot = {
   id: 'main',
   name: 'Main Parking Lot',
   spots: [
-    // Row along the church building (west side)
-    ...Array(6).fill(0).map((_, i) => ({
-      id: `west-${i+1}`,
-      label: `W${i+1}`,
-      status: 'available',
-      position: { x: 30, y: 25 + i * 8 },
-      size: { width: 8, height: 14 },
-      rotation: 90,
-    })),
-    // Row in front of the church (south side)
-    ...Array(8).fill(0).map((_, i) => ({
-      id: `south-${i+1}`,
-      label: `S${i+1}`,
-      status: 'available',
-      position: { x: 35 + i * 8, y: 75 },
-      size: { width: 14, height: 8 },
-    })),
-    // Row along the east side
+    // First column (23-26 vertically)
     ...Array(4).fill(0).map((_, i) => ({
-      id: `east-${i+1}`,
-      label: `E${i+1}`,
+      id: `col1-${26 - i}`,
+      label: `${26 - i}`,
       status: 'available',
-      position: { x: 70, y: 30 + i * 8 },
-      size: { width: 8, height: 14 },
-      rotation: 90,
+      position: { x: 20, y: 25 + i * 15 },
+      size: { width: 12, height: 8 },
+      rotation: 0,
+    })),
+
+    // Second column, top row (17-19)
+    ...Array(3).fill(0).map((_, i) => ({
+      id: `col2-top-${19 - i}`,
+      label: `${19 - i}`,
+      status: 'available',
+      position: { x: 35, y: 25 },
+      size: { width: 8, height: 12 },
+      rotation: 0,
+    })),
+
+    // Second column, bottom row (20-22)
+    ...Array(3).fill(0).map((_, i) => ({
+      id: `col2-bottom-${20 + i}`,
+      label: `${20 + i}`,
+      status: 'available',
+      position: { x: 35, y: 45 },
+      size: { width: 8, height: 12 },
+      rotation: 0,
+    })),
+
+    // Third column, top row (1-8)
+    ...Array(8).fill(0).map((_, i) => ({
+      id: `col3-top-${8 - i}`,
+      label: `${8 - i}`,
+      status: 'available',
+      position: { x: 50 + i * 10, y: 25 },
+      size: { width: 8, height: 12 },
+      rotation: 0,
+    })),
+
+    // Third column, bottom row (9-16)
+    ...Array(8).fill(0).map((_, i) => ({
+      id: `col3-bottom-${9 + i}`,
+      label: `${9 + i}`,
+      status: 'available',
+      position: { x: 50 + i * 10, y: 45 },
+      size: { width: 8, height: 12 },
+      rotation: 0,
     })),
   ] as ParkingSpot[],
 };
