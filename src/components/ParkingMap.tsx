@@ -10,8 +10,8 @@ const CENTER_COORDINATES = {
   latitude: 37.7028856,
   longitude: -122.4634879,
   zoom: 19.5,
-  pitch: 45,
-  bearing: -25
+  pitch: 0, // Set pitch to 0 for top-down view
+  bearing: 0 // Set bearing to 0 for north-up orientation
 };
 
 interface ParkingMapProps {
