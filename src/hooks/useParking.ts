@@ -10,7 +10,7 @@ const initialParkingLot: ParkingLot = {
       id: `spot-${i+1}`,
       label: `${i+1}`,
       status: 'available',
-      position: { x: 35 + i * 8, y: 10 },
+      position: { x: 35 + i * 8, y: 15 },
       size: { width: 12, height: 8 },
     })),
 
@@ -19,7 +19,7 @@ const initialParkingLot: ParkingLot = {
       id: `spot-${i+9}`,
       label: `${i+9}`,
       status: 'available',
-      position: { x: 35 + i * 8, y: 20 },
+      position: { x: 35 + i * 8, y: 25 },
       size: { width: 12, height: 8 },
     })),
 
@@ -28,16 +28,16 @@ const initialParkingLot: ParkingLot = {
       id: `spot-${i+17}`,
       label: `${i+17}`,
       status: 'available',
-      position: { x: 10 + i * 8, y: 10 },
+      position: { x: 10 + i * 8, y: 5 },
       size: { width: 12, height: 8 },
     })),
 
-    // Left side second row (20-22)
+    // Left side second row (20-22) - aligned with spots 1-8
     ...Array(3).fill(0).map((_, i) => ({
       id: `spot-${i+20}`,
       label: `${i+20}`,
       status: 'available',
-      position: { x: 10 + i * 8, y: 20 },
+      position: { x: 10 + i * 8, y: 15 },
       size: { width: 12, height: 8 },
     })),
 
