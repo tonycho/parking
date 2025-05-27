@@ -11,8 +11,8 @@ const initialParkingLot: ParkingLot = {
       id: `col1-${26 - i}`,
       label: `${26 - i}`,
       status: 'available',
-      position: { x: 20, y: 25 + i * 15 },
-      size: { width: 12, height: 8 },
+      position: { x: 10, y: 20 + i * 20 },
+      size: { width: 15, height: 10 },
       rotation: 0,
     })),
 
@@ -21,8 +21,8 @@ const initialParkingLot: ParkingLot = {
       id: `col2-top-${19 - i}`,
       label: `${19 - i}`,
       status: 'available',
-      position: { x: 35, y: 25 },
-      size: { width: 8, height: 12 },
+      position: { x: 30, y: 20 },
+      size: { width: 15, height: 10 },
       rotation: 0,
     })),
 
@@ -31,8 +31,8 @@ const initialParkingLot: ParkingLot = {
       id: `col2-bottom-${20 + i}`,
       label: `${20 + i}`,
       status: 'available',
-      position: { x: 35, y: 45 },
-      size: { width: 8, height: 12 },
+      position: { x: 30, y: 50 },
+      size: { width: 15, height: 10 },
       rotation: 0,
     })),
 
@@ -41,8 +41,8 @@ const initialParkingLot: ParkingLot = {
       id: `col3-top-${8 - i}`,
       label: `${8 - i}`,
       status: 'available',
-      position: { x: 50 + i * 10, y: 25 },
-      size: { width: 8, height: 12 },
+      position: { x: 50 + i * 15, y: 20 },
+      size: { width: 15, height: 10 },
       rotation: 0,
     })),
 
@@ -51,8 +51,8 @@ const initialParkingLot: ParkingLot = {
       id: `col3-bottom-${9 + i}`,
       label: `${9 + i}`,
       status: 'available',
-      position: { x: 50 + i * 10, y: 45 },
-      size: { width: 8, height: 12 },
+      position: { x: 50 + i * 15, y: 50 },
+      size: { width: 15, height: 10 },
       rotation: 0,
     })),
   ] as ParkingSpot[],
@@ -91,14 +91,12 @@ export function useParking() {
     localStorage.setItem('knownVehicles', JSON.stringify(knownVehicles));
   }, [parkingLot, vehicles, knownVehicles]);
 
-  // Add or update vehicle information
   const updateVehicle = (vehicleData: Omit<Vehicle, 'id' | 'timeParked'>, spotId: string) => {
     const now = new Date().toISOString();
     const spot = parkingLot.spots.find(s => s.id === spotId);
     
     if (!spot) return;
 
-    // Update known vehicles list
     const vehicleInfo = {
       driverName: vehicleData.driverName,
       phoneNumber: vehicleData.phoneNumber,
@@ -115,11 +113,9 @@ export function useParking() {
       return prev;
     });
 
-    // Find if this spot already has a vehicle
     const existingVehicleIndex = vehicles.findIndex(v => v.parkingSpotId === spotId);
     
     if (existingVehicleIndex >= 0) {
-      // Update existing vehicle
       const updatedVehicles = [...vehicles];
       updatedVehicles[existingVehicleIndex] = {
         ...updatedVehicles[existingVehicleIndex],
@@ -128,7 +124,6 @@ export function useParking() {
       };
       setVehicles(updatedVehicles);
     } else {
-      // Add new vehicle
       const newVehicle: Vehicle = {
         id: `vehicle-${Date.now()}`,
         ...vehicleData,
@@ -138,17 +133,14 @@ export function useParking() {
       setVehicles([...vehicles, newVehicle]);
     }
 
-    // Update spot status
     updateSpotStatus(spotId, 'occupied', vehicleData.licensePlate);
   };
 
-  // Remove vehicle and update spot status
   const removeVehicle = (spotId: string) => {
     setVehicles(vehicles.filter(v => v.parkingSpotId !== spotId));
     updateSpotStatus(spotId, 'available');
   };
 
-  // Update a parking spot's status
   const updateSpotStatus = (spotId: string, status: 'available' | 'occupied', vehicleId?: string) => {
     setParkingLot(prevLot => ({
       ...prevLot,
@@ -160,26 +152,21 @@ export function useParking() {
     }));
   };
 
-  // Reset all parking data
   const resetParking = () => {
     setParkingLot(initialParkingLot);
     setVehicles([]);
     setSelectedSpot(null);
     setSearchQuery('');
-    // Note: We don't reset knownVehicles as we want to keep the vehicle history
   };
 
-  // Get a vehicle by parking spot ID
   const getVehicleBySpotId = (spotId: string): Vehicle | undefined => {
     return vehicles.find(v => v.parkingSpotId === spotId);
   };
 
-  // Get known vehicle by license plate
   const getKnownVehicle = (licensePlate: string) => {
     return knownVehicles.find(v => v.licensePlate === licensePlate);
   };
 
-  // Filter spots and vehicles based on search query
   const filteredResults = () => {
     if (!searchQuery.trim()) return { spots: parkingLot.spots, filteredVehicles: vehicles };
 
