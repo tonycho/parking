@@ -1,34 +1,34 @@
 import { useState, useEffect } from 'react';
 import { ParkingLot, ParkingSpot, Vehicle } from '../types';
 
-// Initial parking lot configuration based on the provided image
+// Initial parking lot configuration based on the satellite view of Cumberland Presbyterian Church
 const initialParkingLot: ParkingLot = {
   id: 'main',
   name: 'Main Parking Lot',
   spots: [
-    // Row at the bottom of the image
+    // Row along the church building (west side)
     ...Array(6).fill(0).map((_, i) => ({
-      id: `bottom-${i+1}`,
-      label: `B${i+1}`,
+      id: `west-${i+1}`,
+      label: `W${i+1}`,
       status: 'available',
-      position: { x: 10 + i * 16, y: 85 },
-      size: { width: 14, height: 8 },
-    })),
-    // Row at the left side of the image
-    ...Array(4).fill(0).map((_, i) => ({
-      id: `left-${i+1}`,
-      label: `L${i+1}`,
-      status: 'available',
-      position: { x: 5, y: 15 + i * 15 },
+      position: { x: 30, y: 25 + i * 8 },
       size: { width: 8, height: 14 },
       rotation: 90,
     })),
-    // Area near the building (right side)
-    ...Array(3).fill(0).map((_, i) => ({
-      id: `right-${i+1}`,
-      label: `R${i+1}`,
+    // Row in front of the church (south side)
+    ...Array(8).fill(0).map((_, i) => ({
+      id: `south-${i+1}`,
+      label: `S${i+1}`,
       status: 'available',
-      position: { x: 70, y: 30 + i * 15 },
+      position: { x: 35 + i * 8, y: 75 },
+      size: { width: 14, height: 8 },
+    })),
+    // Row along the east side
+    ...Array(4).fill(0).map((_, i) => ({
+      id: `east-${i+1}`,
+      label: `E${i+1}`,
+      status: 'available',
+      position: { x: 70, y: 30 + i * 8 },
       size: { width: 8, height: 14 },
       rotation: 90,
     })),
