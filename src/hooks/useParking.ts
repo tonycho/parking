@@ -1,46 +1,46 @@
 import { useState, useEffect } from 'react';
 import { ParkingLot, ParkingSpot, Vehicle } from '../types';
 
-// Initial parking lot configuration based on the provided image
+// Initial parking lot configuration based on the satellite view
 const initialParkingLot: ParkingLot = {
   id: 'main',
   name: 'Main Parking Lot',
   spots: [
-    // West row along the church building (spots 1-8)
-    ...Array(8).fill(0).map((_, i) => ({
+    // West row along the church building (spots 1-10)
+    ...Array(10).fill(0).map((_, i) => ({
       id: `spot-${i+1}`,
       label: `${i+1}`,
       status: 'available',
-      position: { x: 25, y: 15 + i * 7 },
+      position: { x: 15, y: 10 + i * 6 },
       size: { width: 8, height: 12 },
       rotation: 90,
     })),
     
-    // Middle row (spots 9-16)
-    ...Array(8).fill(0).map((_, i) => ({
-      id: `spot-${i+9}`,
-      label: `${i+9}`,
+    // Middle row (spots 11-20)
+    ...Array(10).fill(0).map((_, i) => ({
+      id: `spot-${i+11}`,
+      label: `${i+11}`,
       status: 'available',
-      position: { x: 35, y: 15 + i * 7 },
+      position: { x: 35, y: 10 + i * 6 },
       size: { width: 8, height: 12 },
       rotation: 90,
     })),
 
-    // South row (spots 17-22)
-    ...Array(6).fill(0).map((_, i) => ({
-      id: `spot-${i+17}`,
-      label: `${i+17}`,
+    // South row (spots 21-28)
+    ...Array(8).fill(0).map((_, i) => ({
+      id: `spot-${i+21}`,
+      label: `${i+21}`,
       status: 'available',
-      position: { x: 25 + i * 7, y: 75 },
+      position: { x: 20 + i * 7, y: 75 },
       size: { width: 12, height: 8 },
     })),
 
-    // East row (spots 23-26)
-    ...Array(4).fill(0).map((_, i) => ({
-      id: `spot-${i+23}`,
-      label: `${i+23}`,
+    // East row (spots 29-34)
+    ...Array(6).fill(0).map((_, i) => ({
+      id: `spot-${i+29}`,
+      label: `${i+29}`,
       status: 'available',
-      position: { x: 70, y: 30 + i * 7 },
+      position: { x: 75, y: 20 + i * 6 },
       size: { width: 8, height: 12 },
       rotation: 90,
     })),
