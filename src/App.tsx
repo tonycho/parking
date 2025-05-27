@@ -27,13 +27,15 @@ function App() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Set isAuthenticated to true by default while developing
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   const { spots, filteredVehicles } = filteredResults();
 
-  if (!isAuthenticated) {
-    return <Login onLogin={() => setIsAuthenticated(true)} />;
-  }
+  // Remove the login check
+  // if (!isAuthenticated) {
+  //   return <Login onLogin={() => setIsAuthenticated(true)} />;
+  // }
 
   const handleSpotClick = (spot: typeof spots[0]) => {
     setSelectedSpot(spot);
