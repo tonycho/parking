@@ -1,18 +1,5 @@
 import React, { useCallback } from 'react';
-import Map, { Marker } from 'react-map-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
 import { ParkingSpot as ParkingSpotType } from '../types';
-
-const MAPBOX_TOKEN = 'pk.eyJ1IjoidGNobzExMjAiLCJhIjoiY21iNzNya3oyMDZjaTJtcHQyOHpqZzhuayJ9.Y_KYYgREwSvUt3MzRdYtQA';
-
-// Center coordinates for Cumberland Presbyterian Church parking lot
-const CENTER_COORDINATES = {
-  latitude: 37.7028856,
-  longitude: -122.4634879,
-  zoom: 19.5,
-  pitch: 45,
-  bearing: -25
-};
 
 interface ParkingMapProps {
   spots: ParkingSpotType[];
@@ -27,61 +14,43 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
   selectedSpotId, 
   getDriverName 
 }) => {
-  const getMarkerColor = useCallback((spot: ParkingSpotType) => {
-    if (spot.id === selectedSpotId) return '#3B82F6'; // blue-500
-    if (spot.status === 'available') return '#22C55E'; // green-500
-    return '#EF4444'; // red-500
+  const getSpotColor = useCallback((spot: ParkingSpotType) => {
+    if (spot.id === selectedSpotId) return 'bg-blue-500 border-blue-600';
+    if (spot.status === 'available') return 'bg-green-500 border-green-600';
+    return 'bg-red-500 border-red-600';
   }, [selectedSpotId]);
 
   return (
-    <Map
-      mapboxAccessToken={MAPBOX_TOKEN}
-      initialViewState={CENTER_COORDINATES}
-      style={{ width: '100%', height: '100%' }}
-      mapStyle="mapbox://styles/mapbox/satellite-v9"
-    >
+    <div className="relative w-full h-full bg-gray-100">
       {spots.map((spot) => {
         const driverName = getDriverName(spot.id);
-        const color = getMarkerColor(spot);
+        const colorClasses = getSpotColor(spot);
         
-        // Calculate marker position based on spot's relative position
-        // Adjusted scale factors for more precise positioning
-        const scaleY = 0.0000025; // Reduced scale factor for more precise positioning
-        const scaleX = 0.0000025; // Adjusted for the parking lot's aspect ratio
-        
-        const latitude = CENTER_COORDINATES.latitude + (spot.position.y - 50) * scaleY;
-        const longitude = CENTER_COORDINATES.longitude + (spot.position.x - 50) * scaleX;
-
         return (
-          <Marker
+          <div
             key={spot.id}
-            latitude={latitude}
-            longitude={longitude}
-            onClick={(e) => {
-              e.originalEvent.stopPropagation();
-              onSpotClick(spot);
+            className={`absolute cursor-pointer transition-all duration-300 ease-in-out ${colorClasses} 
+                     border-2 rounded-sm flex flex-col items-center justify-center text-white font-semibold
+                     hover:scale-105 hover:shadow-lg`}
+            style={{
+              left: `${spot.position.x}%`,
+              top: `${spot.position.y}%`,
+              width: `${spot.size.width}%`,
+              height: `${spot.size.height}%`,
+              transform: spot.rotation ? `rotate(${spot.rotation}deg)` : undefined,
             }}
+            onClick={() => onSpotClick(spot)}
           >
-            <div
-              className="relative cursor-pointer transition-transform hover:scale-105"
-              style={{ transform: `rotate(${spot.rotation || 0}deg)` }}
-            >
-              <div
-                className="w-12 h-8 rounded-sm shadow-md flex items-center justify-center text-white text-sm font-semibold"
-                style={{ backgroundColor: color }}
-              >
-                {spot.label}
+            <div>{spot.label}</div>
+            {driverName && (
+              <div className="text-xs mt-1 whitespace-nowrap overflow-hidden text-ellipsis px-1">
+                {driverName}
               </div>
-              {driverName && (
-                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded shadow-sm text-xs whitespace-nowrap">
-                  {driverName}
-                </div>
-              )}
-            </div>
-          </Marker>
+            )}
+          </div>
         );
       })}
-    </Map>
+    </div>
   );
 };
 
