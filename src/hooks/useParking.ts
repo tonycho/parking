@@ -10,8 +10,8 @@ const initialParkingLot: ParkingLot = {
       id: `spot-${i+1}`,
       label: `${i+1}`,
       status: 'available',
-      position: { x: 35 + i * 8, y: 15 },
-      size: { width: 12, height: 8 },
+      position: { x: 45 + i * 12, y: 15 },
+      size: { width: 10, height: 6 },
     })),
 
     // Main right area bottom row (9-16)
@@ -19,8 +19,8 @@ const initialParkingLot: ParkingLot = {
       id: `spot-${i+9}`,
       label: `${i+9}`,
       status: 'available',
-      position: { x: 35 + i * 8, y: 25 },
-      size: { width: 12, height: 8 },
+      position: { x: 45 + i * 12, y: 25 },
+      size: { width: 10, height: 6 },
     })),
 
     // Left side top row (17-19)
@@ -28,8 +28,8 @@ const initialParkingLot: ParkingLot = {
       id: `spot-${i+17}`,
       label: `${i+17}`,
       status: 'available',
-      position: { x: 10 + i * 8, y: 5 },
-      size: { width: 12, height: 8 },
+      position: { x: 10 + i * 12, y: 5 },
+      size: { width: 10, height: 6 },
     })),
 
     // Left side second row (20-22) - aligned with spots 1-8
@@ -37,8 +37,8 @@ const initialParkingLot: ParkingLot = {
       id: `spot-${i+20}`,
       label: `${i+20}`,
       status: 'available',
-      position: { x: 10 + i * 8, y: 15 },
-      size: { width: 12, height: 8 },
+      position: { x: 10 + i * 12, y: 15 },
+      size: { width: 10, height: 6 },
     })),
 
     // Left side vertical column (23-26)
@@ -46,8 +46,8 @@ const initialParkingLot: ParkingLot = {
       id: `spot-${i+23}`,
       label: `${i+23}`,
       status: 'available',
-      position: { x: 5, y: 45 + i * 8 },
-      size: { width: 12, height: 8 },
+      position: { x: 5, y: 45 + i * 10 },
+      size: { width: 10, height: 6 },
     })),
   ] as ParkingSpot[],
 };
