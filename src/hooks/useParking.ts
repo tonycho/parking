@@ -1,48 +1,36 @@
 import { useState, useEffect } from 'react';
 import { ParkingLot, ParkingSpot, Vehicle } from '../types';
 
+// Initial parking lot configuration based on the satellite view of Cumberland Presbyterian Church
 const initialParkingLot: ParkingLot = {
   id: 'main',
   name: 'Main Parking Lot',
   spots: [
-    // First column (1-8)
-    ...Array(8).fill(0).map((_, i) => ({
-      id: `spot-${i+1}`,
-      label: `${i+1}`,
-      status: 'available',
-      position: { x: 10 + i * 10, y: 20 },
-      size: { width: 6, height: 12 },
-      rotation: 0,
-    })),
-
-    // Second column (9-16)
-    ...Array(8).fill(0).map((_, i) => ({
-      id: `spot-${i+9}`,
-      label: `${i+9}`,
-      status: 'available',
-      position: { x: 10 + i * 10, y: 35 },
-      size: { width: 6, height: 12 },
-      rotation: 0,
-    })),
-
-    // Third column (17-22)
+    // Row along the church building (west side)
     ...Array(6).fill(0).map((_, i) => ({
-      id: `spot-${i+17}`,
-      label: `${i+17}`,
+      id: `west-${i+1}`,
+      label: `W${i+1}`,
       status: 'available',
-      position: { x: 10 + i * 10, y: 50 },
-      size: { width: 6, height: 12 },
-      rotation: 0,
+      position: { x: 30, y: 25 + i * 8 },
+      size: { width: 8, height: 14 },
+      rotation: 90,
     })),
-
-    // Right side column (23-26)
-    ...Array(4).fill(0).map((_, i) => ({
-      id: `spot-${i+23}`,
-      label: `${i+23}`,
+    // Row in front of the church (south side)
+    ...Array(8).fill(0).map((_, i) => ({
+      id: `south-${i+1}`,
+      label: `S${i+1}`,
       status: 'available',
-      position: { x: 85, y: 20 + i * 15 },
-      size: { width: 12, height: 6 },
-      rotation: 0,
+      position: { x: 35 + i * 8, y: 75 },
+      size: { width: 14, height: 8 },
+    })),
+    // Row along the east side
+    ...Array(4).fill(0).map((_, i) => ({
+      id: `east-${i+1}`,
+      label: `E${i+1}`,
+      status: 'available',
+      position: { x: 70, y: 30 + i * 8 },
+      size: { width: 8, height: 14 },
+      rotation: 90,
     })),
   ] as ParkingSpot[],
 };
