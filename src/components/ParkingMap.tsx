@@ -3,14 +3,15 @@ import Map, { Marker } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { ParkingSpot as ParkingSpotType } from '../types';
 
-// Replace with your actual Mapbox token
 const MAPBOX_TOKEN = 'pk.eyJ1IjoidGNobzExMjAiLCJhIjoiY21iNzNya3oyMDZjaTJtcHQyOHpqZzhuayJ9.Y_KYYgREwSvUt3MzRdYtQA';
 
-// Center coordinates for the parking lot
+// Center coordinates for Cumberland Presbyterian Church parking lot
 const CENTER_COORDINATES = {
-  latitude: 40.7128,
-  longitude: -74.0060,
-  zoom: 18
+  latitude: 37.7028856,
+  longitude: -122.4634879,
+  zoom: 19.5,
+  pitch: 45,
+  bearing: -25
 };
 
 interface ParkingMapProps {
@@ -44,8 +45,9 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
         const color = getMarkerColor(spot);
         
         // Calculate marker position based on spot's relative position
-        const latitude = CENTER_COORDINATES.latitude + (spot.position.y - 50) * 0.0001;
-        const longitude = CENTER_COORDINATES.longitude + (spot.position.x - 50) * 0.0001;
+        // Adjusted scale factor for more precise positioning
+        const latitude = CENTER_COORDINATES.latitude + (spot.position.y - 50) * 0.000005;
+        const longitude = CENTER_COORDINATES.longitude + (spot.position.x - 50) * 0.000005;
 
         return (
           <Marker
