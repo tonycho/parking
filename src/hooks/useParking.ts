@@ -1,48 +1,47 @@
 import { useState, useEffect } from 'react';
 import { ParkingLot, ParkingSpot, Vehicle } from '../types';
 
-// Initial parking lot configuration based on the satellite view
 const initialParkingLot: ParkingLot = {
   id: 'main',
   name: 'Main Parking Lot',
   spots: [
-    // West row along the church building (spots 1-10)
-    ...Array(10).fill(0).map((_, i) => ({
+    // Main area (spots 1-16)
+    ...Array(16).fill(0).map((_, i) => ({
       id: `spot-${i+1}`,
       label: `${i+1}`,
       status: 'available',
-      position: { x: 15, y: 10 + i * 6 },
-      size: { width: 8, height: 12 },
-      rotation: 90,
-    })),
-    
-    // Middle row (spots 11-20)
-    ...Array(10).fill(0).map((_, i) => ({
-      id: `spot-${i+11}`,
-      label: `${i+11}`,
-      status: 'available',
-      position: { x: 35, y: 10 + i * 6 },
+      position: { x: 35, y: 10 + i * 5 },
       size: { width: 8, height: 12 },
       rotation: 90,
     })),
 
-    // South row (spots 21-28)
-    ...Array(8).fill(0).map((_, i) => ({
-      id: `spot-${i+21}`,
-      label: `${i+21}`,
+    // Left side spots (17-19)
+    ...Array(3).fill(0).map((_, i) => ({
+      id: `spot-${i+17}`,
+      label: `${i+17}`,
+      status: 'available',
+      position: { x: 15, y: 20 + i * 5 },
+      size: { width: 8, height: 12 },
+      rotation: 90,
+    })),
+
+    // Left side spots (20-22)
+    ...Array(3).fill(0).map((_, i) => ({
+      id: `spot-${i+20}`,
+      label: `${i+20}`,
+      status: 'available',
+      position: { x: 25, y: 20 + i * 5 },
+      size: { width: 8, height: 12 },
+      rotation: 90,
+    })),
+
+    // Bottom row (spots 23-26)
+    ...Array(4).fill(0).map((_, i) => ({
+      id: `spot-${i+23}`,
+      label: `${i+23}`,
       status: 'available',
       position: { x: 20 + i * 7, y: 75 },
       size: { width: 12, height: 8 },
-    })),
-
-    // East row (spots 29-34)
-    ...Array(6).fill(0).map((_, i) => ({
-      id: `spot-${i+29}`,
-      label: `${i+29}`,
-      status: 'available',
-      position: { x: 75, y: 20 + i * 6 },
-      size: { width: 8, height: 12 },
-      rotation: 90,
     })),
   ] as ParkingSpot[],
 };
