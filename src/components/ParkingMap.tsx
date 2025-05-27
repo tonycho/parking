@@ -1,10 +1,18 @@
 import React, { useCallback } from 'react';
+import Map, { Marker } from 'react-map-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { ParkingSpot as ParkingSpotType } from '../types';
 
-// Cumberland Presbyterian Church coordinates
-const CENTER_LAT = 37.7028856;
-const CENTER_LNG = -122.4634879;
-const ZOOM = 20;
+const MAPBOX_TOKEN = 'pk.eyJ1IjoidGNobzExMjAiLCJhIjoiY21iNzNya3oyMDZjaTJtcHQyOHpqZzhuayJ9.Y_KYYgREwSvUt3MzRdYtQA';
+
+// Center coordinates for Cumberland Presbyterian Church parking lot
+const CENTER_COORDINATES = {
+  latitude: 37.7028856,
+  longitude: -122.4634879,
+  zoom: 19.5,
+  pitch: 45,
+  bearing: -25
+};
 
 interface ParkingMapProps {
   spots: ParkingSpotType[];
@@ -25,41 +33,38 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
     return '#EF4444'; // red-500
   }, [selectedSpotId]);
 
-  // Create markers string for Google Static Maps API
-  const markers = spots.map(spot => {
-    const color = getMarkerColor(spot).replace('#', '0x');
-    // Calculate marker position based on spot's relative position
-    const scaleY = 0.0000025;
-    const scaleX = 0.0000025;
-    const lat = CENTER_LAT + (spot.position.y - 50) * scaleY;
-    const lng = CENTER_LNG + (spot.position.x - 50) * scaleX;
-    return `markers=color:${color}%7Clabel:${spot.label}%7C${lat},${lng}`;
-  }).join('&');
-
-  const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${CENTER_LAT},${CENTER_LNG}&zoom=${ZOOM}&size=800x600&maptype=satellite&${markers}&key=YOUR_GOOGLE_MAPS_API_KEY`;
-
   return (
-    <div className="relative w-full h-full">
-      <img 
-        src={mapUrl} 
-        alt="Parking Map"
-        className="w-full h-full object-cover"
-      />
-      <div className="absolute inset-0">
-        {spots.map((spot) => {
-          const driverName = getDriverName(spot.id);
-          const color = getMarkerColor(spot);
-          
-          return (
-            <button
-              key={spot.id}
-              onClick={() => onSpotClick(spot)}
-              className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform hover:scale-105"
-              style={{
-                left: `${spot.position.x}%`,
-                top: `${spot.position.y}%`,
-                transform: `rotate(${spot.rotation || 0}deg)`,
-              }}
+    <Map
+      mapboxAccessToken={MAPBOX_TOKEN}
+      initialViewState={CENTER_COORDINATES}
+      style={{ width: '100%', height: '100%' }}
+      mapStyle="mapbox://styles/mapbox/satellite-v9"
+    >
+      {spots.map((spot) => {
+        const driverName = getDriverName(spot.id);
+        const color = getMarkerColor(spot);
+        
+        // Calculate marker position based on spot's relative position
+        // Adjusted scale factors for more precise positioning
+        const scaleY = 0.0000025; // Reduced scale factor for more precise positioning
+        const scaleX = 0.0000025; // Adjusted for the parking lot's aspect ratio
+        
+        const latitude = CENTER_COORDINATES.latitude + (spot.position.y - 50) * scaleY;
+        const longitude = CENTER_COORDINATES.longitude + (spot.position.x - 50) * scaleX;
+
+        return (
+          <Marker
+            key={spot.id}
+            latitude={latitude}
+            longitude={longitude}
+            onClick={(e) => {
+              e.originalEvent.stopPropagation();
+              onSpotClick(spot);
+            }}
+          >
+            <div
+              className="relative cursor-pointer transition-transform hover:scale-105"
+              style={{ transform: `rotate(${spot.rotation || 0}deg)` }}
             >
               <div
                 className="w-12 h-8 rounded-sm shadow-md flex items-center justify-center text-white text-sm font-semibold"
@@ -72,11 +77,11 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
                   {driverName}
                 </div>
               )}
-            </button>
-          );
-        })}
-      </div>
-    </div>
+            </div>
+          </Marker>
+        );
+      })}
+    </Map>
   );
 };
 
