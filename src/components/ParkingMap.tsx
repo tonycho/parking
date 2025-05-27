@@ -4,7 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { ParkingSpot as ParkingSpotType } from '../types';
 
 // Replace with your actual Mapbox token
-const MAPBOX_TOKEN = 'pk.eyJ1IjoiYm9sdGRldiIsImEiOiJjbHRwOWV6ZWQwMWF2MmpxdDV5ZjBwbXl6In0.YPz1Y0HJR7Q2Yk6xNYQqrw';
+const MAPBOX_TOKEN = 'pk.eyJ1IjoidGNobzExMjAiLCJhIjoiY21iNzNya3oyMDZjaTJtcHQyOHpqZzhuayJ9.Y_KYYgREwSvUt3MzRdYtQA';
 
 // Center coordinates for the parking lot
 const CENTER_COORDINATES = {
