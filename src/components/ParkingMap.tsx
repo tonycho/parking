@@ -1,6 +1,17 @@
-import React from 'react';
+import React, { useCallback } from 'react';
+import Map, { Marker } from 'react-map-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { ParkingSpot as ParkingSpotType } from '../types';
-import ParkingSpotComponent from './ParkingSpot';
+
+// Replace with your actual Mapbox token
+const MAPBOX_TOKEN = 'pk.eyJ1IjoiYm9sdGRldiIsImEiOiJjbHRwOWV6ZWQwMWF2MmpxdDV5ZjBwbXl6In0.YPz1Y0HJR7Q2Yk6xNYQqrw';
+
+// Center coordinates for the parking lot
+const CENTER_COORDINATES = {
+  latitude: 40.7128,
+  longitude: -74.0060,
+  zoom: 18
+};
 
 interface ParkingMapProps {
   spots: ParkingSpotType[];
@@ -9,30 +20,63 @@ interface ParkingMapProps {
   getDriverName: (spotId: string) => string | undefined;
 }
 
-const ParkingMap: React.FC<ParkingMapProps> = ({ spots, onSpotClick, selectedSpotId, getDriverName }) => {
+const ParkingMap: React.FC<ParkingMapProps> = ({ 
+  spots, 
+  onSpotClick, 
+  selectedSpotId, 
+  getDriverName 
+}) => {
+  const getMarkerColor = useCallback((spot: ParkingSpotType) => {
+    if (spot.id === selectedSpotId) return '#3B82F6'; // blue-500
+    if (spot.status === 'available') return '#22C55E'; // green-500
+    return '#EF4444'; // red-500
+  }, [selectedSpotId]);
+
   return (
-    <div className="relative w-full h-full bg-gray-200 rounded-lg overflow-hidden shadow-md">
-      {/* Background for the parking lot */}
-      <div className="absolute inset-0 bg-gray-300">
-        {/* Building outline */}
-        <div className="absolute top-[20%] right-[20%] w-[30%] h-[40%] bg-slate-400 rounded-sm shadow-md" />
+    <Map
+      mapboxAccessToken={MAPBOX_TOKEN}
+      initialViewState={CENTER_COORDINATES}
+      style={{ width: '100%', height: '100%' }}
+      mapStyle="mapbox://styles/mapbox/satellite-v9"
+    >
+      {spots.map((spot) => {
+        const driverName = getDriverName(spot.id);
+        const color = getMarkerColor(spot);
         
-        {/* Road/driveway markings */}
-        <div className="absolute top-[10%] left-[10%] w-[80%] h-[2px] bg-white" />
-        <div className="absolute top-[10%] left-[10%] w-[2px] h-[80%] bg-white" />
-      </div>
-      
-      {/* Render each parking spot */}
-      {spots.map(spot => (
-        <ParkingSpotComponent
-          key={spot.id}
-          spot={spot}
-          onClick={() => onSpotClick(spot)}
-          isSelected={spot.id === selectedSpotId}
-          driverName={getDriverName(spot.id)}
-        />
-      ))}
-    </div>
+        // Calculate marker position based on spot's relative position
+        const latitude = CENTER_COORDINATES.latitude + (spot.position.y - 50) * 0.0001;
+        const longitude = CENTER_COORDINATES.longitude + (spot.position.x - 50) * 0.0001;
+
+        return (
+          <Marker
+            key={spot.id}
+            latitude={latitude}
+            longitude={longitude}
+            onClick={(e) => {
+              e.originalEvent.stopPropagation();
+              onSpotClick(spot);
+            }}
+          >
+            <div
+              className="relative cursor-pointer transition-transform hover:scale-105"
+              style={{ transform: `rotate(${spot.rotation || 0}deg)` }}
+            >
+              <div
+                className="w-12 h-8 rounded-sm shadow-md flex items-center justify-center text-white text-sm font-semibold"
+                style={{ backgroundColor: color }}
+              >
+                {spot.label}
+              </div>
+              {driverName && (
+                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded shadow-sm text-xs whitespace-nowrap">
+                  {driverName}
+                </div>
+              )}
+            </div>
+          </Marker>
+        );
+      })}
+    </Map>
   );
 };
 
