@@ -16,7 +16,14 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
   getDriverName 
 }) => {
   return (
-    <div className="relative w-full h-full bg-white overflow-hidden">
+    <div 
+      className="relative w-full h-full bg-[url('https://images.pexels.com/photos/1756957/pexels-photo-1756957.jpeg')] bg-cover bg-center"
+      style={{
+        backgroundImage: `url(${parkingLotImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
       {spots.map((spot) => (
         <ParkingSpotComponent
           key={spot.id}
