@@ -5,42 +5,48 @@ const initialParkingLot: ParkingLot = {
   id: 'main',
   name: 'Main Parking Lot',
   spots: [
-    // Main area (spots 1-16)
-    ...Array(16).fill(0).map((_, i) => ({
-      id: `spot-${i+1}`,
-      label: `${i+1}`,
-      status: 'available',
-      position: { x: 35, y: 10 + i * 5 },
-      size: { width: 8, height: 12 },
-      rotation: 90,
-    })),
-
-    // Left side spots (17-19)
+    // Top row (17-19)
     ...Array(3).fill(0).map((_, i) => ({
       id: `spot-${i+17}`,
       label: `${i+17}`,
       status: 'available',
-      position: { x: 15, y: 20 + i * 5 },
-      size: { width: 8, height: 12 },
-      rotation: 90,
+      position: { x: 10, y: 5 + i * 8 },
+      size: { width: 12, height: 8 },
     })),
 
-    // Left side spots (20-22)
+    // Main right area top row (1-8)
+    ...Array(8).fill(0).map((_, i) => ({
+      id: `spot-${i+1}`,
+      label: `${i+1}`,
+      status: 'available',
+      position: { x: 35 + i * 8, y: 10 },
+      size: { width: 12, height: 8 },
+    })),
+
+    // Main right area bottom row (9-16)
+    ...Array(8).fill(0).map((_, i) => ({
+      id: `spot-${i+9}`,
+      label: `${i+9}`,
+      status: 'available',
+      position: { x: 35 + i * 8, y: 20 },
+      size: { width: 12, height: 8 },
+    })),
+
+    // Left side middle row (20-22)
     ...Array(3).fill(0).map((_, i) => ({
       id: `spot-${i+20}`,
       label: `${i+20}`,
       status: 'available',
-      position: { x: 25, y: 20 + i * 5 },
-      size: { width: 8, height: 12 },
-      rotation: 90,
+      position: { x: 10, y: 25 + i * 8 },
+      size: { width: 12, height: 8 },
     })),
 
-    // Bottom row (spots 23-26)
+    // Left side vertical column (23-26)
     ...Array(4).fill(0).map((_, i) => ({
       id: `spot-${i+23}`,
       label: `${i+23}`,
       status: 'available',
-      position: { x: 20 + i * 7, y: 75 },
+      position: { x: 5, y: 45 + i * 8 },
       size: { width: 12, height: 8 },
     })),
   ] as ParkingSpot[],

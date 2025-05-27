@@ -17,15 +17,13 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
 }) => {
   return (
     <div className="relative w-full h-full bg-gray-100 overflow-hidden">
-      {/* Church building outline */}
-      <div className="absolute top-[2%] left-[2%] w-[85%] h-[65%] bg-gray-300 flex items-center justify-center text-gray-600 font-medium rounded-lg">
-        Cumberland Presbyterian Church
+      {/* Building outline */}
+      <div className="absolute right-[10%] top-[10%] w-[80%] h-[40%] bg-gray-300 flex items-center justify-center text-gray-600 font-medium rounded-lg">
+        Building
       </div>
 
-      {/* Driveway/entrance */}
-      <div className="absolute bottom-[5%] left-[40%] w-[20%] h-[15%] bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
-        Entrance
-      </div>
+      {/* Driveway */}
+      <div className="absolute right-[20%] top-[20%] w-[30%] h-[80%] bg-gray-200" />
       
       {/* Parking spots */}
       {spots.map((spot) => (
