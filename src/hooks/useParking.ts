@@ -225,9 +225,13 @@ export function useParking() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
+      if (!session) {
+        navigate('/login');
+      }
     } catch (error) {
       console.error('Error checking auth:', error);
       setIsAuthenticated(false);
+      navigate('/login');
     } finally {
       setIsLoading(false);
     }
@@ -238,6 +242,7 @@ export function useParking() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         setIsAuthenticated(false);
+        navigate('/login');
         return;
       }
 
@@ -394,6 +399,7 @@ export function useParking() {
       if (sessionError) throw sessionError;
       if (!session) {
         setIsAuthenticated(false);
+        navigate('/login');
         return;
       }
 
@@ -465,6 +471,7 @@ export function useParking() {
       if (sessionError) throw sessionError;
       if (!session) {
         setIsAuthenticated(false);
+        navigate('/login');
         return;
       }
 
@@ -495,6 +502,7 @@ export function useParking() {
       if (sessionError) throw sessionError;
       if (!session) {
         setIsAuthenticated(false);
+        navigate('/login');
         return;
       }
 

@@ -55,7 +55,8 @@ const Login = () => {
         if (createError) throw createError;
       }
 
-      navigate('/', { replace: true });
+      // Force a page reload to ensure all states are updated
+      window.location.href = '/';
     } catch (error: any) {
       setError(error.message || 'Invalid login credentials');
     } finally {
