@@ -55,7 +55,6 @@ const Login = () => {
         if (createError) throw createError;
       }
 
-      // Explicitly navigate to dashboard after successful login
       navigate('/', { replace: true });
     } catch (error: any) {
       setError(error.message || 'Invalid login credentials');
