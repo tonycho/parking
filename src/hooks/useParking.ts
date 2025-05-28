@@ -329,16 +329,39 @@ export function useParking() {
       });
 
       // Map snake_case to camelCase for vehicles
-      setVehicles((vehiclesData || []).map(vehicle => ({
+      const mappedVehicles = (vehiclesData || []).map(vehicle => ({
         id: vehicle.id,
         driverName: vehicle.driver_name,
         phoneNumber: vehicle.phone_number,
         licensePlate: vehicle.license_plate,
         make: vehicle.make,
+        model: vehicle.model,
         color: vehicle.color,
         parkingSpotId: vehicle.parking_spot_id,
         timeParked: vehicle.time_parked
-      })));
+      }));
+
+      setVehicles(mappedVehicles);
+
+      // Set known vehicles (unique by license plate)
+      const uniqueVehicles = Array.from(
+        new Map(
+          mappedVehicles.map(vehicle => [
+            vehicle.licensePlate,
+            {
+              driverName: vehicle.driverName,
+              phoneNumber: vehicle.phoneNumber,
+              licensePlate: vehicle.licensePlate,
+              make: vehicle.make,
+              model: vehicle.model,
+              color: vehicle.color
+            }
+          ])
+        ).values()
+      );
+      
+      setKnownVehicles(uniqueVehicles);
+
     } catch (error) {
       console.error('Error loading parking data:', error);
       throw error;
