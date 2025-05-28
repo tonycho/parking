@@ -16,12 +16,35 @@ const Login = () => {
     setError('');
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (authError) throw authError;
+
+      // After successful authentication, ensure user exists in our database
+      const { data: existingUser, error: userCheckError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', authData.user!.id)
+        .single();
+
+      if (userCheckError && userCheckError.code !== 'PGRST116') { // PGRST116 means no rows returned
+        throw userCheckError;
+      }
+
+      // If user doesn't exist in our database, create them
+      if (!existingUser) {
+        const { error: createError } = await supabase
+          .from('users')
+          .insert({
+            id: authData.user!.id,
+            email: authData.user!.email,
+          });
+
+        if (createError) throw createError;
+      }
 
       navigate('/', { replace: true });
     } catch (error: any) {
