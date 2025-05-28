@@ -21,7 +21,7 @@ const Login = () => {
       if (username === 'admin' && password === 'parking123') {
         localStorage.setItem('isAuthenticated', 'true');
         setIsAuthenticated(true);
-        navigate('/');
+        navigate('/', { replace: true });
       } else {
         setError('Invalid credentials');
       }

@@ -7,17 +7,20 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-// Create Supabase client with anonymous user session
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: false,
-    autoRefreshToken: false,
+    persistSession: true,
+    autoRefreshToken: true,
     detectSessionInUrl: false
   }
 });
 
-// Set up anonymous user session
+// Initialize shared session
 supabase.auth.signInWithPassword({
   email: import.meta.env.VITE_ADMIN_EMAIL,
   password: 'parking123'
+}).then(() => {
+  console.log('Supabase session initialized');
+}).catch(error => {
+  console.error('Error initializing Supabase session:', error);
 });
