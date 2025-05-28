@@ -1,6 +1,6 @@
 export interface Vehicle {
   id: string;
-  driverName: string;
+  contact: string;
   phoneNumber: string;
   licensePlate: string;
   make: string;

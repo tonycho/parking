@@ -56,7 +56,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   knownVehicles,
 }) => {
   const [formData, setFormData] = useState<Omit<Vehicle, 'id' | 'timeParked' | 'parkingSpotId'>>({
-    driverName: '',
+    contact: '',
     phoneNumber: '',
     licensePlate: '',
     make: '',
@@ -81,8 +81,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
 
   useEffect(() => {
     if (existingVehicle) {
-      const { driverName, phoneNumber, licensePlate, make, model, color } = existingVehicle;
-      setFormData({ driverName, phoneNumber, licensePlate, make, model: model || '', color });
+      const { contact, phoneNumber, licensePlate, make, model, color } = existingVehicle;
+      setFormData({ contact, phoneNumber, licensePlate, make, model: model || '', color });
     }
   }, [existingVehicle]);
 
@@ -171,7 +171,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
 
   const handleSuggestionClick = (vehicle: typeof knownVehicles[0]) => {
     setFormData({
-      driverName: vehicle.driverName,
+      contact: vehicle.contact,
       phoneNumber: vehicle.phoneNumber,
       licensePlate: vehicle.licensePlate,
       make: vehicle.make,
@@ -194,7 +194,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
 
   const isFormComplete = () => {
     return (
-      formData.driverName.trim() !== '' &&
+      formData.contact.trim() !== '' &&
       formData.phoneNumber.trim() !== '' &&
       formData.licensePlate.trim() !== '' &&
       formData.make.trim() !== '' &&
@@ -239,7 +239,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                   >
                     <div className="font-medium">{vehicle.licensePlate}</div>
                     <div className="text-sm text-gray-600">
-                      {vehicle.driverName} - {vehicle.make} {vehicle.model} ({vehicle.color})
+                      {vehicle.contact} - {vehicle.make} {vehicle.model} ({vehicle.color})
                     </div>
                   </div>
                 ))}
@@ -254,8 +254,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
             </label>
             <input
               type="text"
-              name="driverName"
-              value={formData.driverName}
+              name="contact"
+              value={formData.contact}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter contact name"

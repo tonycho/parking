@@ -344,7 +344,7 @@ export function useParking() {
       // Map snake_case to camelCase for vehicles
       const mappedVehicles = (vehiclesData || []).map(vehicle => ({
         id: vehicle.id,
-        driverName: vehicle.driver_name,
+        contact: vehicle.contact,
         phoneNumber: vehicle.phone_number,
         licensePlate: vehicle.license_plate,
         make: vehicle.make,
@@ -362,7 +362,7 @@ export function useParking() {
       // First add current vehicles
       mappedVehicles.forEach(vehicle => {
         knownVehiclesMap.set(vehicle.licensePlate, {
-          driverName: vehicle.driverName,
+          contact: vehicle.contact,
           phoneNumber: vehicle.phoneNumber,
           licensePlate: vehicle.licensePlate,
           make: vehicle.make,
@@ -375,7 +375,7 @@ export function useParking() {
       vehicleHistory.forEach((vehicle: any) => {
         if (!knownVehiclesMap.has(vehicle.license_plate)) {
           knownVehiclesMap.set(vehicle.license_plate, {
-            driverName: vehicle.driver_name,
+            contact: vehicle.contact,
             phoneNumber: vehicle.phone_number,
             licensePlate: vehicle.license_plate,
             make: vehicle.make,
@@ -416,7 +416,7 @@ export function useParking() {
 
       // Map camelCase to snake_case for database
       const dbVehicleData = {
-        driver_name: vehicleData.driverName,
+        contact: vehicleData.contact,
         phone_number: vehicleData.phoneNumber,
         license_plate: vehicleData.licensePlate,
         make: vehicleData.make,
@@ -538,7 +538,7 @@ export function useParking() {
 
     const query = searchQuery.toLowerCase();
     const filteredVehicles = vehicles.filter(vehicle => 
-      vehicle.driverName.toLowerCase().includes(query) ||
+      vehicle.contact.toLowerCase().includes(query) ||
       vehicle.licensePlate.toLowerCase().includes(query) ||
       vehicle.make.toLowerCase().includes(query) ||
       (vehicle.model && vehicle.model.toLowerCase().includes(query)) ||

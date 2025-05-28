@@ -53,7 +53,7 @@ const VehicleList: React.FC<VehicleListProps> = ({ vehicles, onVehicleClick, spo
           <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
             <div className="flex items-center text-gray-700">
               <User className="w-4 h-4 mr-1 text-gray-400" />
-              {vehicle.driverName}
+              {vehicle.contact}
             </div>
             <div className="flex items-center text-gray-700">
               <Phone className="w-4 h-4 mr-1 text-gray-400" />
