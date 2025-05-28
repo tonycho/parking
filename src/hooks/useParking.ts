@@ -10,28 +10,28 @@ const initialParkingLot: ParkingLot = {
       id: 'spot-26',
       label: '26',
       status: 'available',
-      position: { x: 5, y: 10 }, // Changed from y: 5
+      position: { x: 5, y: 15 }, // Changed from y: 10
       size: { width: 12, height: 6 },
     },
     {
       id: 'spot-25',
       label: '25',
       status: 'available',
-      position: { x: 5, y: 17 }, // Changed from y: 12
+      position: { x: 5, y: 22 }, // Changed from y: 17
       size: { width: 12, height: 6 },
     },
     {
       id: 'spot-24',
       label: '24',
       status: 'available',
-      position: { x: 5, y: 24 }, // Changed from y: 19
+      position: { x: 5, y: 29 }, // Changed from y: 24
       size: { width: 12, height: 6 },
     },
     {
       id: 'spot-23',
       label: '23',
       status: 'available',
-      position: { x: 5, y: 31 }, // Changed from y: 26
+      position: { x: 5, y: 36 }, // Changed from y: 31
       size: { width: 12, height: 6 },
     },
 
