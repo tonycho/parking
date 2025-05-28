@@ -175,7 +175,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               required
             />
             {suggestions.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+              <div className="absolute z-10 w-full bottom-full mb-1 bg-white border border-gray-300 rounded-md shadow-lg">
                 {suggestions.map((vehicle, index) => (
                   <div
                     key={index}
@@ -244,7 +244,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               {showMakeSuggestions && (
                 <div 
                   ref={makeDropdownRef}
-                  className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
+                  className="absolute z-10 w-full bottom-full mb-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
                 >
                   {filteredManufacturers.map((manufacturer, index) => (
                     <div
@@ -281,7 +281,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               {showColorSuggestions && (
                 <div 
                   ref={colorDropdownRef}
-                  className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
+                  className="absolute z-10 w-full bottom-full mb-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
                 >
                   {filteredColors.map((color, index) => (
                     <div
