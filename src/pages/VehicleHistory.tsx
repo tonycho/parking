@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useParking } from '../hooks/useParking';
 import SearchBar from '../components/SearchBar';
-import { Car, Phone, Tag } from 'lucide-react';
+import { Car, Phone, Tag, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 function VehicleHistory() {
   const { knownVehicles } = useParking();
@@ -23,10 +24,18 @@ function VehicleHistory() {
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-            <Car className="mr-2 h-6 w-6 text-blue-500" />
-            Vehicle History
-          </h1>
+          <div className="flex items-center">
+            <Link
+              to="/"
+              className="mr-4 p-2 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </Link>
+            <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+              <Car className="mr-2 h-6 w-6 text-blue-500" />
+              Vehicle History
+            </h1>
+          </div>
         </div>
 
         <div className="mb-6">
