@@ -35,7 +35,7 @@ const initialParkingLot: ParkingLot = {
       size: { width: 12, height: 6 },
     },
 
-    // Second column (17 and 22)
+    // Second column (17-22)
     {
       id: 'spot-17',
       label: '17',
@@ -44,10 +44,38 @@ const initialParkingLot: ParkingLot = {
       size: { width: 10, height: 6 },
     },
     {
+      id: 'spot-18',
+      label: '18',
+      status: 'available',
+      position: { x: 20, y: 12 },
+      size: { width: 10, height: 6 },
+    },
+    {
+      id: 'spot-19',
+      label: '19',
+      status: 'available',
+      position: { x: 20, y: 19 },
+      size: { width: 10, height: 6 },
+    },
+    {
+      id: 'spot-20',
+      label: '20',
+      status: 'available',
+      position: { x: 20, y: 26 },
+      size: { width: 10, height: 6 },
+    },
+    {
+      id: 'spot-21',
+      label: '21',
+      status: 'available',
+      position: { x: 20, y: 33 },
+      size: { width: 10, height: 6 },
+    },
+    {
       id: 'spot-22',
       label: '22',
       status: 'available',
-      position: { x: 20, y: 12 },
+      position: { x: 20, y: 40 },
       size: { width: 10, height: 6 },
     },
 
