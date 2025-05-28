@@ -213,31 +213,67 @@ export function useParking() {
 
   const loadParkingData = async () => {
     try {
+      // First, try to get the first parking lot
       const { data: parkingLots, error: parkingLotError } = await supabase
         .from('parking_lots')
         .select('*')
-        .limit(1)
-        .single();
+        .limit(1);
 
       if (parkingLotError) throw parkingLotError;
+
+      // If no parking lot exists, create one using the initial data
+      if (!parkingLots || parkingLots.length === 0) {
+        const { data: newParkingLot, error: createError } = await supabase
+          .from('parking_lots')
+          .insert({
+            name: initialParkingLot.name,
+          })
+          .select()
+          .single();
+
+        if (createError) throw createError;
+
+        // Create initial parking spots
+        const spotsToCreate = initialParkingLot.spots.map(spot => ({
+          label: spot.label,
+          status: spot.status,
+          position_x: spot.position.x,
+          position_y: spot.position.y,
+          width: spot.size.width,
+          height: spot.size.height,
+          rotation: spot.rotation || 0,
+          parking_lot_id: newParkingLot.id
+        }));
+
+        const { error: spotsError } = await supabase
+          .from('parking_spots')
+          .insert(spotsToCreate);
+
+        if (spotsError) throw spotsError;
+
+        // Reload the data after creating
+        return loadParkingData();
+      }
+
+      const parkingLot = parkingLots[0];
 
       const { data: spots, error: spotsError } = await supabase
         .from('parking_spots')
         .select('*')
-        .eq('parking_lot_id', parkingLots.id);
+        .eq('parking_lot_id', parkingLot.id);
 
       if (spotsError) throw spotsError;
 
       const { data: vehiclesData, error: vehiclesError } = await supabase
         .from('vehicles')
         .select('*')
-        .eq('parking_lot_id', parkingLots.id);
+        .eq('parking_lot_id', parkingLot.id);
 
       if (vehiclesError) throw vehiclesError;
 
       setParkingLot({
-        id: parkingLots.id,
-        name: parkingLots.name,
+        id: parkingLot.id,
+        name: parkingLot.name,
         spots: spots.map((spot: any) => ({
           id: spot.id,
           label: spot.label,
@@ -248,7 +284,7 @@ export function useParking() {
         })),
       });
 
-      setVehicles(vehiclesData);
+      setVehicles(vehiclesData || []);
     } catch (error) {
       console.error('Error loading parking data:', error);
     }
