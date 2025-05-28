@@ -9,8 +9,6 @@ INSERT INTO vehicle_history (
   user_id
 )
 VALUES
-  ('Non Member', 'N/A', 'N/A', 'N/A', 'N/A', '', '932d78a8-33dc-40fe-849e-71ec7825a98b'),
-  ('Open', 'N/A', 'N/A', 'N/A', 'N/A', '', '932d78a8-33dc-40fe-849e-71ec7825a98b'),
   ('9HOL601', 'Volkswagen', 'ID.4', 'Silver', 'Michael Choi', '415-810-8892', '932d78a8-33dc-40fe-849e-71ec7825a98b'),
   ('9FFG942', 'Tesla', 'Model Y', 'Black', 'Jordan Xie', '415-254-0608', '932d78a8-33dc-40fe-849e-71ec7825a98b'),
   ('8LVV257', 'Honda', 'Clarity', 'Black', 'Jordan Xie', '415-254-0608', '932d78a8-33dc-40fe-849e-71ec7825a98b'),
