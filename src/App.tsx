@@ -64,7 +64,7 @@ function App() {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-2">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center">
               <Car className="h-8 w-8 text-blue-500" />
@@ -105,20 +105,18 @@ function App() {
           <div className="absolute inset-0 bg-gray-600 opacity-75" onClick={() => setSidebarOpen(false)}></div>
           <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white h-full">
             <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-              <div className="px-4">
+              <div className="px-2">
                 <div className="flex items-center">
                   <Car className="h-8 w-8 text-blue-500" />
                   <h1 className="ml-2 text-xl font-semibold text-gray-900">ParkSmart</h1>
                 </div>
               </div>
               <div className="mt-5 px-2 space-y-4">
-                <div className="px-2">
-                  <SearchBar 
-                    value={searchQuery} 
-                    onChange={setSearchQuery}
-                  />
-                </div>
-                <div className="px-2">
+                <SearchBar 
+                  value={searchQuery} 
+                  onChange={setSearchQuery}
+                />
+                <div>
                   <h2 className="text-lg font-medium text-gray-900 mb-4">Vehicles</h2>
                   <div className="space-y-2">
                     <VehicleList 
@@ -141,7 +139,7 @@ function App() {
         {/* Main content */}
         <div className="flex-1 flex flex-col md:flex-row">
           {/* Left column (map) */}
-          <div className="flex-1 p-4 flex flex-col">
+          <div className="flex-1 p-2 flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-gray-900 flex items-center">
                 <MapIcon className="mr-2 h-5 w-5 text-blue-500" />
