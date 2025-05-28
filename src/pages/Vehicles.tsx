@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useParking } from '../hooks/useParking';
 import SearchBar from '../components/SearchBar';
-import { Car, Phone, Tag, LogOut, Database, Map as MapIcon } from 'lucide-react';
+import { Car, Phone, Tag, LogOut, Database, Map as MapIcon, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 function Vehicles() {
-  const { knownVehicles, handleLogout } = useParking();
+  const { knownVehicles, handleLogout, parkingLot, updateVehicle } = useParking();
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedVehicle, setSelectedVehicle] = useState<typeof knownVehicles[0] | null>(null);
+  const [showParkingModal, setShowParkingModal] = useState(false);
 
   const filteredVehicles = knownVehicles.filter(vehicle => {
     const query = searchQuery.toLowerCase();
@@ -19,6 +21,21 @@ function Vehicles() {
       vehicle.color.toLowerCase().includes(query)
     );
   });
+
+  const availableSpots = parkingLot.spots.filter(spot => spot.status === 'available');
+
+  const handlePark = (vehicle: typeof knownVehicles[0]) => {
+    setSelectedVehicle(vehicle);
+    setShowParkingModal(true);
+  };
+
+  const handleSpotSelect = async (spotId: string) => {
+    if (selectedVehicle) {
+      await updateVehicle(selectedVehicle, spotId);
+      setShowParkingModal(false);
+      setSelectedVehicle(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -85,6 +102,9 @@ function Vehicles() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Phone
                     </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -114,6 +134,14 @@ function Vehicles() {
                           {vehicle.phoneNumber || '-'}
                         </div>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={() => handlePark(vehicle)}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          Park
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -122,6 +150,65 @@ function Vehicles() {
           </div>
         </div>
       </div>
+
+      {/* Parking Spot Selection Modal */}
+      {showParkingModal && selectedVehicle && (
+        <div className="fixed z-50 inset-0 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+            <div className="fixed inset-0 transition-opacity">
+              <div 
+                className="absolute inset-0 bg-gray-500 opacity-75"
+                onClick={() => setShowParkingModal(false)}
+              ></div>
+            </div>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg leading-6 font-medium text-gray-900">
+                        Select Parking Spot
+                      </h3>
+                      <button
+                        onClick={() => setShowParkingModal(false)}
+                        className="text-gray-400 hover:text-gray-500"
+                      >
+                        <X className="h-6 w-6" />
+                      </button>
+                    </div>
+                    
+                    <div className="mt-2">
+                      <div className="text-sm text-gray-500 mb-4">
+                        Vehicle: {selectedVehicle.make} {selectedVehicle.model} ({selectedVehicle.licensePlate})
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-4">
+                        {availableSpots.map(spot => (
+                          <button
+                            key={spot.id}
+                            onClick={() => handleSpotSelect(spot.id)}
+                            className={`p-4 text-center rounded-lg border-2 transition-colors
+                              ${spot.priority === 2 
+                                ? 'border-green-600 bg-green-100 hover:bg-green-200' 
+                                : 'border-orange-500 bg-orange-100 hover:bg-orange-200'
+                              }`}
+                          >
+                            <div className="font-bold text-gray-900">{spot.label}</div>
+                            <div className="text-xs text-gray-600">
+                              {spot.priority === 2 ? 'Stay for second hour' : 'First hour only'}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
