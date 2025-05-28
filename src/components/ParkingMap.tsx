@@ -32,7 +32,7 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
               key={spot.id}
               className={`absolute cursor-pointer transition-all duration-300 ease-in-out ${colorClasses} 
                        border-2 rounded-sm flex flex-col items-center justify-center text-white font-semibold
-                       hover:scale-105 hover:shadow-lg`}
+                       hover:scale-105 hover:shadow-lg overflow-hidden`}
               style={{
                 left: `${spot.position.x}%`,
                 top: `${spot.position.y}%`,
@@ -45,7 +45,7 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
               <div>{spot.label}</div>
               {driverName && (
                 <div className="text-xs mt-1 px-1 w-full">
-                  <div className="truncate text-center" style={{ wordBreak: 'break-word' }}>
+                  <div className="text-center break-words hyphens-auto" style={{ wordBreak: 'break-word' }}>
                     {driverName}
                   </div>
                 </div>
