@@ -17,7 +17,7 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
   const getSpotColor = useCallback((spot: ParkingSpotType) => {
     if (spot.id === selectedSpotId) return 'bg-blue-500 border-blue-600';
     if (spot.status === 'occupied') return 'bg-red-500 border-red-600';
-    return spot.priority === 2 ? 'bg-green-500 border-green-600' : 'bg-orange-200 border-orange-300';
+    return spot.priority === 2 ? 'bg-green-500 border-green-600' : 'bg-orange-400 border-orange-500';
   }, [selectedSpotId]);
 
   return (
