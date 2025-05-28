@@ -1,10 +1,11 @@
+// Rename the file to Vehicles.tsx and update the content
 import React, { useState } from 'react';
 import { useParking } from '../hooks/useParking';
 import SearchBar from '../components/SearchBar';
-import { Car, Phone, Tag, LogOut, History } from 'lucide-react';
+import { Car, Phone, Tag, LogOut, Database } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-function VehicleHistory() {
+function Vehicles() {
   const { knownVehicles, handleLogout } = useParking();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -36,7 +37,7 @@ function VehicleHistory() {
                 to="/"
                 className="flex items-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                <History className="w-4 h-4 mr-2" />
+                <MapIcon className="w-4 h-4 mr-2" />
                 Dashboard
               </Link>
               <button
@@ -55,8 +56,8 @@ function VehicleHistory() {
         <div className="max-w-7xl mx-auto">
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-              <History className="mr-2 h-6 w-6 text-blue-500" />
-              Vehicle History
+              <Database className="mr-2 h-6 w-6 text-blue-500" />
+              Vehicles
             </h2>
           </div>
 
@@ -126,4 +127,4 @@ function VehicleHistory() {
   );
 }
 
-export default VehicleHistory;
+export default Vehicles;
