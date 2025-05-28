@@ -330,16 +330,13 @@ export function useParking() {
   };
 
   const updateVehicle = async (vehicleData: Omit<Vehicle, 'id' | 'timeParked'>, spotId: string) => {
-    if (!isAuthenticated) {
-      if (!import.meta.env.DEV) {
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
+      if (!user) {
         window.location.href = '/login';
         return;
       }
-    }
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
 
       const now = new Date().toISOString();
       const spot = parkingLot.spots.find(s => s.id === spotId);
@@ -380,18 +377,19 @@ export function useParking() {
       await loadParkingData();
     } catch (error) {
       console.error('Error updating vehicle:', error);
+      throw error;
     }
   };
 
   const removeVehicle = async (spotId: string) => {
-    if (!isAuthenticated) {
-      if (!import.meta.env.DEV) {
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
+      if (!user) {
         window.location.href = '/login';
         return;
       }
-    }
 
-    try {
       const { error: spotError } = await supabase
         .from('parking_spots')
         .update({ status: 'available' })
@@ -409,18 +407,19 @@ export function useParking() {
       await loadParkingData();
     } catch (error) {
       console.error('Error removing vehicle:', error);
+      throw error;
     }
   };
 
   const resetParking = async () => {
-    if (!isAuthenticated) {
-      if (!import.meta.env.DEV) {
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
+      if (!user) {
         window.location.href = '/login';
         return;
       }
-    }
 
-    try {
       const { error: spotError } = await supabase
         .from('parking_spots')
         .update({ status: 'available' })
@@ -440,6 +439,7 @@ export function useParking() {
       setSearchQuery('');
     } catch (error) {
       console.error('Error resetting parking:', error);
+      throw error;
     }
   };
 
