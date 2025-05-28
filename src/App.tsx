@@ -6,6 +6,7 @@ import VehicleForm from './components/VehicleForm';
 import Stats from './components/Stats';
 import SearchBar from './components/SearchBar';
 import VehicleList from './components/VehicleList';
+import Login from './components/Login';
 
 function App() {
   const {
@@ -26,8 +27,7 @@ function App() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-
-  const { spots, filteredVehicles } = filteredResults();
+  const [isAuthenticated, setIsAuthenticated] = useState(import.meta.env.DEV);
 
   // Add escape key handler
   useEffect(() => {
@@ -47,6 +47,12 @@ function App() {
       window.removeEventListener('keydown', handleEscapeKey);
     };
   }, [selectedSpot, showResetConfirm]);
+
+  const { spots, filteredVehicles } = filteredResults();
+
+  if (!isAuthenticated && !import.meta.env.DEV) {
+    return <Login onLogin={() => setIsAuthenticated(true)} />;
+  }
 
   const handleSpotClick = (spot: typeof spots[0]) => {
     setSelectedSpot(spot);
@@ -104,9 +110,9 @@ function App() {
                 className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
               >
                 {sidebarOpen ? (
-                  <X className="block h-6 w-6\" aria-hidden="true" />
+                  <X className="block h-6 w-6" aria-hidden="true" />
                 ) : (
-                  <Menu className="block h-6 w-6\" aria-hidden="true" />
+                  <Menu className="block h-6 w-6" aria-hidden="true" />
                 )}
               </button>
             </div>
