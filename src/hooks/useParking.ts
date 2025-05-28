@@ -10,7 +10,7 @@ const initialParkingLot: ParkingLot = {
       id: 'spot-26',
       label: '26',
       status: 'available',
-      position: { x: 10, y: 5 },
+      position: { x: 5, y: 5 },
       size: { width: 12, height: 6 },
     },
     {
