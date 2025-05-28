@@ -221,8 +221,8 @@ export function useParking() {
 
   const checkAuth = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      setIsAuthenticated(!!user);
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
     } catch (error) {
       console.error('Error checking auth:', error);
       setIsAuthenticated(false);
@@ -233,9 +233,9 @@ export function useParking() {
 
   const loadParkingData = async () => {
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!user) {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session) {
         setIsAuthenticated(false);
         return;
       }
@@ -243,7 +243,7 @@ export function useParking() {
       const { data: parkingLots, error: parkingLotError } = await supabase
         .from('parking_lots')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', session.user.id)
         .limit(1);
 
       if (parkingLotError) throw parkingLotError;
@@ -253,7 +253,7 @@ export function useParking() {
           .from('parking_lots')
           .insert({
             name: initialParkingLot.name,
-            user_id: user.id
+            user_id: session.user.id
           })
           .select()
           .single();
@@ -292,7 +292,7 @@ export function useParking() {
       const { data: vehiclesData, error: vehiclesError } = await supabase
         .from('vehicles')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', session.user.id);
 
       if (vehiclesError) throw vehiclesError;
 
@@ -317,9 +317,9 @@ export function useParking() {
 
   const updateVehicle = async (vehicleData: Omit<Vehicle, 'id' | 'timeParked'>, spotId: string) => {
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!user) {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session) {
         setIsAuthenticated(false);
         return;
       }
@@ -354,7 +354,7 @@ export function useParking() {
             ...vehicleData,
             parking_spot_id: spotId,
             time_parked: now,
-            user_id: user.id,
+            user_id: session.user.id,
           });
 
         if (vehicleError) throw vehicleError;
@@ -369,9 +369,9 @@ export function useParking() {
 
   const removeVehicle = async (spotId: string) => {
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!user) {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session) {
         setIsAuthenticated(false);
         return;
       }
@@ -399,9 +399,9 @@ export function useParking() {
 
   const resetParking = async () => {
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!user) {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session) {
         setIsAuthenticated(false);
         return;
       }
@@ -416,7 +416,7 @@ export function useParking() {
       const { error: vehicleError } = await supabase
         .from('vehicles')
         .delete()
-        .eq('user_id', user.id);
+        .eq('user_id', session.user.id);
 
       if (vehicleError) throw vehicleError;
 
