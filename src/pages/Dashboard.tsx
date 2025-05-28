@@ -84,7 +84,7 @@ function Dashboard() {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm">
-        <div className="w-full px-4">
+        <div className="max-w-7xl mx-auto px-4 w-full">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center">
               <Car className="h-8 w-8 text-blue-500" />
@@ -119,9 +119,9 @@ function Dashboard() {
                 className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
               >
                 {sidebarOpen ? (
-                  <X className="block h-6 w-6\" aria-hidden="true" />
+                  <X className="block h-6 w-6" aria-hidden="true" />
                 ) : (
-                  <Menu className="block h-6 w-6\" aria-hidden="true" />
+                  <Menu className="block h-6 w-6" aria-hidden="true" />
                 )}
               </button>
             </div>
@@ -174,8 +174,8 @@ function Dashboard() {
         {/* Main content */}
         <div className="flex-1 flex flex-col md:flex-row">
           {/* Left column (map) */}
-          <div className="flex-1 p-4 flex flex-col">
-            <div className="flex items-center justify-between mb-4">
+          <div className="flex-1 p-6 flex flex-col">
+            <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900 flex items-center">
                 <MapIcon className="mr-2 h-6 w-6 text-blue-500" />
                 Parking Map
@@ -185,7 +185,7 @@ function Dashboard() {
               </div>
             </div>
             
-            <div className="mb-4">
+            <div className="mb-6">
               <Stats 
                 totalSpots={parkingLot.spots.length} 
                 availableSpots={availableSpots} 
@@ -206,7 +206,7 @@ function Dashboard() {
           </div>
           
           {/* Right column (sidebar) - Hidden on mobile */}
-          <div className="hidden md:block md:w-96 bg-gray-50 p-4 overflow-y-auto border-l border-gray-200">
+          <div className="hidden md:block md:w-96 bg-gray-50 p-6 overflow-y-auto border-l border-gray-200">
             <SearchBar 
               value={searchQuery} 
               onChange={setSearchQuery}

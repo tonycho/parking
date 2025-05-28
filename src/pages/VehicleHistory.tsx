@@ -24,7 +24,7 @@ function VehicleHistory() {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm">
-        <div className="w-full px-4">
+        <div className="max-w-7xl mx-auto px-4 w-full">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center">
               <Car className="h-8 w-8 text-blue-500" />
@@ -51,7 +51,7 @@ function VehicleHistory() {
         </div>
       </header>
 
-      <div className="flex-1 p-4">
+      <div className="flex-1 p-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-900 flex items-center">
