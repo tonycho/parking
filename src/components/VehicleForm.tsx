@@ -135,7 +135,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       setSuggestions([]);
     } else if (name === 'contact' && value.trim()) {
       const matchingSuggestions = knownVehicles.filter(v => 
-        v.contact.toLowerCase().includes(value.toLowerCase())
+        v.contact.toLowerCase().includes(value.toLowerCase()) ||
+        v.phoneNumber.toLowerCase().includes(value.toLowerCase())
       );
       setContactSuggestions(matchingSuggestions);
     } else if (name === 'contact') {
@@ -191,11 +192,15 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   };
 
   const handleContactSuggestionClick = (vehicle: typeof knownVehicles[0]) => {
-    setFormData(prev => ({
-      ...prev,
+    setFormData({
       contact: vehicle.contact,
-      phoneNumber: vehicle.phoneNumber
-    }));
+      phoneNumber: vehicle.phoneNumber,
+      licensePlate: vehicle.licensePlate,
+      make: vehicle.make,
+      model: vehicle.model || '',
+      color: vehicle.color
+    });
+    setSuggestions([]);
     setContactSuggestions([]);
   };
 
@@ -289,7 +294,10 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                   >
                     <div className="font-medium">{vehicle.contact}</div>
                     <div className="text-sm text-gray-600">
-                      {vehicle.phoneNumber}
+                      {vehicle.phoneNumber} - {vehicle.licensePlate}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {vehicle.make} {vehicle.model} ({vehicle.color})
                     </div>
                   </div>
                 ))}
