@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useParking } from '../hooks/useParking';
 import SearchBar from '../components/SearchBar';
-import { Car, Phone, Tag, LogOut, Database, Map as MapIcon, X } from 'lucide-react';
+import { Car, Phone, Tag, LogOut, Database, Map as MapIcon, X, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 function Vehicles() {
-  const { knownVehicles, handleLogout, parkingLot, updateVehicle } = useParking();
+  const { knownVehicles, handleLogout, parkingLot, updateVehicle, removeVehicle } = useParking();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVehicle, setSelectedVehicle] = useState<typeof knownVehicles[0] | null>(null);
   const [showParkingModal, setShowParkingModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
   const filteredVehicles = knownVehicles.filter(vehicle => {
     const query = searchQuery.toLowerCase();
@@ -43,6 +44,16 @@ function Vehicles() {
       await updateVehicle(selectedVehicle, spotId);
       setShowParkingModal(false);
       setSelectedVehicle(null);
+    }
+  };
+
+  const handleDelete = async (licensePlate: string) => {
+    try {
+      // Here you would call your API to delete the vehicle
+      console.log('Deleting vehicle:', licensePlate);
+      setShowDeleteConfirm(null);
+    } catch (error) {
+      console.error('Error deleting vehicle:', error);
     }
   };
 
@@ -144,12 +155,20 @@ function Vehicles() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => handlePark(vehicle)}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          Park
-                        </button>
+                        <div className="flex items-center justify-end space-x-4">
+                          <button
+                            onClick={() => handlePark(vehicle)}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            Park
+                          </button>
+                          <button
+                            onClick={() => setShowDeleteConfirm(vehicle.licensePlate)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -210,6 +229,53 @@ function Vehicles() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed z-50 inset-0 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+            <div className="fixed inset-0 transition-opacity">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <Trash2 className="h-6 w-6 text-red-600" />
+                  </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                      Delete Vehicle
+                    </h3>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">
+                        Are you sure you want to delete this vehicle? This action cannot be undone.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  onClick={() => handleDelete(showDeleteConfirm)}
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Delete
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(null)}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
