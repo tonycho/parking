@@ -250,7 +250,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
           <div>
             <label className="block text-sm font-medium text-gray-700">
               <User className="mr-2 inline" size={16} />
-              Driver Name
+              Contact
             </label>
             <input
               type="text"
@@ -258,7 +258,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               value={formData.driverName}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter driver's name"
+              placeholder="Enter contact name"
               required
             />
           </div>
