@@ -1,8 +1,7 @@
-// Rename the file to Vehicles.tsx and update the content
 import React, { useState } from 'react';
 import { useParking } from '../hooks/useParking';
 import SearchBar from '../components/SearchBar';
-import { Car, Phone, Tag, LogOut, Database } from 'lucide-react';
+import { Car, Phone, Tag, LogOut, Database, Map as MapIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 function Vehicles() {
