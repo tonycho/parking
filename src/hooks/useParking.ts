@@ -213,6 +213,11 @@ export function useParking() {
 
   const loadParkingData = async () => {
     try {
+      // Get the current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error('Not authenticated');
+
       // First, try to get the first parking lot
       const { data: parkingLots, error: parkingLotError } = await supabase
         .from('parking_lots')
@@ -227,6 +232,7 @@ export function useParking() {
           .from('parking_lots')
           .insert({
             name: initialParkingLot.name,
+            user_id: user.id
           })
           .select()
           .single();
@@ -292,7 +298,7 @@ export function useParking() {
 
   const updateVehicle = async (vehicleData: Omit<Vehicle, 'id' | 'timeParked'>, spotId: string) => {
     try {
-      const { data: user } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       const now = new Date().toISOString();
