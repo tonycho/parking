@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Car, Map as MapIcon, Menu, X, RotateCcw } from 'lucide-react';
+import { Car, Map as MapIcon, Menu, X, RotateCcw, LogOut } from 'lucide-react';
 import { useParking } from '../hooks/useParking';
 import ParkingMap from '../components/ParkingMap';
 import VehicleForm from '../components/VehicleForm';
@@ -22,6 +22,7 @@ function Dashboard() {
     occupiedSpots,
     resetParking,
     knownVehicles,
+    handleLogout,
   } = useParking();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -92,6 +93,13 @@ function Dashboard() {
             
             <div className="flex items-center space-x-4">
               <button
+                onClick={handleLogout}
+                className="flex items-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </button>
+              <button
                 onClick={() => setShowResetConfirm(true)}
                 className="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
               >
@@ -104,9 +112,9 @@ function Dashboard() {
                 className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
               >
                 {sidebarOpen ? (
-                  <X className="block h-6 w-6\" aria-hidden="true" />
+                  <X className="block h-6 w-6" aria-hidden="true" />
                 ) : (
-                  <Menu className="block h-6 w-6\" aria-hidden="true" />
+                  <Menu className="block h-6 w-6" aria-hidden="true" />
                 )}
               </button>
             </div>

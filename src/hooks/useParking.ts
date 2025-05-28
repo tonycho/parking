@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ParkingLot, ParkingSpot, Vehicle } from '../types';
 import { supabase } from '../lib/supabase';
+import { useNavigate } from 'react-router-dom';
 
 const initialParkingLot: ParkingLot = {
   id: 'main',
@@ -208,6 +209,7 @@ export function useParking() {
   const [knownVehicles, setKnownVehicles] = useState<Omit<Vehicle, 'id' | 'timeParked' | 'parkingSpotId'>[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     checkAuth();
@@ -491,6 +493,17 @@ export function useParking() {
     return { spots, filteredVehicles };
   };
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setIsAuthenticated(false);
+      navigate('/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
   return {
     parkingLot,
     vehicles,
@@ -508,5 +521,6 @@ export function useParking() {
     knownVehicles,
     isAuthenticated,
     isLoading,
+    handleLogout,
   };
 }
