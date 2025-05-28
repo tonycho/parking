@@ -219,7 +219,15 @@ export function useParking() {
   const loadParkingData = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      const userId = user?.id || 'anonymous_user_id';
+      
+      if (!user?.id) {
+        // Reset to initial state if no authenticated user
+        setParkingLot(initialParkingLot);
+        setVehicles([]);
+        setIsAuthenticated(false);
+        localStorage.removeItem('isAuthenticated');
+        return;
+      }
 
       // First, try to get the first parking lot
       const { data: parkingLots, error: parkingLotError } = await supabase
@@ -235,7 +243,7 @@ export function useParking() {
           .from('parking_lots')
           .insert({
             name: initialParkingLot.name,
-            user_id: userId
+            user_id: user.id
           })
           .select()
           .single();
@@ -307,7 +315,12 @@ export function useParking() {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      const userId = user?.id || 'anonymous_user_id';
+      
+      if (!user?.id) {
+        setIsAuthenticated(false);
+        localStorage.removeItem('isAuthenticated');
+        throw new Error('No authenticated user found');
+      }
 
       const now = new Date().toISOString();
       const spot = parkingLot.spots.find(s => s.id === spotId);
@@ -339,7 +352,7 @@ export function useParking() {
             ...vehicleData,
             parking_spot_id: spotId,
             time_parked: now,
-            user_id: userId
+            user_id: user.id
           });
 
         if (vehicleError) throw vehicleError;
@@ -358,6 +371,14 @@ export function useParking() {
     }
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user?.id) {
+        setIsAuthenticated(false);
+        localStorage.removeItem('isAuthenticated');
+        throw new Error('No authenticated user found');
+      }
+
       const { error: spotError } = await supabase
         .from('parking_spots')
         .update({ status: 'available' })
@@ -385,6 +406,14 @@ export function useParking() {
     }
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user?.id) {
+        setIsAuthenticated(false);
+        localStorage.removeItem('isAuthenticated');
+        throw new Error('No authenticated user found');
+      }
+
       const { error: spotError } = await supabase
         .from('parking_spots')
         .update({ status: 'available' })
