@@ -44,8 +44,10 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
             >
               <div>{spot.label}</div>
               {driverName && (
-                <div className="text-xs mt-1 whitespace-nowrap overflow-hidden text-ellipsis px-1">
-                  {driverName}
+                <div className="text-xs mt-1 px-1 w-full">
+                  <div className="truncate text-center" style={{ wordBreak: 'break-word' }}>
+                    {driverName}
+                  </div>
                 </div>
               )}
             </div>
