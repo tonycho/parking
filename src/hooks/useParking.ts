@@ -335,7 +335,7 @@ export function useParking() {
         phoneNumber: vehicle.phone_number,
         licensePlate: vehicle.license_plate,
         make: vehicle.make,
-        model: vehicle.model,
+        model: vehicle.model || '', // Ensure model is always a string
         color: vehicle.color,
         parkingSpotId: vehicle.parking_spot_id,
         timeParked: vehicle.time_parked
@@ -353,7 +353,7 @@ export function useParking() {
               phoneNumber: vehicle.phoneNumber,
               licensePlate: vehicle.licensePlate,
               make: vehicle.make,
-              model: vehicle.model,
+              model: vehicle.model || '', // Ensure model is always a string
               color: vehicle.color
             }
           ])
@@ -394,6 +394,7 @@ export function useParking() {
         phone_number: vehicleData.phoneNumber,
         license_plate: vehicleData.licensePlate,
         make: vehicleData.make,
+        model: vehicleData.model || '', // Ensure model is always a string
         color: vehicleData.color
       };
 
@@ -503,6 +504,7 @@ export function useParking() {
       vehicle.driverName.toLowerCase().includes(query) ||
       vehicle.licensePlate.toLowerCase().includes(query) ||
       vehicle.make.toLowerCase().includes(query) ||
+      (vehicle.model && vehicle.model.toLowerCase().includes(query)) || // Safe check for model
       vehicle.color.toLowerCase().includes(query) ||
       vehicle.phoneNumber.includes(query)
     );
