@@ -216,14 +216,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   };
 
   const isFormComplete = () => {
-    return (
-      formData.contact.trim() !== '' &&
-      formData.phoneNumber.trim() !== '' &&
-      formData.licensePlate.trim() !== '' &&
-      formData.make.trim() !== '' &&
-      formData.model.trim() !== '' &&
-      formData.color.trim() !== ''
-    );
+    return formData.licensePlate.trim() !== '';
   };
 
   return (
@@ -282,7 +275,6 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter contact name"
-              required
             />
             {contactSuggestions.length > 0 && (
               <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
@@ -317,7 +309,6 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter phone number"
-              required
             />
           </div>
           
@@ -336,7 +327,6 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Vehicle make"
-                required
               />
               {showMakeSuggestions && (
                 <div 
@@ -371,7 +361,6 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder={formData.make ? "Vehicle model" : "Select make first"}
-                required
                 disabled={!formData.make}
               />
               {showModelSuggestions && formData.make && (
@@ -409,7 +398,6 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Vehicle color"
-                required
               />
               {showColorSuggestions && (
                 <div 
