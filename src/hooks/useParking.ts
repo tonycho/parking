@@ -325,6 +325,21 @@ export function useParking() {
 
       if (spotsError) throw spotsError;
 
+      // Update state with fetched data
+      setParkingLot({
+        id: currentParkingLot.id,
+        name: currentParkingLot.name,
+        spots: spots.map((spot: any) => ({
+          id: spot.id,
+          label: spot.label,
+          status: spot.status,
+          position: { x: spot.position_x, y: spot.position_y },
+          size: { width: spot.width, height: spot.height },
+          rotation: spot.rotation,
+          priority: spot.priority || 1,
+        })),
+      });
+
       // Get vehicles
       const { data: vehiclesData, error: vehiclesError } = await supabase
         .from('vehicles')
@@ -340,20 +355,6 @@ export function useParking() {
         .eq('user_id', userId);
 
       if (historyError) throw historyError;
-
-      // Update state with fetched data
-      setParkingLot({
-        id: currentParkingLot.id,
-        name: currentParkingLot.name,
-        spots: spots.map((spot: any) => ({
-          id: spot.id,
-          label: spot.label,
-          status: spot.status,
-          position: { x: spot.position_x, y: spot.position_y },
-          size: { width: spot.width, height: spot.height },
-          rotation: spot.rotation,
-        })),
-      });
 
       // Map snake_case to camelCase for vehicles
       const mappedVehicles = (vehiclesData || []).map(vehicle => ({
