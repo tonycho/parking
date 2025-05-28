@@ -262,6 +262,7 @@ export function useParking() {
         if (createUserError) throw createUserError;
       }
 
+      // Get or create parking lot
       const { data: parkingLots, error: parkingLotError } = await supabase
         .from('parking_lots')
         .select('*')
@@ -269,6 +270,8 @@ export function useParking() {
         .limit(1);
 
       if (parkingLotError) throw parkingLotError;
+
+      let currentParkingLot;
 
       if (!parkingLots || parkingLots.length === 0) {
         const { data: newParkingLot, error: createError } = await supabase
@@ -281,7 +284,9 @@ export function useParking() {
           .single();
 
         if (createError) throw createError;
+        currentParkingLot = newParkingLot;
 
+        // Create initial parking spots
         const spotsToCreate = initialParkingLot.spots.map(spot => ({
           label: spot.label,
           status: spot.status,
@@ -298,19 +303,19 @@ export function useParking() {
           .insert(spotsToCreate);
 
         if (spotsError) throw spotsError;
-
-        return loadParkingData();
+      } else {
+        currentParkingLot = parkingLots[0];
       }
 
-      const parkingLot = parkingLots[0];
-
+      // Get parking spots
       const { data: spots, error: spotsError } = await supabase
         .from('parking_spots')
         .select('*')
-        .eq('parking_lot_id', parkingLot.id);
+        .eq('parking_lot_id', currentParkingLot.id);
 
       if (spotsError) throw spotsError;
 
+      // Get vehicles
       const { data: vehiclesData, error: vehiclesError } = await supabase
         .from('vehicles')
         .select('*')
@@ -319,8 +324,8 @@ export function useParking() {
       if (vehiclesError) throw vehiclesError;
 
       setParkingLot({
-        id: parkingLot.id,
-        name: parkingLot.name,
+        id: currentParkingLot.id,
+        name: currentParkingLot.name,
         spots: spots.map((spot: any) => ({
           id: spot.id,
           label: spot.label,
