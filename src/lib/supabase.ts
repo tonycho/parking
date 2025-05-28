@@ -7,38 +7,29 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: false,
-    flowType: 'pkce'
-  }
-});
-
-// Helper function to register a user
-export async function registerUser(email: string, password: string) {
-  const { data, error } = await supabase.rpc('register_user', {
-    p_email: email,
-    p_password: password
-  });
-  
-  if (error) throw error;
-  return data;
-}
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Helper function to authenticate a user
 export async function authenticateUser(email: string, password: string) {
-  const { data: user, error: authError } = await supabase.rpc('authenticate_user', {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('email', email)
+    .single();
+
+  if (error) throw error;
+  if (!data) throw new Error('User not found');
+
+  const { data: authData, error: authError } = await supabase.rpc('authenticate_user', {
     p_email: email,
     p_password: password
   });
-  
-  if (authError) throw authError;
-  if (!user) throw new Error('Invalid login credentials');
 
-  // Set session in localStorage
-  localStorage.setItem('parkingUser', JSON.stringify(user));
+  if (authError) throw authError;
+  if (!authData) throw new Error('Invalid login credentials');
+
+  // Store the user data in localStorage
+  localStorage.setItem('parkingUser', JSON.stringify(authData));
   
-  return { user, session: true };
+  return { user: authData, session: true };
 }
