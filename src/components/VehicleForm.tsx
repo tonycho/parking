@@ -71,13 +71,16 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
         manufacturer.toLowerCase().includes(value.toLowerCase())
       );
       setFilteredManufacturers(filtered);
-      setShowMakeSuggestions(true);
+      setShowMakeSuggestions(filtered.length > 0);
     }
   };
 
   const handleManufacturerSelect = (manufacturer: string) => {
     setFormData(prev => ({ ...prev, make: manufacturer }));
     setShowMakeSuggestions(false);
+    if (makeInputRef.current) {
+      makeInputRef.current.value = manufacturer;
+    }
   };
 
   const handleSuggestionClick = (vehicle: typeof knownVehicles[0]) => {
@@ -191,12 +194,18 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 name="make"
                 value={formData.make}
                 onChange={handleChange}
-                onFocus={() => setShowMakeSuggestions(true)}
+                onFocus={() => {
+                  const filtered = carManufacturers.filter(manufacturer =>
+                    manufacturer.toLowerCase().includes(formData.make.toLowerCase())
+                  );
+                  setFilteredManufacturers(filtered);
+                  setShowMakeSuggestions(filtered.length > 0);
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Vehicle make"
                 required
               />
-              {showMakeSuggestions && filteredManufacturers.length > 0 && (
+              {showMakeSuggestions && (
                 <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
                   {filteredManufacturers.map((manufacturer, index) => (
                     <div
