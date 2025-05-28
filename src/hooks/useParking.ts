@@ -240,33 +240,45 @@ export function useParking() {
         return;
       }
 
-      // First, ensure the user exists in the users table
-      const { data: existingUser, error: userCheckError } = await supabase
+      // First, check if user exists by email
+      const { data: users, error: userCheckError } = await supabase
         .from('users')
-        .select('id')
-        .eq('id', session.user.id)
-        .single();
+        .select('id, email')
+        .eq('email', session.user.email)
+        .limit(1);
 
-      if (userCheckError && userCheckError.code !== 'PGRST116') {
-        throw userCheckError;
-      }
+      if (userCheckError) throw userCheckError;
 
-      if (!existingUser) {
-        const { error: createUserError } = await supabase
+      let userId = session.user.id;
+
+      if (users && users.length > 0) {
+        // User exists, ensure ID matches
+        if (users[0].id !== session.user.id) {
+          // Update user ID to match auth ID
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({ id: session.user.id })
+            .eq('email', session.user.email);
+          
+          if (updateError) throw updateError;
+        }
+      } else {
+        // User doesn't exist, create new user
+        const { error: createError } = await supabase
           .from('users')
           .insert({
             id: session.user.id,
             email: session.user.email
           });
 
-        if (createUserError) throw createUserError;
+        if (createError) throw createError;
       }
 
       // Get or create parking lot
       const { data: parkingLots, error: parkingLotError } = await supabase
         .from('parking_lots')
         .select('*')
-        .eq('user_id', session.user.id)
+        .eq('user_id', userId)
         .limit(1);
 
       if (parkingLotError) throw parkingLotError;
@@ -278,7 +290,7 @@ export function useParking() {
           .from('parking_lots')
           .insert({
             name: initialParkingLot.name,
-            user_id: session.user.id
+            user_id: userId
           })
           .select()
           .single();
@@ -319,7 +331,7 @@ export function useParking() {
       const { data: vehiclesData, error: vehiclesError } = await supabase
         .from('vehicles')
         .select('*')
-        .eq('user_id', session.user.id);
+        .eq('user_id', userId);
 
       if (vehiclesError) throw vehiclesError;
 

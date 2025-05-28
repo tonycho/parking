@@ -23,24 +23,33 @@ const Login = () => {
 
       if (authError) throw authError;
 
-      // After successful authentication, ensure user exists in our database
-      const { data: existingUser, error: userCheckError } = await supabase
+      // Check if user exists by email
+      const { data: users, error: userCheckError } = await supabase
         .from('users')
-        .select('id')
-        .eq('id', authData.user!.id)
-        .single();
+        .select('id, email')
+        .eq('email', email)
+        .limit(1);
 
-      if (userCheckError && userCheckError.code !== 'PGRST116') { // PGRST116 means no rows returned
-        throw userCheckError;
-      }
+      if (userCheckError) throw userCheckError;
 
-      // If user doesn't exist in our database, create them
-      if (!existingUser) {
+      if (users && users.length > 0) {
+        // User exists, ensure ID matches
+        if (users[0].id !== authData.user!.id) {
+          // Update user ID to match auth ID
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({ id: authData.user!.id })
+            .eq('email', email);
+          
+          if (updateError) throw updateError;
+        }
+      } else {
+        // User doesn't exist, create new user
         const { error: createError } = await supabase
           .from('users')
           .insert({
             id: authData.user!.id,
-            email: authData.user!.email,
+            email: authData.user!.email
           });
 
         if (createError) throw createError;
