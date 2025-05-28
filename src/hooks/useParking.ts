@@ -314,6 +314,14 @@ export function useParking() {
 
       if (vehiclesError) throw vehiclesError;
 
+      // Get vehicle history
+      const { data: vehicleHistory, error: historyError } = await supabase
+        .from('vehicle_history')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (historyError) throw historyError;
+
       // Update state with fetched data
       setParkingLot({
         id: currentParkingLot.id,
@@ -335,7 +343,7 @@ export function useParking() {
         phoneNumber: vehicle.phone_number,
         licensePlate: vehicle.license_plate,
         make: vehicle.make,
-        model: vehicle.model || '', // Ensure model is always a string
+        model: vehicle.model || '',
         color: vehicle.color,
         parkingSpotId: vehicle.parking_spot_id,
         timeParked: vehicle.time_parked
@@ -343,24 +351,36 @@ export function useParking() {
 
       setVehicles(mappedVehicles);
 
-      // Set known vehicles (unique by license plate)
-      const uniqueVehicles = Array.from(
-        new Map(
-          mappedVehicles.map(vehicle => [
-            vehicle.licensePlate,
-            {
-              driverName: vehicle.driverName,
-              phoneNumber: vehicle.phoneNumber,
-              licensePlate: vehicle.licensePlate,
-              make: vehicle.make,
-              model: vehicle.model || '', // Ensure model is always a string
-              color: vehicle.color
-            }
-          ])
-        ).values()
-      );
+      // Set known vehicles from history
+      const knownVehiclesMap = new Map();
       
-      setKnownVehicles(uniqueVehicles);
+      // First add current vehicles
+      mappedVehicles.forEach(vehicle => {
+        knownVehiclesMap.set(vehicle.licensePlate, {
+          driverName: vehicle.driverName,
+          phoneNumber: vehicle.phoneNumber,
+          licensePlate: vehicle.licensePlate,
+          make: vehicle.make,
+          model: vehicle.model || '',
+          color: vehicle.color
+        });
+      });
+
+      // Then add historical vehicles
+      vehicleHistory.forEach((vehicle: any) => {
+        if (!knownVehiclesMap.has(vehicle.license_plate)) {
+          knownVehiclesMap.set(vehicle.license_plate, {
+            driverName: vehicle.driver_name,
+            phoneNumber: vehicle.phone_number,
+            licensePlate: vehicle.license_plate,
+            make: vehicle.make,
+            model: vehicle.model || '',
+            color: vehicle.color
+          });
+        }
+      });
+
+      setKnownVehicles(Array.from(knownVehiclesMap.values()));
 
     } catch (error) {
       console.error('Error loading parking data:', error);
@@ -394,9 +414,19 @@ export function useParking() {
         phone_number: vehicleData.phoneNumber,
         license_plate: vehicleData.licensePlate,
         make: vehicleData.make,
-        model: vehicleData.model || '', // Ensure model is always a string
-        color: vehicleData.color
+        model: vehicleData.model || '',
+        color: vehicleData.color,
+        user_id: session.user.id
       };
+
+      // Update or insert into vehicle_history
+      const { error: historyError } = await supabase
+        .from('vehicle_history')
+        .upsert([dbVehicleData], {
+          onConflict: 'license_plate,user_id'
+        });
+
+      if (historyError) throw historyError;
 
       const existingVehicle = vehicles.find(v => v.parkingSpotId === spotId);
       
@@ -417,7 +447,6 @@ export function useParking() {
             ...dbVehicleData,
             parking_spot_id: spotId,
             time_parked: now,
-            user_id: session.user.id,
           });
 
         if (vehicleError) throw vehicleError;
@@ -504,7 +533,7 @@ export function useParking() {
       vehicle.driverName.toLowerCase().includes(query) ||
       vehicle.licensePlate.toLowerCase().includes(query) ||
       vehicle.make.toLowerCase().includes(query) ||
-      (vehicle.model && vehicle.model.toLowerCase().includes(query)) || // Safe check for model
+      (vehicle.model && vehicle.model.toLowerCase().includes(query)) ||
       vehicle.color.toLowerCase().includes(query) ||
       vehicle.phoneNumber.includes(query)
     );
