@@ -233,59 +233,38 @@ export function useParking() {
 
   const loadParkingData = async () => {
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         setIsAuthenticated(false);
         return;
       }
 
-      // First, check if user exists by email
-      const { data: users, error: userCheckError } = await supabase
+      const userId = session.user.id;
+
+      // Upsert user record
+      const { error: userError } = await supabase
         .from('users')
-        .select('id, email')
-        .eq('email', session.user.email)
-        .limit(1);
+        .upsert({
+          id: userId,
+          email: session.user.email
+        }, {
+          onConflict: 'email'
+        });
 
-      if (userCheckError) throw userCheckError;
-
-      let userId = session.user.id;
-
-      if (users && users.length > 0) {
-        // User exists, ensure ID matches
-        if (users[0].id !== session.user.id) {
-          // Update user ID to match auth ID
-          const { error: updateError } = await supabase
-            .from('users')
-            .update({ id: session.user.id })
-            .eq('email', session.user.email);
-          
-          if (updateError) throw updateError;
-        }
-      } else {
-        // User doesn't exist, create new user
-        const { error: createError } = await supabase
-          .from('users')
-          .insert({
-            id: session.user.id,
-            email: session.user.email
-          });
-
-        if (createError) throw createError;
-      }
+      if (userError) throw userError;
 
       // Get or create parking lot
-      const { data: parkingLots, error: parkingLotError } = await supabase
+      let { data: parkingLots, error: parkingLotError } = await supabase
         .from('parking_lots')
         .select('*')
-        .eq('user_id', userId)
-        .limit(1);
+        .eq('user_id', userId);
 
       if (parkingLotError) throw parkingLotError;
 
       let currentParkingLot;
 
       if (!parkingLots || parkingLots.length === 0) {
+        // Create new parking lot
         const { data: newParkingLot, error: createError } = await supabase
           .from('parking_lots')
           .insert({
@@ -301,7 +280,7 @@ export function useParking() {
         // Create initial parking spots
         const spotsToCreate = initialParkingLot.spots.map(spot => ({
           label: spot.label,
-          status: spot.status,
+          status: 'available',
           position_x: spot.position.x,
           position_y: spot.position.y,
           width: spot.size.width,
@@ -315,6 +294,16 @@ export function useParking() {
           .insert(spotsToCreate);
 
         if (spotsError) throw spotsError;
+
+        // Fetch the newly created parking lot
+        const { data: refreshedLot, error: refreshError } = await supabase
+          .from('parking_lots')
+          .select('*')
+          .eq('id', newParkingLot.id)
+          .single();
+
+        if (refreshError) throw refreshError;
+        currentParkingLot = refreshedLot;
       } else {
         currentParkingLot = parkingLots[0];
       }
@@ -335,6 +324,7 @@ export function useParking() {
 
       if (vehiclesError) throw vehiclesError;
 
+      // Update state with fetched data
       setParkingLot({
         id: currentParkingLot.id,
         name: currentParkingLot.name,
