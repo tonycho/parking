@@ -349,7 +349,7 @@ export function useParking() {
 
       // Get vehicles
       const { data: vehiclesData, error: vehiclesError } = await supabase
-        .from('vehicles')
+        .from('vehicle_parking_spot')
         .select('*')
         .eq('user_id', userId);
 
@@ -357,7 +357,7 @@ export function useParking() {
 
       // Get vehicle history
       const { data: vehicleHistory, error: historyError } = await supabase
-        .from('vehicle_history')
+        .from('vehicles')
         .select('*')
         .eq('user_id', userId);
 
@@ -438,9 +438,9 @@ export function useParking() {
         user_id: session.user.id
       };
 
-      // Update or insert into vehicle_history
+      // Update or insert into vehicles
       const { error: historyError } = await supabase
-        .from('vehicle_history')
+        .from('vehicles')
         .upsert([dbVehicleData], {
           onConflict: 'license_plate,user_id'
         });
@@ -463,7 +463,7 @@ export function useParking() {
         
         if (existingVehicle) {
           const { error: vehicleError } = await supabase
-            .from('vehicles')
+            .from('vehicle_parking_spot')
             .update({
               ...dbVehicleData,
               time_parked: now,
@@ -473,7 +473,7 @@ export function useParking() {
           if (vehicleError) throw vehicleError;
         } else {
           const { error: vehicleError } = await supabase
-            .from('vehicles')
+            .from('vehicle_parking_spot')
             .insert({
               ...dbVehicleData,
               parking_spot_id: spotId,
@@ -501,9 +501,9 @@ export function useParking() {
         return;
       }
 
-      // Delete from vehicle_history
+      // Delete from vehicles
       const { error: historyError } = await supabase
-        .from('vehicle_history')
+        .from('vehicles')
         .delete()
         .eq('license_plate', licensePlate)
         .eq('user_id', session.user.id);
@@ -535,7 +535,7 @@ export function useParking() {
       if (spotError) throw spotError;
 
       const { error: vehicleError } = await supabase
-        .from('vehicles')
+        .from('vehicle_parking_spot')
         .delete()
         .eq('parking_spot_id', spotId);
 
@@ -566,7 +566,7 @@ export function useParking() {
       if (spotError) throw spotError;
 
       const { error: vehicleError } = await supabase
-        .from('vehicles')
+        .from('vehicle_parking_spot')
         .delete()
         .eq('user_id', session.user.id);
 
