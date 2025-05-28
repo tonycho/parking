@@ -43,15 +43,17 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
               }}
               onClick={() => onSpotClick(spot)}
             >
-              <div className={isOccupied ? 'text-xs opacity-75' : ''}>
-                {spot.label}
-              </div>
-              {driverName && (
-                <div className="text-xs mt-1 px-1 w-full">
-                  <div className="text-center break-words hyphens-auto" style={{ wordBreak: 'break-word' }}>
+              {isOccupied ? (
+                <>
+                  <div className="text-center break-words hyphens-auto w-full px-1" style={{ wordBreak: 'break-word' }}>
                     {driverName}
                   </div>
-                </div>
+                  <div className="text-xs opacity-75 mt-0.5">
+                    {spot.label}
+                  </div>
+                </>
+              ) : (
+                <div>{spot.label}</div>
               )}
             </div>
           );
