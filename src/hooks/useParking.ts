@@ -491,6 +491,32 @@ export function useParking() {
     }
   };
 
+  const deleteVehicle = async (licensePlate: string) => {
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session) {
+        setIsAuthenticated(false);
+        navigate('/login');
+        return;
+      }
+
+      // Delete from vehicle_history
+      const { error: historyError } = await supabase
+        .from('vehicle_history')
+        .delete()
+        .eq('license_plate', licensePlate)
+        .eq('user_id', session.user.id);
+
+      if (historyError) throw historyError;
+
+      await loadParkingData();
+    } catch (error) {
+      console.error('Error deleting vehicle:', error);
+      throw error;
+    }
+  };
+
   const removeVehicle = async (spotId: string) => {
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -617,5 +643,6 @@ export function useParking() {
     isAuthenticated,
     isLoading,
     handleLogout,
+    deleteVehicle,
   };
 }

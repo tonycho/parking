@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import VehicleForm from '../components/VehicleForm';
 
 function Vehicles() {
-  const { knownVehicles, handleLogout, parkingLot, updateVehicle, removeVehicle } = useParking();
+  const { knownVehicles, handleLogout, parkingLot, updateVehicle, removeVehicle, deleteVehicle } = useParking();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVehicle, setSelectedVehicle] = useState<typeof knownVehicles[0] | null>(null);
   const [showParkingModal, setShowParkingModal] = useState(false);
@@ -51,8 +51,7 @@ function Vehicles() {
 
   const handleDelete = async (licensePlate: string) => {
     try {
-      // Here you would call your API to delete the vehicle
-      console.log('Deleting vehicle:', licensePlate);
+      await deleteVehicle(licensePlate);
       setShowDeleteConfirm(null);
     } catch (error) {
       console.error('Error deleting vehicle:', error);
