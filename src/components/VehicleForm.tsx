@@ -36,8 +36,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
 
   const [suggestions, setSuggestions] = useState<typeof knownVehicles>([]);
   const [showMakeSuggestions, setShowMakeSuggestions] = useState(false);
-  const [filteredManufacturers, setFilteredManufacturers] = useState<string[]>([]);
+  const [filteredManufacturers, setFilteredManufacturers] = useState<string[]>(carManufacturers);
   const makeInputRef = useRef<HTMLInputElement>(null);
+  const makeDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (existingVehicle) {
@@ -48,7 +49,10 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (makeInputRef.current && !makeInputRef.current.contains(event.target as Node)) {
+      if (makeInputRef.current && 
+          makeDropdownRef.current && 
+          !makeInputRef.current.contains(event.target as Node) &&
+          !makeDropdownRef.current.contains(event.target as Node)) {
         setShowMakeSuggestions(false);
       }
     };
@@ -70,7 +74,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       const filtered = carManufacturers.filter(manufacturer =>
         manufacturer.toLowerCase().includes(value.toLowerCase())
       );
-      setFilteredManufacturers(filtered);
+      setFilteredManufacturers(filtered.length > 0 ? filtered : []);
       setShowMakeSuggestions(true);
     }
   };
@@ -192,10 +196,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 value={formData.make}
                 onChange={handleChange}
                 onFocus={() => {
-                  const filtered = carManufacturers.filter(manufacturer =>
-                    manufacturer.toLowerCase().includes(formData.make.toLowerCase())
-                  );
-                  setFilteredManufacturers(filtered.length > 0 ? filtered : carManufacturers);
+                  setFilteredManufacturers(carManufacturers);
                   setShowMakeSuggestions(true);
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -203,7 +204,10 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 required
               />
               {showMakeSuggestions && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                <div 
+                  ref={makeDropdownRef}
+                  className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
+                >
                   {filteredManufacturers.map((manufacturer, index) => (
                     <div
                       key={index}
