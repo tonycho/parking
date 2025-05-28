@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Lock, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { authenticateUser } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,13 +16,14 @@ const Login = () => {
     setError('');
 
     try {
-      const { user, session } = await authenticateUser(email, password);
-      
-      if (user && session) {
-        navigate('/', { replace: true });
-      } else {
-        throw new Error('Login failed');
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      navigate('/', { replace: true });
     } catch (error: any) {
       setError(error.message || 'Invalid login credentials');
     } finally {
