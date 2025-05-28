@@ -20,13 +20,13 @@ function App() {
       <Route 
         path="/login" 
         element={
-          isAuthenticated ? <Navigate to="/\" replace /> : <Login />
+          isAuthenticated ? <Navigate to="/" /> : <Login />
         } 
       />
       <Route 
         path="/" 
         element={
-          isAuthenticated ? <Dashboard /> : <Navigate to="/login\" replace />
+          isAuthenticated ? <Dashboard /> : <Navigate to="/login" />
         } 
       />
     </Routes>
