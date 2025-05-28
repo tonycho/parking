@@ -126,11 +126,13 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
 
-    if (name === 'licensePlate') {
+    if (name === 'licensePlate' && value.trim()) {
       const matchingSuggestions = knownVehicles.filter(v => 
         v.licensePlate.toLowerCase().includes(value.toLowerCase())
       );
-      setSuggestions(matchingSuggestions.length > 0 ? matchingSuggestions : []);
+      setSuggestions(matchingSuggestions);
+    } else if (name === 'licensePlate') {
+      setSuggestions([]);
     } else if (name === 'make') {
       const filtered = carManufacturers.filter(manufacturer =>
         manufacturer.toLowerCase().includes(value.toLowerCase())
@@ -208,7 +210,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       <form onSubmit={handleSubmit} className="p-4">
         <div className="space-y-4">
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               <Tag className="mr-2 inline" size={16} />
               License Plate
             </label>
@@ -222,7 +224,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               required
             />
             {suggestions.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
                 {suggestions.map((vehicle, index) => (
                   <div
                     key={index}
