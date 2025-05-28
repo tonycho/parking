@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 
 const initialParkingLot: ParkingLot = {
   id: 'main',
-  name: 'Main Parking Lot',
+  name: 'Cumberland Parking',
   spots: [
     // First column (23-26 vertically)
     {
