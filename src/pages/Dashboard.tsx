@@ -112,9 +112,9 @@ function Dashboard() {
                 className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
               >
                 {sidebarOpen ? (
-                  <X className="block h-6 w-6\" aria-hidden="true" />
+                  <X className="block h-6 w-6" aria-hidden="true" />
                 ) : (
-                  <Menu className="block h-6 w-6\" aria-hidden="true" />
+                  <Menu className="block h-6 w-6" aria-hidden="true" />
                 )}
               </button>
             </div>
@@ -168,10 +168,24 @@ function Dashboard() {
         {/* Left column (map) */}
         <div className="flex-1 p-6 flex flex-col">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-              <MapIcon className="mr-2 h-6 w-6 text-blue-500" />
-              Parking Map
-            </h2>
+            <div className="flex items-center">
+              <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                <MapIcon className="mr-2 h-6 w-6 text-blue-500" />
+                Parking Map
+              </h2>
+              <a 
+                href="/image.png" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="ml-2 text-blue-500 hover:text-blue-600 transition-colors"
+              >
+                <img 
+                  src="/image.png" 
+                  alt="Parking Map Legend" 
+                  className="h-8 w-auto"
+                />
+              </a>
+            </div>
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-500">
                 Click on a spot to manage vehicle information
