@@ -241,18 +241,6 @@ export function useParking() {
 
       const userId = session.user.id;
 
-      // Upsert user record
-      const { error: userError } = await supabase
-        .from('users')
-        .upsert({
-          id: userId,
-          email: session.user.email
-        }, {
-          onConflict: 'email'
-        });
-
-      if (userError) throw userError;
-
       // Get or create parking lot
       let { data: parkingLots, error: parkingLotError } = await supabase
         .from('parking_lots')
