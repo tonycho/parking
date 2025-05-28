@@ -195,9 +195,6 @@ function Vehicles() {
                               }`}
                           >
                             <div className="font-bold text-gray-900">{spot.label}</div>
-                            <div className="text-xs text-gray-600">
-                              {spot.priority === 2 ? 'Stay for second hour' : 'First hour only'}
-                            </div>
                           </button>
                         ))}
                       </div>
