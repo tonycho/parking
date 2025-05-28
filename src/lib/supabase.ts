@@ -29,11 +29,16 @@ export async function registerUser(email: string, password: string) {
 
 // Helper function to authenticate a user
 export async function authenticateUser(email: string, password: string) {
-  const { data, error } = await supabase.rpc('authenticate_user', {
+  const { data: user, error: authError } = await supabase.rpc('authenticate_user', {
     p_email: email,
     p_password: password
   });
   
-  if (error) throw error;
-  return data;
+  if (authError) throw authError;
+  if (!user) throw new Error('Invalid login credentials');
+
+  // Set session in localStorage
+  localStorage.setItem('parkingUser', JSON.stringify(user));
+  
+  return { user, session: true };
 }

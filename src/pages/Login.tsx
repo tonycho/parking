@@ -16,9 +16,9 @@ const Login = () => {
     setError('');
 
     try {
-      const data = await authenticateUser(email, password);
+      const { user, session } = await authenticateUser(email, password);
       
-      if (data?.session) {
+      if (user && session) {
         navigate('/', { replace: true });
       } else {
         throw new Error('Login failed');

@@ -221,7 +221,7 @@ export function useParking() {
 
   const checkAuth = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = localStorage.getItem('parkingUser');
       setIsAuthenticated(!!user);
     } catch (error) {
       console.error('Error checking auth:', error);
@@ -233,16 +233,17 @@ export function useParking() {
 
   const loadParkingData = async () => {
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!user) {
+      const userStr = localStorage.getItem('parkingUser');
+      if (!userStr) {
         setIsAuthenticated(false);
         return;
       }
+      const user = JSON.parse(userStr);
 
       const { data: parkingLots, error: parkingLotError } = await supabase
         .from('parking_lots')
         .select('*')
+        .eq('user_id', user.id)
         .limit(1);
 
       if (parkingLotError) throw parkingLotError;
@@ -316,12 +317,12 @@ export function useParking() {
 
   const updateVehicle = async (vehicleData: Omit<Vehicle, 'id' | 'timeParked'>, spotId: string) => {
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!user) {
+      const userStr = localStorage.getItem('parkingUser');
+      if (!userStr) {
         setIsAuthenticated(false);
         return;
       }
+      const user = JSON.parse(userStr);
 
       const now = new Date().toISOString();
       const spot = parkingLot.spots.find(s => s.id === spotId);
@@ -368,12 +369,12 @@ export function useParking() {
 
   const removeVehicle = async (spotId: string) => {
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!user) {
+      const userStr = localStorage.getItem('parkingUser');
+      if (!userStr) {
         setIsAuthenticated(false);
         return;
       }
+      const user = JSON.parse(userStr);
 
       const { error: spotError } = await supabase
         .from('parking_spots')
@@ -398,12 +399,12 @@ export function useParking() {
 
   const resetParking = async () => {
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!user) {
+      const userStr = localStorage.getItem('parkingUser');
+      if (!userStr) {
         setIsAuthenticated(false);
         return;
       }
+      const user = JSON.parse(userStr);
 
       const { error: spotError } = await supabase
         .from('parking_spots')
