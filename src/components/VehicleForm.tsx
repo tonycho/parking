@@ -9,6 +9,23 @@ const carManufacturers = [
   'Nissan', 'Porsche', 'Ram', 'Subaru', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo'
 ];
 
+const carColors = [
+  { name: 'Black', hex: '#000000' },
+  { name: 'White', hex: '#FFFFFF' },
+  { name: 'Silver', hex: '#C0C0C0' },
+  { name: 'Gray', hex: '#808080' },
+  { name: 'Red', hex: '#FF0000' },
+  { name: 'Blue', hex: '#0000FF' },
+  { name: 'Brown', hex: '#964B00' },
+  { name: 'Green', hex: '#008000' },
+  { name: 'Beige', hex: '#F5F5DC' },
+  { name: 'Gold', hex: '#FFD700' },
+  { name: 'Orange', hex: '#FFA500' },
+  { name: 'Yellow', hex: '#FFFF00' },
+  { name: 'Purple', hex: '#800080' },
+  { name: 'Other', hex: 'gradient' }
+];
+
 interface VehicleFormProps {
   spot: ParkingSpot;
   existingVehicle?: Vehicle;
@@ -36,9 +53,13 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
 
   const [suggestions, setSuggestions] = useState<typeof knownVehicles>([]);
   const [showMakeSuggestions, setShowMakeSuggestions] = useState(false);
+  const [showColorSuggestions, setShowColorSuggestions] = useState(false);
   const [filteredManufacturers, setFilteredManufacturers] = useState<string[]>(carManufacturers);
+  const [filteredColors, setFilteredColors] = useState(carColors);
   const makeInputRef = useRef<HTMLInputElement>(null);
   const makeDropdownRef = useRef<HTMLDivElement>(null);
+  const colorInputRef = useRef<HTMLInputElement>(null);
+  const colorDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (existingVehicle) {
@@ -54,6 +75,12 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
           !makeInputRef.current.contains(event.target as Node) &&
           !makeDropdownRef.current.contains(event.target as Node)) {
         setShowMakeSuggestions(false);
+      }
+      if (colorInputRef.current && 
+          colorDropdownRef.current && 
+          !colorInputRef.current.contains(event.target as Node) &&
+          !colorDropdownRef.current.contains(event.target as Node)) {
+        setShowColorSuggestions(false);
       }
     };
 
@@ -76,12 +103,23 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       );
       setFilteredManufacturers(filtered.length > 0 ? filtered : []);
       setShowMakeSuggestions(true);
+    } else if (name === 'color') {
+      const filtered = carColors.filter(color =>
+        color.name.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredColors(filtered.length > 0 ? filtered : carColors);
+      setShowColorSuggestions(true);
     }
   };
 
   const handleManufacturerSelect = (manufacturer: string) => {
     setFormData(prev => ({ ...prev, make: manufacturer }));
     setShowMakeSuggestions(false);
+  };
+
+  const handleColorSelect = (colorName: string) => {
+    setFormData(prev => ({ ...prev, color: colorName }));
+    setShowColorSuggestions(false);
   };
 
   const handleSuggestionClick = (vehicle: typeof knownVehicles[0]) => {
@@ -221,20 +259,52 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               )}
             </div>
             
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                 <Palette className="mr-2" size={16} />
                 Color
               </label>
               <input
+                ref={colorInputRef}
                 type="text"
                 name="color"
                 value={formData.color}
                 onChange={handleChange}
+                onFocus={() => {
+                  setFilteredColors(carColors);
+                  setShowColorSuggestions(true);
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Vehicle color"
                 required
               />
+              {showColorSuggestions && (
+                <div 
+                  ref={colorDropdownRef}
+                  className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
+                >
+                  {filteredColors.map((color, index) => (
+                    <div
+                      key={index}
+                      className="p-2 hover:bg-gray-100 cursor-pointer flex items-center"
+                      onClick={() => handleColorSelect(color.name)}
+                    >
+                      {color.hex === 'gradient' ? (
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-r from-red-500 via-green-500 to-blue-500 mr-2" />
+                      ) : (
+                        <div 
+                          className="w-6 h-6 rounded-full mr-2" 
+                          style={{ 
+                            backgroundColor: color.hex,
+                            border: color.name === 'White' ? '1px solid #e5e7eb' : 'none'
+                          }} 
+                        />
+                      )}
+                      {color.name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
