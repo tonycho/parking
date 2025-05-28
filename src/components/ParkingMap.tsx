@@ -45,11 +45,11 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
             >
               {isOccupied ? (
                 <>
-                  <div className="text-center break-words hyphens-auto w-full px-1\" style={{ wordBreak: 'break-word' }}>
-                    {driverName}
-                  </div>
-                  <div className="text-xs opacity-75 mt-0.5">
+                  <div className="text-xs opacity-75">
                     {spot.label}
+                  </div>
+                  <div className="text-center break-words hyphens-auto w-full px-1" style={{ wordBreak: 'break-word' }}>
+                    {driverName}
                   </div>
                 </>
               ) : (
