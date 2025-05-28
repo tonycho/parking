@@ -82,7 +82,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   useEffect(() => {
     if (existingVehicle) {
       const { driverName, phoneNumber, licensePlate, make, model, color } = existingVehicle;
-      setFormData({ driverName, phoneNumber, licensePlate, make, model, color });
+      setFormData({ driverName, phoneNumber, licensePlate, make, model: model || '', color });
     }
   }, [existingVehicle]);
 
@@ -119,7 +119,6 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
     } else {
       setFilteredModels([]);
     }
-    setFormData(prev => ({ ...prev, model: '' }));
   }, [formData.make]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,7 +170,14 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   };
 
   const handleSuggestionClick = (vehicle: typeof knownVehicles[0]) => {
-    setFormData(vehicle);
+    setFormData({
+      driverName: vehicle.driverName,
+      phoneNumber: vehicle.phoneNumber,
+      licensePlate: vehicle.licensePlate,
+      make: vehicle.make,
+      model: vehicle.model || '',
+      color: vehicle.color
+    });
     setSuggestions([]);
   };
 
