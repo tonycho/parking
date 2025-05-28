@@ -18,7 +18,6 @@ const carModels: { [key: string]: string[] } = {
   'Honda': ['Accord', 'Civic', 'CR-V', 'Pilot', 'Other'],
   'Toyota': ['Camry', 'Corolla', 'RAV4', 'Highlander', 'Tacoma', 'Other'],
   'Tesla': ['Model 3', 'Model S', 'Model X', 'Model Y', 'Other'],
-  // Add a default for makes without specific models
   'Other': ['Other']
 };
 
@@ -114,14 +113,12 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   }, []);
 
   useEffect(() => {
-    // Update available models when make changes
     if (formData.make) {
       const availableModels = carModels[formData.make] || carModels['Other'];
       setFilteredModels(availableModels);
     } else {
       setFilteredModels([]);
     }
-    // Clear model when make changes
     setFormData(prev => ({ ...prev, model: '' }));
   }, [formData.make]);
 
@@ -133,7 +130,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       const matchingSuggestions = knownVehicles.filter(v => 
         v.licensePlate.toLowerCase().includes(value.toLowerCase())
       );
-      setSuggestions(matchingSuggestions);
+      setSuggestions(matchingSuggestions.length > 0 ? matchingSuggestions : []);
     } else if (name === 'make') {
       const filtered = carManufacturers.filter(manufacturer =>
         manufacturer.toLowerCase().includes(value.toLowerCase())
@@ -225,7 +222,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               required
             />
             {suggestions.length > 0 && (
-              <div className="absolute z-10 w-full bottom-[calc(100%+1px)] bg-white border border-gray-300 rounded-md shadow-lg">
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
                 {suggestions.map((vehicle, index) => (
                   <div
                     key={index}
