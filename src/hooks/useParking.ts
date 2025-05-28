@@ -557,12 +557,13 @@ export function useParking() {
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      setIsAuthenticated(false);
-      navigate('/login');
+      await supabase.auth.signOut();
     } catch (error) {
       console.error('Error logging out:', error);
+    } finally {
+      // Always reset client-side state and redirect regardless of server response
+      setIsAuthenticated(false);
+      navigate('/login');
     }
   };
 
