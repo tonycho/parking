@@ -206,11 +206,9 @@ export function useParking() {
   const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [knownVehicles, setKnownVehicles] = useState<Omit<Vehicle, 'id' | 'timeParked' | 'parkingSpotId'>[]>([]);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('isAuthenticated') === 'true';
+  });
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -218,36 +216,8 @@ export function useParking() {
     }
   }, [isAuthenticated]);
 
-  const checkAuth = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      setIsAuthenticated(!!user);
-      
-      if (!user && !import.meta.env.DEV) {
-        window.location.href = '/login';
-      }
-    } catch (error) {
-      console.error('Error checking auth:', error);
-      setIsAuthenticated(false);
-      if (!import.meta.env.DEV) {
-        window.location.href = '/login';
-      }
-    }
-  };
-
   const loadParkingData = async () => {
     try {
-      // Get the current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!user) {
-        setIsAuthenticated(false);
-        if (!import.meta.env.DEV) {
-          window.location.href = '/login';
-          return;
-        }
-      }
-
       // First, try to get the first parking lot
       const { data: parkingLots, error: parkingLotError } = await supabase
         .from('parking_lots')
@@ -262,7 +232,6 @@ export function useParking() {
           .from('parking_lots')
           .insert({
             name: initialParkingLot.name,
-            user_id: user.id
           })
           .select()
           .single();
@@ -323,21 +292,15 @@ export function useParking() {
       setVehicles(vehiclesData || []);
     } catch (error) {
       console.error('Error loading parking data:', error);
-      if (!import.meta.env.DEV) {
-        window.location.href = '/login';
-      }
     }
   };
 
   const updateVehicle = async (vehicleData: Omit<Vehicle, 'id' | 'timeParked'>, spotId: string) => {
-    try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!user) {
-        window.location.href = '/login';
-        return;
-      }
+    if (!isAuthenticated) {
+      throw new Error('Not authenticated');
+    }
 
+    try {
       const now = new Date().toISOString();
       const spot = parkingLot.spots.find(s => s.id === spotId);
       if (!spot) return;
@@ -368,7 +331,6 @@ export function useParking() {
             ...vehicleData,
             parking_spot_id: spotId,
             time_parked: now,
-            user_id: user.id,
           });
 
         if (vehicleError) throw vehicleError;
@@ -382,14 +344,11 @@ export function useParking() {
   };
 
   const removeVehicle = async (spotId: string) => {
-    try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!user) {
-        window.location.href = '/login';
-        return;
-      }
+    if (!isAuthenticated) {
+      throw new Error('Not authenticated');
+    }
 
+    try {
       const { error: spotError } = await supabase
         .from('parking_spots')
         .update({ status: 'available' })
@@ -412,14 +371,11 @@ export function useParking() {
   };
 
   const resetParking = async () => {
-    try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!user) {
-        window.location.href = '/login';
-        return;
-      }
+    if (!isAuthenticated) {
+      throw new Error('Not authenticated');
+    }
 
+    try {
       const { error: spotError } = await supabase
         .from('parking_spots')
         .update({ status: 'available' })
@@ -484,5 +440,6 @@ export function useParking() {
     resetParking,
     knownVehicles,
     isAuthenticated,
+    setIsAuthenticated,
   };
 }

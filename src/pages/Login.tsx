@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Lock, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useParking } from '../hooks/useParking';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -8,6 +9,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { setIsAuthenticated } = useParking();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,6 +19,8 @@ const Login = () => {
     try {
       // Hardcoded credentials check
       if (username === 'admin' && password === 'parking123') {
+        localStorage.setItem('isAuthenticated', 'true');
+        setIsAuthenticated(true);
         navigate('/');
       } else {
         setError('Invalid credentials');
