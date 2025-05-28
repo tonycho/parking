@@ -1,6 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ParkingSpot, Vehicle } from '../types';
 import { CarFront, User, Phone, Tag, Palette, RotateCcw } from 'lucide-react';
+
+const carManufacturers = [
+  'Acura', 'Audi', 'BMW', 'Buick', 'Cadillac', 'Chevrolet', 'Chrysler', 
+  'Dodge', 'Ford', 'GMC', 'Honda', 'Hyundai', 'Infiniti', 'Jaguar', 'Jeep', 
+  'Kia', 'Lexus', 'Lincoln', 'Mazda', 'Mercedes-Benz', 'Mini', 'Mitsubishi', 
+  'Nissan', 'Porsche', 'Ram', 'Subaru', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo'
+];
 
 interface VehicleFormProps {
   spot: ParkingSpot;
@@ -28,6 +35,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   });
 
   const [suggestions, setSuggestions] = useState<typeof knownVehicles>([]);
+  const [showMakeSuggestions, setShowMakeSuggestions] = useState(false);
+  const [filteredManufacturers, setFilteredManufacturers] = useState<string[]>([]);
+  const makeInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (existingVehicle) {
@@ -36,17 +46,38 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
     }
   }, [existingVehicle]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (makeInputRef.current && !makeInputRef.current.contains(event.target as Node)) {
+        setShowMakeSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
 
-    // Show suggestions when typing license plate
     if (name === 'licensePlate') {
       const matchingSuggestions = knownVehicles.filter(v => 
         v.licensePlate.toLowerCase().includes(value.toLowerCase())
       );
       setSuggestions(matchingSuggestions);
+    } else if (name === 'make') {
+      const filtered = carManufacturers.filter(manufacturer =>
+        manufacturer.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredManufacturers(filtered);
+      setShowMakeSuggestions(true);
     }
+  };
+
+  const handleManufacturerSelect = (manufacturer: string) => {
+    setFormData(prev => ({ ...prev, make: manufacturer }));
+    setShowMakeSuggestions(false);
   };
 
   const handleSuggestionClick = (vehicle: typeof knownVehicles[0]) => {
@@ -152,17 +183,32 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
           </div>
           
           <div className="grid grid-cols-2 gap-4">
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-1">Make</label>
               <input
+                ref={makeInputRef}
                 type="text"
                 name="make"
                 value={formData.make}
                 onChange={handleChange}
+                onFocus={() => setShowMakeSuggestions(true)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Vehicle make"
                 required
               />
+              {showMakeSuggestions && filteredManufacturers.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                  {filteredManufacturers.map((manufacturer, index) => (
+                    <div
+                      key={index}
+                      className="p-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleManufacturerSelect(manufacturer)}
+                    >
+                      {manufacturer}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             
             <div>
