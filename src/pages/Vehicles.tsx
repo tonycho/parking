@@ -22,7 +22,16 @@ function Vehicles() {
     );
   });
 
-  const availableSpots = parkingLot.spots.filter(spot => spot.status === 'available');
+  const availableSpots = parkingLot.spots
+    .filter(spot => spot.status === 'available')
+    .sort((a, b) => {
+      // First sort by priority (higher priority first)
+      if (b.priority !== a.priority) {
+        return b.priority - a.priority;
+      }
+      // Then sort by label
+      return a.label.localeCompare(b.label);
+    });
 
   const handlePark = (vehicle: typeof knownVehicles[0]) => {
     setSelectedVehicle(vehicle);
@@ -194,7 +203,7 @@ function Vehicles() {
                                 : 'border-orange-500 bg-orange-100 hover:bg-orange-200'
                               }`}
                           >
-                            <div className="font-bold text-gray-900">{spot.label}</div>
+                            {spot.label}
                           </button>
                         ))}
                       </div>
