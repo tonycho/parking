@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Lock, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { authenticateUser } from '../lib/supabase';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -11,22 +11,20 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent form submission
+    e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-      if (data.user) {
+      const data = await authenticateUser(email, password);
+      
+      if (data?.session) {
         navigate('/', { replace: true });
+      } else {
+        throw new Error('Login failed');
       }
     } catch (error: any) {
-      setError(error.message || 'An error occurred during login');
+      setError(error.message || 'Invalid login credentials');
     } finally {
       setLoading(false);
     }
