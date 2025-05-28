@@ -558,10 +558,16 @@ export function useParking() {
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
+      setIsAuthenticated(false);
+      setVehicles([]);
+      setParkingLot(initialParkingLot);
+      setSelectedSpot(null);
+      setSearchQuery('');
+      setKnownVehicles([]);
+      navigate('/login');
     } catch (error) {
       console.error('Error logging out:', error);
-    } finally {
-      // Always reset client-side state and redirect regardless of server response
+      // Even if there's an error, we'll reset the client state and redirect
       setIsAuthenticated(false);
       navigate('/login');
     }
