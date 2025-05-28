@@ -14,6 +14,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 0, y: 15 },
       size: { width: 15, height: 10 },
+      priority: 1
     },
     {
       id: 'spot-c2',
@@ -21,6 +22,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 0, y: 26 },
       size: { width: 15, height: 10 },
+      priority: 1
     },
     {
       id: 'spot-c3',
@@ -28,6 +30,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 0, y: 37 },
       size: { width: 15, height: 10 },
+      priority: 1
     },
     {
       id: 'spot-c4',
@@ -35,6 +38,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 0, y: 48 },
       size: { width: 15, height: 10 },
+      priority: 1
     },
 
     // Second column (B10-B12)
@@ -44,6 +48,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 16, y: 5 },
       size: { width: 6, height: 12 },
+      priority: 1
     },
     {
       id: 'spot-b11',
@@ -51,6 +56,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 23, y: 5 },
       size: { width: 6, height: 12 },
+      priority: 1
     },
     {
       id: 'spot-b12',
@@ -58,6 +64,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 30, y: 5 },
       size: { width: 6, height: 12 },
+      priority: 1
     },
 
     // Third column - top row (A9-A1)
@@ -67,6 +74,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 37, y: 10 },
       size: { width: 6, height: 12 },
+      priority: 2
     },
     {
       id: 'spot-a8',
@@ -74,6 +82,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 44, y: 10 },
       size: { width: 6, height: 12 },
+      priority: 2
     },
     {
       id: 'spot-a7',
@@ -81,6 +90,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 51, y: 10 },
       size: { width: 6, height: 12 },
+      priority: 2
     },
     {
       id: 'spot-a6',
@@ -88,6 +98,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 58, y: 10 },
       size: { width: 6, height: 12 },
+      priority: 2
     },
     {
       id: 'spot-a5',
@@ -95,6 +106,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 65, y: 10 },
       size: { width: 6, height: 12 },
+      priority: 2
     },
     {
       id: 'spot-a4',
@@ -102,6 +114,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 72, y: 10 },
       size: { width: 6, height: 12 },
+      priority: 2
     },
     {
       id: 'spot-a3',
@@ -109,6 +122,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 79, y: 10 },
       size: { width: 6, height: 12 },
+      priority: 2
     },
     {
       id: 'spot-a2',
@@ -116,6 +130,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 86, y: 10 },
       size: { width: 6, height: 12 },
+      priority: 2
     },
     {
       id: 'spot-a1',
@@ -123,6 +138,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 93, y: 10 },
       size: { width: 6, height: 12 },
+      priority: 2
     },
 
     // Third column - bottom row (B9-B1)
@@ -132,6 +148,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 37, y: 23 },
       size: { width: 6, height: 12 },
+      priority: 1
     },
     {
       id: 'spot-b8',
@@ -139,6 +156,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 44, y: 23 },
       size: { width: 6, height: 12 },
+      priority: 1
     },
     {
       id: 'spot-b7',
@@ -146,6 +164,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 51, y: 23 },
       size: { width: 6, height: 12 },
+      priority: 1
     },
     {
       id: 'spot-b6',
@@ -153,6 +172,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 58, y: 23 },
       size: { width: 6, height: 12 },
+      priority: 1
     },
     {
       id: 'spot-b5',
@@ -160,6 +180,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 65, y: 23 },
       size: { width: 6, height: 12 },
+      priority: 1
     },
     {
       id: 'spot-b4',
@@ -167,6 +188,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 72, y: 23 },
       size: { width: 6, height: 12 },
+      priority: 1
     },
     {
       id: 'spot-b3',
@@ -174,6 +196,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 79, y: 23 },
       size: { width: 6, height: 12 },
+      priority: 1
     },
     {
       id: 'spot-b2',
@@ -181,6 +204,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 86, y: 23 },
       size: { width: 6, height: 12 },
+      priority: 1
     },
     {
       id: 'spot-b1',
@@ -188,29 +212,7 @@ const initialParkingLot: ParkingLot = {
       status: 'available',
       position: { x: 93, y: 23 },
       size: { width: 6, height: 12 },
-    },
-
-    // Additional spots (A10-A12)
-    {
-      id: 'spot-a10',
-      label: 'A10',
-      status: 'available',
-      position: { x: 37, y: 0 },
-      size: { width: 6, height: 12 },
-    },
-    {
-      id: 'spot-a11',
-      label: 'A11',
-      status: 'available',
-      position: { x: 44, y: 0 },
-      size: { width: 6, height: 12 },
-    },
-    {
-      id: 'spot-a12',
-      label: 'A12',
-      status: 'available',
-      position: { x: 51, y: 0 },
-      size: { width: 6, height: 12 },
+      priority: 1
     },
   ],
 };
@@ -237,11 +239,15 @@ export function useParking() {
 
   const checkAuth = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
       if (!session) {
+        setIsAuthenticated(false);
         navigate('/login');
+        return;
       }
+
+      setIsAuthenticated(true);
     } catch (error) {
       console.error('Error checking auth:', error);
       setIsAuthenticated(false);
@@ -295,6 +301,7 @@ export function useParking() {
           width: spot.size.width,
           height: spot.size.height,
           rotation: spot.rotation || 0,
+          priority: spot.priority || 1,
           parking_lot_id: newParkingLot.id
         }));
 
@@ -419,15 +426,6 @@ export function useParking() {
       }
 
       const now = new Date().toISOString();
-      const spot = parkingLot.spots.find(s => s.id === spotId);
-      if (!spot) return;
-
-      const { error: spotError } = await supabase
-        .from('parking_spots')
-        .update({ status: 'occupied' })
-        .eq('id', spotId);
-
-      if (spotError) throw spotError;
 
       // Map camelCase to snake_case for database
       const dbVehicleData = {
@@ -449,28 +447,41 @@ export function useParking() {
 
       if (historyError) throw historyError;
 
-      const existingVehicle = vehicles.find(v => v.parkingSpotId === spotId);
-      
-      if (existingVehicle) {
-        const { error: vehicleError } = await supabase
-          .from('vehicles')
-          .update({
-            ...dbVehicleData,
-            time_parked: now,
-          })
-          .eq('id', existingVehicle.id);
+      // Only update parking spot and add vehicle if a spot is provided
+      if (spotId) {
+        const spot = parkingLot.spots.find(s => s.id === spotId);
+        if (!spot) return;
 
-        if (vehicleError) throw vehicleError;
-      } else {
-        const { error: vehicleError } = await supabase
-          .from('vehicles')
-          .insert({
-            ...dbVehicleData,
-            parking_spot_id: spotId,
-            time_parked: now,
-          });
+        const { error: spotError } = await supabase
+          .from('parking_spots')
+          .update({ status: 'occupied' })
+          .eq('id', spotId);
 
-        if (vehicleError) throw vehicleError;
+        if (spotError) throw spotError;
+
+        const existingVehicle = vehicles.find(v => v.parkingSpotId === spotId);
+        
+        if (existingVehicle) {
+          const { error: vehicleError } = await supabase
+            .from('vehicles')
+            .update({
+              ...dbVehicleData,
+              time_parked: now,
+            })
+            .eq('id', existingVehicle.id);
+
+          if (vehicleError) throw vehicleError;
+        } else {
+          const { error: vehicleError } = await supabase
+            .from('vehicles')
+            .insert({
+              ...dbVehicleData,
+              parking_spot_id: spotId,
+              time_parked: now,
+            });
+
+          if (vehicleError) throw vehicleError;
+        }
       }
 
       await loadParkingData();
