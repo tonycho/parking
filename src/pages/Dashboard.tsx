@@ -29,7 +29,6 @@ function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
-  // Add escape key handler
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -85,7 +84,7 @@ function Dashboard() {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm">
-        <div className="w-full px-2">
+        <div className="w-full px-4">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center">
               <Car className="h-8 w-8 text-blue-500" />
@@ -120,9 +119,9 @@ function Dashboard() {
                 className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
               >
                 {sidebarOpen ? (
-                  <X className="block h-6 w-6\" aria-hidden="true" />
+                  <X className="block h-6 w-6" aria-hidden="true" />
                 ) : (
-                  <Menu className="block h-6 w-6\" aria-hidden="true" />
+                  <Menu className="block h-6 w-6" aria-hidden="true" />
                 )}
               </button>
             </div>
@@ -175,10 +174,10 @@ function Dashboard() {
         {/* Main content */}
         <div className="flex-1 flex flex-col md:flex-row">
           {/* Left column (map) */}
-          <div className="flex-1 p-2 flex flex-col">
+          <div className="flex-1 p-4 flex flex-col">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-medium text-gray-900 flex items-center">
-                <MapIcon className="mr-2 h-5 w-5 text-blue-500" />
+              <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                <MapIcon className="mr-2 h-6 w-6 text-blue-500" />
                 Parking Map
               </h2>
               <div className="text-sm text-gray-500">
