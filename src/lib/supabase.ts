@@ -9,27 +9,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Helper function to authenticate a user
+// Helper function to authenticate a user using Supabase's built-in auth
 export async function authenticateUser(email: string, password: string) {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('email', email)
-    .single();
-
-  if (error) throw error;
-  if (!data) throw new Error('User not found');
-
-  const { data: authData, error: authError } = await supabase.rpc('authenticate_user', {
-    p_email: email,
-    p_password: password
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password
   });
 
-  if (authError) throw authError;
-  if (!authData) throw new Error('Invalid login credentials');
+  if (error) throw error;
+  if (!data.user) throw new Error('User not found');
 
   // Store the user data in localStorage
-  localStorage.setItem('parkingUser', JSON.stringify(authData));
+  localStorage.setItem('parkingUser', JSON.stringify(data.user));
   
-  return { user: authData, session: true };
+  return { user: data.user, session: data.session };
 }
