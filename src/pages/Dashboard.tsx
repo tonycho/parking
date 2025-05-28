@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Car, Map as MapIcon, Menu, X, RotateCcw, LogOut, Database } from 'lucide-react';
+import { Car, Map as MapIcon, Menu, X, RotateCcw, LogOut, Database, Image } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useParking } from '../hooks/useParking';
 import ParkingMap from '../components/ParkingMap';
@@ -28,6 +28,7 @@ function Dashboard() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showMapImage, setShowMapImage] = useState(false);
 
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
@@ -36,6 +37,8 @@ function Dashboard() {
           setSelectedSpot(null);
         } else if (showResetConfirm) {
           setShowResetConfirm(false);
+        } else if (showMapImage) {
+          setShowMapImage(false);
         }
       }
     };
@@ -45,7 +48,7 @@ function Dashboard() {
     return () => {
       window.removeEventListener('keydown', handleEscapeKey);
     };
-  }, [selectedSpot, showResetConfirm]);
+  }, [selectedSpot, showResetConfirm, showMapImage]);
 
   const { spots, filteredVehicles } = filteredResults();
 
@@ -84,7 +87,7 @@ function Dashboard() {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 w-full">
+        <div className="max-w-7xl mx-auto px-4 w-full">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center">
               <Car className="h-8 w-8 text-blue-500" />
@@ -112,9 +115,9 @@ function Dashboard() {
                 className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
               >
                 {sidebarOpen ? (
-                  <X className="block h-6 w-6\" aria-hidden="true" />
+                  <X className="block h-6 w-6" aria-hidden="true" />
                 ) : (
-                  <Menu className="block h-6 w-6\" aria-hidden="true" />
+                  <Menu className="block h-6 w-6" aria-hidden="true" />
                 )}
               </button>
             </div>
@@ -166,25 +169,19 @@ function Dashboard() {
       {/* Main content */}
       <div className="flex-1 flex flex-col md:flex-row">
         {/* Left column (map) */}
-        <div className="flex-1 p-6 flex flex-col max-w-7xl mx-auto w-full">
+        <div className="flex-1 p-4 flex flex-col max-w-7xl mx-auto w-full">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
               <h2 className="text-2xl font-bold text-gray-900 flex items-center">
                 <MapIcon className="mr-2 h-6 w-6 text-blue-500" />
                 Parking Map
               </h2>
-              <a 
-                href="/image.png" 
-                target="_blank" 
-                rel="noopener noreferrer"
+              <button 
+                onClick={() => setShowMapImage(true)}
                 className="ml-2 text-blue-500 hover:text-blue-600 transition-colors"
               >
-                <img 
-                  src="/image.png" 
-                  alt="Parking Map Legend" 
-                  className="h-8 w-auto"
-                />
-              </a>
+                <Image className="h-6 w-6" />
+              </button>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-500">
@@ -221,7 +218,7 @@ function Dashboard() {
         </div>
         
         {/* Right column (sidebar) - Hidden on mobile */}
-        <div className="hidden md:block md:w-96 bg-gray-50 p-6 overflow-y-auto border-l border-gray-200">
+        <div className="hidden md:block md:w-96 bg-gray-50 p-4 overflow-y-auto border-l border-gray-200">
           <SearchBar 
             value={searchQuery} 
             onChange={setSearchQuery}
@@ -242,6 +239,38 @@ function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Map Image Modal */}
+      {showMapImage && (
+        <div className="fixed z-50 inset-0 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div 
+                className="absolute inset-0 bg-gray-500 opacity-75"
+                onClick={() => setShowMapImage(false)}
+              ></div>
+            </div>
+
+            <div className="relative inline-block bg-white rounded-lg overflow-hidden shadow-xl transform transition-all max-w-4xl w-full">
+              <div className="absolute top-0 right-0 pt-4 pr-4">
+                <button
+                  type="button"
+                  className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
+                  onClick={() => setShowMapImage(false)}
+                >
+                  <span className="sr-only">Close</span>
+                  <X className="h-6 w-6" aria-hidden="true" />
+                </button>
+              </div>
+              <img 
+                src="/image.png" 
+                alt="Parking Map" 
+                className="w-full h-auto"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal for vehicle form */}
       {selectedSpot && (
