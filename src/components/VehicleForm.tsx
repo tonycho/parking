@@ -65,6 +65,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   });
 
   const [suggestions, setSuggestions] = useState<typeof knownVehicles>([]);
+  const [contactSuggestions, setContactSuggestions] = useState<typeof knownVehicles>([]);
   const [showMakeSuggestions, setShowMakeSuggestions] = useState(false);
   const [showModelSuggestions, setShowModelSuggestions] = useState(false);
   const [showColorSuggestions, setShowColorSuggestions] = useState(false);
@@ -132,6 +133,13 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       setSuggestions(matchingSuggestions);
     } else if (name === 'licensePlate') {
       setSuggestions([]);
+    } else if (name === 'contact' && value.trim()) {
+      const matchingSuggestions = knownVehicles.filter(v => 
+        v.contact.toLowerCase().includes(value.toLowerCase())
+      );
+      setContactSuggestions(matchingSuggestions);
+    } else if (name === 'contact') {
+      setContactSuggestions([]);
     } else if (name === 'make') {
       const filtered = carManufacturers.filter(manufacturer =>
         manufacturer.toLowerCase().includes(value.toLowerCase())
@@ -179,6 +187,16 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       color: vehicle.color
     });
     setSuggestions([]);
+    setContactSuggestions([]);
+  };
+
+  const handleContactSuggestionClick = (vehicle: typeof knownVehicles[0]) => {
+    setFormData(prev => ({
+      ...prev,
+      contact: vehicle.contact,
+      phoneNumber: vehicle.phoneNumber
+    }));
+    setContactSuggestions([]);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -247,7 +265,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
             )}
           </div>
 
-          <div>
+          <div className="relative">
             <label className="block text-sm font-medium text-gray-700">
               <User className="mr-2 inline" size={16} />
               Contact
@@ -261,6 +279,22 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               placeholder="Enter contact name"
               required
             />
+            {contactSuggestions.length > 0 && (
+              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                {contactSuggestions.map((vehicle, index) => (
+                  <div
+                    key={index}
+                    className="p-2 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => handleContactSuggestionClick(vehicle)}
+                  >
+                    <div className="font-medium">{vehicle.contact}</div>
+                    <div className="text-sm text-gray-600">
+                      {vehicle.phoneNumber}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           
           <div>
