@@ -71,16 +71,13 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
         manufacturer.toLowerCase().includes(value.toLowerCase())
       );
       setFilteredManufacturers(filtered);
-      setShowMakeSuggestions(filtered.length > 0);
+      setShowMakeSuggestions(true);
     }
   };
 
   const handleManufacturerSelect = (manufacturer: string) => {
     setFormData(prev => ({ ...prev, make: manufacturer }));
     setShowMakeSuggestions(false);
-    if (makeInputRef.current) {
-      makeInputRef.current.value = manufacturer;
-    }
   };
 
   const handleSuggestionClick = (vehicle: typeof knownVehicles[0]) => {
@@ -198,8 +195,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                   const filtered = carManufacturers.filter(manufacturer =>
                     manufacturer.toLowerCase().includes(formData.make.toLowerCase())
                   );
-                  setFilteredManufacturers(filtered);
-                  setShowMakeSuggestions(filtered.length > 0);
+                  setFilteredManufacturers(filtered.length > 0 ? filtered : carManufacturers);
+                  setShowMakeSuggestions(true);
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Vehicle make"
