@@ -5,13 +5,20 @@ import { CarFront, User, Phone, Tag, Clock } from 'lucide-react';
 interface VehicleListProps {
   vehicles: Vehicle[];
   onVehicleClick: (spotId: string) => void;
+  spots: ParkingSpot[];
 }
 
-const VehicleList: React.FC<VehicleListProps> = ({ vehicles, onVehicleClick }) => {
+const VehicleList: React.FC<VehicleListProps> = ({ vehicles, onVehicleClick, spots }) => {
   // Format date for display
   const formatTime = (timeString: string) => {
     const date = new Date(timeString);
     return date.toLocaleString();
+  };
+
+  // Get spot label by spot ID
+  const getSpotLabel = (spotId: string): string => {
+    const spot = spots.find(s => s.id === spotId);
+    return spot ? spot.label : '';
   };
 
   if (vehicles.length === 0) {
@@ -34,12 +41,12 @@ const VehicleList: React.FC<VehicleListProps> = ({ vehicles, onVehicleClick }) =
             <div className="flex items-center">
               <CarFront className="w-5 h-5 text-blue-500 mr-2" />
               <div>
-                <p className="font-medium text-gray-900">{vehicle.make} ({vehicle.color})</p>
+                <p className="font-medium text-gray-900">{vehicle.make} {vehicle.model} ({vehicle.color})</p>
                 <p className="text-sm text-gray-500">{vehicle.licensePlate}</p>
               </div>
             </div>
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              Spot {vehicle.parkingSpotId.split('-')[1]}
+              Spot {getSpotLabel(vehicle.parkingSpotId)}
             </span>
           </div>
           
