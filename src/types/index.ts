@@ -4,6 +4,7 @@ export interface Vehicle {
   phoneNumber: string;
   licensePlate: string;
   make: string;
+  model: string;
   color: string;
   parkingSpotId: string;
   timeParked: string;

@@ -9,6 +9,19 @@ const carManufacturers = [
   'Nissan', 'Porsche', 'Ram', 'Subaru', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo'
 ];
 
+const carModels: { [key: string]: string[] } = {
+  'Acura': ['ILX', 'MDX', 'RDX', 'TLX', 'Other'],
+  'Audi': ['A3', 'A4', 'A5', 'A6', 'Q3', 'Q5', 'Q7', 'Other'],
+  'BMW': ['3 Series', '5 Series', 'X3', 'X5', 'Other'],
+  'Chevrolet': ['Camaro', 'Corvette', 'Malibu', 'Silverado', 'Tahoe', 'Other'],
+  'Ford': ['F-150', 'Mustang', 'Explorer', 'Escape', 'Focus', 'Other'],
+  'Honda': ['Accord', 'Civic', 'CR-V', 'Pilot', 'Other'],
+  'Toyota': ['Camry', 'Corolla', 'RAV4', 'Highlander', 'Tacoma', 'Other'],
+  'Tesla': ['Model 3', 'Model S', 'Model X', 'Model Y', 'Other'],
+  // Add a default for makes without specific models
+  'Other': ['Other']
+};
+
 const carColors = [
   { name: 'Black', hex: '#000000' },
   { name: 'White', hex: '#FFFFFF' },
@@ -48,23 +61,29 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
     phoneNumber: '',
     licensePlate: '',
     make: '',
+    model: '',
     color: '',
   });
 
   const [suggestions, setSuggestions] = useState<typeof knownVehicles>([]);
   const [showMakeSuggestions, setShowMakeSuggestions] = useState(false);
+  const [showModelSuggestions, setShowModelSuggestions] = useState(false);
   const [showColorSuggestions, setShowColorSuggestions] = useState(false);
   const [filteredManufacturers, setFilteredManufacturers] = useState<string[]>(carManufacturers);
+  const [filteredModels, setFilteredModels] = useState<string[]>([]);
   const [filteredColors, setFilteredColors] = useState(carColors);
+
   const makeInputRef = useRef<HTMLInputElement>(null);
   const makeDropdownRef = useRef<HTMLDivElement>(null);
+  const modelInputRef = useRef<HTMLInputElement>(null);
+  const modelDropdownRef = useRef<HTMLDivElement>(null);
   const colorInputRef = useRef<HTMLInputElement>(null);
   const colorDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (existingVehicle) {
-      const { driverName, phoneNumber, licensePlate, make, color } = existingVehicle;
-      setFormData({ driverName, phoneNumber, licensePlate, make, color });
+      const { driverName, phoneNumber, licensePlate, make, model, color } = existingVehicle;
+      setFormData({ driverName, phoneNumber, licensePlate, make, model, color });
     }
   }, [existingVehicle]);
 
@@ -75,6 +94,12 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
           !makeInputRef.current.contains(event.target as Node) &&
           !makeDropdownRef.current.contains(event.target as Node)) {
         setShowMakeSuggestions(false);
+      }
+      if (modelInputRef.current && 
+          modelDropdownRef.current && 
+          !modelInputRef.current.contains(event.target as Node) &&
+          !modelDropdownRef.current.contains(event.target as Node)) {
+        setShowModelSuggestions(false);
       }
       if (colorInputRef.current && 
           colorDropdownRef.current && 
@@ -87,6 +112,18 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    // Update available models when make changes
+    if (formData.make) {
+      const availableModels = carModels[formData.make] || carModels['Other'];
+      setFilteredModels(availableModels);
+    } else {
+      setFilteredModels([]);
+    }
+    // Clear model when make changes
+    setFormData(prev => ({ ...prev, model: '' }));
+  }, [formData.make]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -103,6 +140,13 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       );
       setFilteredManufacturers(filtered.length > 0 ? filtered : []);
       setShowMakeSuggestions(true);
+    } else if (name === 'model' && formData.make) {
+      const availableModels = carModels[formData.make] || carModels['Other'];
+      const filtered = availableModels.filter(model =>
+        model.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredModels(filtered.length > 0 ? filtered : availableModels);
+      setShowModelSuggestions(true);
     } else if (name === 'color') {
       const filtered = carColors.filter(color =>
         color.name.toLowerCase().includes(value.toLowerCase())
@@ -115,6 +159,11 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   const handleManufacturerSelect = (manufacturer: string) => {
     setFormData(prev => ({ ...prev, make: manufacturer }));
     setShowMakeSuggestions(false);
+  };
+
+  const handleModelSelect = (model: string) => {
+    setFormData(prev => ({ ...prev, model }));
+    setShowModelSuggestions(false);
   };
 
   const handleColorSelect = (colorName: string) => {
@@ -144,6 +193,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       formData.phoneNumber.trim() !== '' &&
       formData.licensePlate.trim() !== '' &&
       formData.make.trim() !== '' &&
+      formData.model.trim() !== '' &&
       formData.color.trim() !== ''
     );
   };
@@ -184,7 +234,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                   >
                     <div className="font-medium">{vehicle.licensePlate}</div>
                     <div className="text-sm text-gray-600">
-                      {vehicle.driverName} - {vehicle.make} ({vehicle.color})
+                      {vehicle.driverName} - {vehicle.make} {vehicle.model} ({vehicle.color})
                     </div>
                   </div>
                 ))}
@@ -258,8 +308,44 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 </div>
               )}
             </div>
-            
+
             <div className="relative">
+              <label className="block text-sm font-medium text-gray-700">Model</label>
+              <input
+                ref={modelInputRef}
+                type="text"
+                name="model"
+                value={formData.model}
+                onChange={handleChange}
+                onFocus={() => {
+                  if (formData.make) {
+                    setShowModelSuggestions(true);
+                  }
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={formData.make ? "Vehicle model" : "Select make first"}
+                required
+                disabled={!formData.make}
+              />
+              {showModelSuggestions && formData.make && (
+                <div 
+                  ref={modelDropdownRef}
+                  className="absolute z-10 w-full bottom-[calc(100%+1px)] bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
+                >
+                  {filteredModels.map((model, index) => (
+                    <div
+                      key={index}
+                      className="p-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleModelSelect(model)}
+                    >
+                      {model}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="relative col-span-2">
               <label className="block text-sm font-medium text-gray-700">
                 <Palette className="mr-2 inline" size={16} />
                 Color
