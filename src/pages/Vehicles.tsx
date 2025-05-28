@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useParking } from '../hooks/useParking';
 import SearchBar from '../components/SearchBar';
-import { Car, Phone, Tag, LogOut, Database, Map as MapIcon, X, Trash2 } from 'lucide-react';
+import { Car, Phone, Tag, LogOut, Database, Map as MapIcon, X, Trash2, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import VehicleForm from '../components/VehicleForm';
 
 function Vehicles() {
   const { knownVehicles, handleLogout, parkingLot, updateVehicle, removeVehicle } = useParking();
@@ -10,6 +11,7 @@ function Vehicles() {
   const [selectedVehicle, setSelectedVehicle] = useState<typeof knownVehicles[0] | null>(null);
   const [showParkingModal, setShowParkingModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
 
   const filteredVehicles = knownVehicles.filter(vehicle => {
     const query = searchQuery.toLowerCase();
@@ -57,6 +59,16 @@ function Vehicles() {
     }
   };
 
+  const handleAddVehicle = async (vehicleData: any) => {
+    try {
+      // Add the vehicle without assigning a spot
+      await updateVehicle(vehicleData, '');
+      setShowAddVehicleModal(false);
+    } catch (error) {
+      console.error('Error adding vehicle:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Header */}
@@ -90,11 +102,18 @@ function Vehicles() {
 
       <div className="flex-1 p-6">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-6">
+          <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900 flex items-center">
               <Database className="mr-2 h-6 w-6 text-blue-500" />
               Vehicles
             </h2>
+            <button
+              onClick={() => setShowAddVehicleModal(true)}
+              className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Vehicle
+            </button>
           </div>
 
           <div className="mb-6">
@@ -178,6 +197,31 @@ function Vehicles() {
           </div>
         </div>
       </div>
+
+      {/* Add Vehicle Modal */}
+      {showAddVehicleModal && (
+        <div className="fixed z-50 inset-0 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity">
+              <div 
+                className="absolute inset-0 bg-gray-500 opacity-75"
+                onClick={() => setShowAddVehicleModal(false)}
+              ></div>
+            </div>
+
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <VehicleForm
+                spot={{ id: '', label: '', status: 'available', position: { x: 0, y: 0 }, size: { width: 0, height: 0 }, priority: 1 }}
+                onSave={handleAddVehicle}
+                onCancel={() => setShowAddVehicleModal(false)}
+                knownVehicles={knownVehicles}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Parking Spot Selection Modal */}
       {showParkingModal && selectedVehicle && (
