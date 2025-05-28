@@ -326,7 +326,17 @@ export function useParking() {
         })),
       });
 
-      setVehicles(vehiclesData || []);
+      // Map snake_case to camelCase for vehicles
+      setVehicles((vehiclesData || []).map(vehicle => ({
+        id: vehicle.id,
+        driverName: vehicle.driver_name,
+        phoneNumber: vehicle.phone_number,
+        licensePlate: vehicle.license_plate,
+        make: vehicle.make,
+        color: vehicle.color,
+        parkingSpotId: vehicle.parking_spot_id,
+        timeParked: vehicle.time_parked
+      })));
     } catch (error) {
       console.error('Error loading parking data:', error);
       throw error;
@@ -353,13 +363,22 @@ export function useParking() {
 
       if (spotError) throw spotError;
 
+      // Map camelCase to snake_case for database
+      const dbVehicleData = {
+        driver_name: vehicleData.driverName,
+        phone_number: vehicleData.phoneNumber,
+        license_plate: vehicleData.licensePlate,
+        make: vehicleData.make,
+        color: vehicleData.color
+      };
+
       const existingVehicle = vehicles.find(v => v.parkingSpotId === spotId);
       
       if (existingVehicle) {
         const { error: vehicleError } = await supabase
           .from('vehicles')
           .update({
-            ...vehicleData,
+            ...dbVehicleData,
             time_parked: now,
           })
           .eq('id', existingVehicle.id);
@@ -369,7 +388,7 @@ export function useParking() {
         const { error: vehicleError } = await supabase
           .from('vehicles')
           .insert({
-            ...vehicleData,
+            ...dbVehicleData,
             parking_spot_id: spotId,
             time_parked: now,
             user_id: session.user.id,
