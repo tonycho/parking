@@ -26,6 +26,7 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
         {spots.map((spot) => {
           const driverName = getDriverName(spot.id);
           const colorClasses = getSpotColor(spot);
+          const isOccupied = spot.status === 'occupied';
           
           return (
             <div
@@ -42,7 +43,9 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
               }}
               onClick={() => onSpotClick(spot)}
             >
-              <div>{spot.label}</div>
+              <div className={isOccupied ? 'text-xs opacity-75' : ''}>
+                {spot.label}
+              </div>
               {driverName && (
                 <div className="text-xs mt-1 px-1 w-full">
                   <div className="text-center break-words hyphens-auto" style={{ wordBreak: 'break-word' }}>
