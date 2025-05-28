@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Car, Map as MapIcon, Menu, X, RotateCcw, LogOut } from 'lucide-react';
+import { Car, Map as MapIcon, Menu, X, RotateCcw, LogOut, History } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useParking } from '../hooks/useParking';
 import ParkingMap from '../components/ParkingMap';
 import VehicleForm from '../components/VehicleForm';
@@ -77,7 +78,7 @@ function Dashboard() {
 
   const getDriverName = (spotId: string) => {
     const vehicle = getVehicleBySpotId(spotId);
-    return vehicle?.driverName;
+    return vehicle?.contact;
   };
 
   return (
@@ -92,6 +93,13 @@ function Dashboard() {
             </div>
             
             <div className="flex items-center space-x-4">
+              <Link
+                to="/history"
+                className="flex items-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <History className="w-4 h-4 mr-2" />
+                History
+              </Link>
               <button
                 onClick={handleLogout}
                 className="flex items-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

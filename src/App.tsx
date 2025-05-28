@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import VehicleHistory from './pages/VehicleHistory';
 import { useParking } from './hooks/useParking';
 
 function App() {
@@ -27,6 +28,12 @@ function App() {
         path="/" 
         element={
           isAuthenticated ? <Dashboard /> : <Navigate to="/login" />
+        } 
+      />
+      <Route 
+        path="/history" 
+        element={
+          isAuthenticated ? <VehicleHistory /> : <Navigate to="/login" />
         } 
       />
     </Routes>
