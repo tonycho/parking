@@ -1,61 +1,202 @@
 import { useState, useEffect } from 'react';
 import { ParkingLot, ParkingSpot, Vehicle } from '../types';
 
-// Initial parking lot configuration based on the provided layout image
 const initialParkingLot: ParkingLot = {
   id: 'main',
   name: 'Main Parking Lot',
   spots: [
     // First column (23-26 vertically)
-    ...Array(4).fill(0).map((_, i) => ({
-      id: `col1-${26 - i}`,
-      label: `${26 - i}`,
+    {
+      id: 'spot-26',
+      label: '26',
       status: 'available',
-      position: { x: 10, y: 20 + i * 20 },
-      size: { width: 15, height: 10 },
-      rotation: 0,
-    })),
+      position: { x: 5, y: 5 },
+      size: { width: 12, height: 8 },
+    },
+    {
+      id: 'spot-25',
+      label: '25',
+      status: 'available',
+      position: { x: 5, y: 15 },
+      size: { width: 12, height: 8 },
+    },
+    {
+      id: 'spot-24',
+      label: '24',
+      status: 'available',
+      position: { x: 5, y: 25 },
+      size: { width: 12, height: 8 },
+    },
+    {
+      id: 'spot-23',
+      label: '23',
+      status: 'available',
+      position: { x: 5, y: 35 },
+      size: { width: 12, height: 8 },
+    },
 
-    // Second column, top row (17-19)
-    ...Array(3).fill(0).map((_, i) => ({
-      id: `col2-top-${19 - i}`,
-      label: `${19 - i}`,
+    // Second column top row (17-19)
+    {
+      id: 'spot-17',
+      label: '17',
       status: 'available',
-      position: { x: 30, y: 20 },
-      size: { width: 15, height: 10 },
-      rotation: 0,
-    })),
+      position: { x: 20, y: 5 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-18',
+      label: '18',
+      status: 'available',
+      position: { x: 20, y: 15 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-19',
+      label: '19',
+      status: 'available',
+      position: { x: 20, y: 25 },
+      size: { width: 8, height: 8 },
+    },
 
-    // Second column, bottom row (20-22)
-    ...Array(3).fill(0).map((_, i) => ({
-      id: `col2-bottom-${20 + i}`,
-      label: `${20 + i}`,
+    // Second column bottom row (20-22)
+    {
+      id: 'spot-20',
+      label: '20',
       status: 'available',
-      position: { x: 30, y: 50 },
-      size: { width: 15, height: 10 },
-      rotation: 0,
-    })),
+      position: { x: 30, y: 5 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-21',
+      label: '21',
+      status: 'available',
+      position: { x: 30, y: 15 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-22',
+      label: '22',
+      status: 'available',
+      position: { x: 30, y: 25 },
+      size: { width: 8, height: 8 },
+    },
 
-    // Third column, top row (1-8)
-    ...Array(8).fill(0).map((_, i) => ({
-      id: `col3-top-${8 - i}`,
-      label: `${8 - i}`,
+    // Third column top row (1-8)
+    {
+      id: 'spot-8',
+      label: '8',
       status: 'available',
-      position: { x: 50 + i * 15, y: 20 },
-      size: { width: 15, height: 10 },
-      rotation: 0,
-    })),
+      position: { x: 45, y: 5 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-7',
+      label: '7',
+      status: 'available',
+      position: { x: 55, y: 5 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-6',
+      label: '6',
+      status: 'available',
+      position: { x: 65, y: 5 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-5',
+      label: '5',
+      status: 'available',
+      position: { x: 75, y: 5 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-4',
+      label: '4',
+      status: 'available',
+      position: { x: 85, y: 5 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-3',
+      label: '3',
+      status: 'available',
+      position: { x: 95, y: 5 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-2',
+      label: '2',
+      status: 'available',
+      position: { x: 105, y: 5 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-1',
+      label: '1',
+      status: 'available',
+      position: { x: 115, y: 5 },
+      size: { width: 8, height: 8 },
+    },
 
-    // Third column, bottom row (9-16)
-    ...Array(8).fill(0).map((_, i) => ({
-      id: `col3-bottom-${9 + i}`,
-      label: `${9 + i}`,
+    // Third column bottom row (9-16)
+    {
+      id: 'spot-9',
+      label: '9',
       status: 'available',
-      position: { x: 50 + i * 15, y: 50 },
-      size: { width: 15, height: 10 },
-      rotation: 0,
-    })),
-  ] as ParkingSpot[],
+      position: { x: 45, y: 25 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-10',
+      label: '10',
+      status: 'available',
+      position: { x: 55, y: 25 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-11',
+      label: '11',
+      status: 'available',
+      position: { x: 65, y: 25 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-12',
+      label: '12',
+      status: 'available',
+      position: { x: 75, y: 25 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-13',
+      label: '13',
+      status: 'available',
+      position: { x: 85, y: 25 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-14',
+      label: '14',
+      status: 'available',
+      position: { x: 95, y: 25 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-15',
+      label: '15',
+      status: 'available',
+      position: { x: 105, y: 25 },
+      size: { width: 8, height: 8 },
+    },
+    {
+      id: 'spot-16',
+      label: '16',
+      status: 'available',
+      position: { x: 115, y: 25 },
+      size: { width: 8, height: 8 },
+    },
+  ],
 };
 
 export function useParking() {
@@ -65,7 +206,6 @@ export function useParking() {
   const [searchQuery, setSearchQuery] = useState('');
   const [knownVehicles, setKnownVehicles] = useState<Omit<Vehicle, 'id' | 'timeParked' | 'parkingSpotId'>[]>([]);
 
-  // Load data from localStorage on initial render
   useEffect(() => {
     const savedParkingLot = localStorage.getItem('parkingLot');
     const savedVehicles = localStorage.getItem('vehicles');
@@ -84,7 +224,6 @@ export function useParking() {
     }
   }, []);
 
-  // Save data to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('parkingLot', JSON.stringify(parkingLot));
     localStorage.setItem('vehicles', JSON.stringify(vehicles));
