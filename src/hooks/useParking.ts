@@ -240,6 +240,28 @@ export function useParking() {
         return;
       }
 
+      // First, ensure the user exists in the users table
+      const { data: existingUser, error: userCheckError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', session.user.id)
+        .single();
+
+      if (userCheckError && userCheckError.code !== 'PGRST116') {
+        throw userCheckError;
+      }
+
+      if (!existingUser) {
+        const { error: createUserError } = await supabase
+          .from('users')
+          .insert({
+            id: session.user.id,
+            email: session.user.email
+          });
+
+        if (createUserError) throw createUserError;
+      }
+
       const { data: parkingLots, error: parkingLotError } = await supabase
         .from('parking_lots')
         .select('*')
@@ -312,6 +334,7 @@ export function useParking() {
       setVehicles(vehiclesData || []);
     } catch (error) {
       console.error('Error loading parking data:', error);
+      throw error;
     }
   };
 
