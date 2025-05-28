@@ -207,6 +207,7 @@ export function useParking() {
   const [searchQuery, setSearchQuery] = useState('');
   const [knownVehicles, setKnownVehicles] = useState<Omit<Vehicle, 'id' | 'timeParked' | 'parkingSpotId'>[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     checkAuth();
@@ -222,14 +223,11 @@ export function useParking() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       setIsAuthenticated(!!user);
-      
-      if (!user) {
-        window.location.href = '/login';
-      }
     } catch (error) {
       console.error('Error checking auth:', error);
       setIsAuthenticated(false);
-      window.location.href = '/login';
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -239,11 +237,9 @@ export function useParking() {
       if (userError) throw userError;
       if (!user) {
         setIsAuthenticated(false);
-        window.location.href = '/login';
         return;
       }
 
-      // First, try to get the first parking lot
       const { data: parkingLots, error: parkingLotError } = await supabase
         .from('parking_lots')
         .select('*')
@@ -251,7 +247,6 @@ export function useParking() {
 
       if (parkingLotError) throw parkingLotError;
 
-      // If no parking lot exists, create one using the initial data
       if (!parkingLots || parkingLots.length === 0) {
         const { data: newParkingLot, error: createError } = await supabase
           .from('parking_lots')
@@ -264,7 +259,6 @@ export function useParking() {
 
         if (createError) throw createError;
 
-        // Create initial parking spots
         const spotsToCreate = initialParkingLot.spots.map(spot => ({
           label: spot.label,
           status: spot.status,
@@ -282,7 +276,6 @@ export function useParking() {
 
         if (spotsError) throw spotsError;
 
-        // Reload the data after creating
         return loadParkingData();
       }
 
@@ -318,7 +311,6 @@ export function useParking() {
       setVehicles(vehiclesData || []);
     } catch (error) {
       console.error('Error loading parking data:', error);
-      window.location.href = '/login';
     }
   };
 
@@ -327,7 +319,7 @@ export function useParking() {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError) throw authError;
       if (!user) {
-        window.location.href = '/login';
+        setIsAuthenticated(false);
         return;
       }
 
@@ -379,7 +371,7 @@ export function useParking() {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError) throw authError;
       if (!user) {
-        window.location.href = '/login';
+        setIsAuthenticated(false);
         return;
       }
 
@@ -409,7 +401,7 @@ export function useParking() {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError) throw authError;
       if (!user) {
-        window.location.href = '/login';
+        setIsAuthenticated(false);
         return;
       }
 
@@ -477,5 +469,6 @@ export function useParking() {
     resetParking,
     knownVehicles,
     isAuthenticated,
+    isLoading,
   };
 }
