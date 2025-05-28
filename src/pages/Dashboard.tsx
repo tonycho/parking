@@ -106,22 +106,15 @@ function Dashboard() {
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
               </button>
-              <button
-                onClick={() => setShowResetConfirm(true)}
-                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Reset All
-              </button>
               
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
               >
                 {sidebarOpen ? (
-                  <X className="block h-6 w-6\" aria-hidden="true" />
+                  <X className="block h-6 w-6" aria-hidden="true" />
                 ) : (
-                  <Menu className="block h-6 w-6\" aria-hidden="true" />
+                  <Menu className="block h-6 w-6" aria-hidden="true" />
                 )}
               </button>
             </div>
@@ -129,105 +122,112 @@ function Dashboard() {
         </div>
       </header>
 
-      <main className="flex-grow flex overflow-hidden">
-        {/* Sidebar for mobile */}
-        <div
-          className={`fixed inset-0 z-40 md:hidden transition-opacity duration-300 ${
-            sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-        >
-          <div className="absolute inset-0 bg-gray-600 opacity-75" onClick={() => setSidebarOpen(false)}></div>
-          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white h-full">
-            <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-              <div className="px-2">
-                <div className="flex items-center">
-                  <Car className="h-8 w-8 text-blue-500" />
-                  <h1 className="ml-2 text-xl font-semibold text-gray-900">ParkSmart</h1>
-                </div>
+      {/* Sidebar for mobile */}
+      <div
+        className={`fixed inset-0 z-40 md:hidden transition-opacity duration-300 ${
+          sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        <div className="absolute inset-0 bg-gray-600 opacity-75" onClick={() => setSidebarOpen(false)}></div>
+        <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white h-full">
+          <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+            <div className="px-2">
+              <div className="flex items-center">
+                <Car className="h-8 w-8 text-blue-500" />
+                <h1 className="ml-2 text-xl font-semibold text-gray-900">ParkSmart</h1>
               </div>
-              <div className="mt-5 px-2 space-y-4">
-                <SearchBar 
-                  value={searchQuery} 
-                  onChange={setSearchQuery}
-                />
-                <div>
-                  <h2 className="text-lg font-medium text-gray-900 mb-4">Vehicles</h2>
-                  <div className="space-y-2">
-                    <VehicleList 
-                      vehicles={filteredVehicles}
-                      spots={parkingLot.spots}
-                      onVehicleClick={(spotId) => {
-                        const spot = parkingLot.spots.find(s => s.id === spotId);
-                        if (spot) {
-                          setSelectedSpot(spot);
-                          setSidebarOpen(false);
-                        }
-                      }}
-                    />
-                  </div>
+            </div>
+            <div className="mt-5 px-2 space-y-4">
+              <SearchBar 
+                value={searchQuery} 
+                onChange={setSearchQuery}
+              />
+              <div>
+                <h2 className="text-lg font-medium text-gray-900 mb-4">Vehicles</h2>
+                <div className="space-y-2">
+                  <VehicleList 
+                    vehicles={filteredVehicles}
+                    spots={parkingLot.spots}
+                    onVehicleClick={(spotId) => {
+                      const spot = parkingLot.spots.find(s => s.id === spotId);
+                      if (spot) {
+                        setSelectedSpot(spot);
+                        setSidebarOpen(false);
+                      }
+                    }}
+                  />
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Main content */}
-        <div className="flex-1 flex flex-col md:flex-row">
-          {/* Left column (map) */}
-          <div className="flex-1 p-6 flex flex-col">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                <MapIcon className="mr-2 h-6 w-6 text-blue-500" />
-                Parking Map
-              </h2>
+      {/* Main content */}
+      <div className="flex-1 flex flex-col md:flex-row">
+        {/* Left column (map) */}
+        <div className="flex-1 p-6 flex flex-col">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+              <MapIcon className="mr-2 h-6 w-6 text-blue-500" />
+              Parking Map
+            </h2>
+            <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-500">
                 Click on a spot to manage vehicle information
               </div>
-            </div>
-            
-            <div className="mb-6">
-              <Stats 
-                totalSpots={parkingLot.spots.length} 
-                availableSpots={availableSpots} 
-                occupiedSpots={occupiedSpots}
-              />
-            </div>
-            
-            <div className="flex-1 relative h-0">
-              <div className="absolute inset-0">
-                <ParkingMap 
-                  spots={spots} 
-                  onSpotClick={handleSpotClick} 
-                  selectedSpotId={selectedSpot?.id}
-                  getDriverName={getDriverName}
-                />
-              </div>
+              <button
+                onClick={() => setShowResetConfirm(true)}
+                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Reset All
+              </button>
             </div>
           </div>
           
-          {/* Right column (sidebar) - Hidden on mobile */}
-          <div className="hidden md:block md:w-96 bg-gray-50 p-6 overflow-y-auto border-l border-gray-200">
-            <SearchBar 
-              value={searchQuery} 
-              onChange={setSearchQuery}
+          <div className="mb-6">
+            <Stats 
+              totalSpots={parkingLot.spots.length} 
+              availableSpots={availableSpots} 
+              occupiedSpots={occupiedSpots}
             />
-            
-            <div className="mt-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Vehicles</h2>
-              <VehicleList 
-                vehicles={filteredVehicles}
-                spots={parkingLot.spots}
-                onVehicleClick={(spotId) => {
-                  const spot = parkingLot.spots.find(s => s.id === spotId);
-                  if (spot) {
-                    setSelectedSpot(spot);
-                  }
-                }}
+          </div>
+          
+          <div className="flex-1 relative h-0">
+            <div className="absolute inset-0">
+              <ParkingMap 
+                spots={spots} 
+                onSpotClick={handleSpotClick} 
+                selectedSpotId={selectedSpot?.id}
+                getDriverName={getDriverName}
               />
             </div>
           </div>
         </div>
-      </main>
+        
+        {/* Right column (sidebar) - Hidden on mobile */}
+        <div className="hidden md:block md:w-96 bg-gray-50 p-6 overflow-y-auto border-l border-gray-200">
+          <SearchBar 
+            value={searchQuery} 
+            onChange={setSearchQuery}
+          />
+          
+          <div className="mt-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Vehicles</h2>
+            <VehicleList 
+              vehicles={filteredVehicles}
+              spots={parkingLot.spots}
+              onVehicleClick={(spotId) => {
+                const spot = parkingLot.spots.find(s => s.id === spotId);
+                if (spot) {
+                  setSelectedSpot(spot);
+                }
+              }}
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Modal for vehicle form */}
       {selectedSpot && (
