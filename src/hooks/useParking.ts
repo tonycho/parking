@@ -206,17 +206,47 @@ export function useParking() {
   const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [knownVehicles, setKnownVehicles] = useState<Omit<Vehicle, 'id' | 'timeParked' | 'parkingSpotId'>[]>([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    loadParkingData();
+    checkAuth();
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadParkingData();
+    }
+  }, [isAuthenticated]);
+
+  const checkAuth = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsAuthenticated(!!user);
+      
+      if (!user && !import.meta.env.DEV) {
+        window.location.href = '/login';
+      }
+    } catch (error) {
+      console.error('Error checking auth:', error);
+      setIsAuthenticated(false);
+      if (!import.meta.env.DEV) {
+        window.location.href = '/login';
+      }
+    }
+  };
 
   const loadParkingData = async () => {
     try {
       // Get the current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
-      if (!user) throw new Error('Not authenticated');
+      if (!user) {
+        setIsAuthenticated(false);
+        if (!import.meta.env.DEV) {
+          window.location.href = '/login';
+          return;
+        }
+      }
 
       // First, try to get the first parking lot
       const { data: parkingLots, error: parkingLotError } = await supabase
@@ -293,10 +323,20 @@ export function useParking() {
       setVehicles(vehiclesData || []);
     } catch (error) {
       console.error('Error loading parking data:', error);
+      if (!import.meta.env.DEV) {
+        window.location.href = '/login';
+      }
     }
   };
 
   const updateVehicle = async (vehicleData: Omit<Vehicle, 'id' | 'timeParked'>, spotId: string) => {
+    if (!isAuthenticated) {
+      if (!import.meta.env.DEV) {
+        window.location.href = '/login';
+        return;
+      }
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
@@ -344,6 +384,13 @@ export function useParking() {
   };
 
   const removeVehicle = async (spotId: string) => {
+    if (!isAuthenticated) {
+      if (!import.meta.env.DEV) {
+        window.location.href = '/login';
+        return;
+      }
+    }
+
     try {
       const { error: spotError } = await supabase
         .from('parking_spots')
@@ -366,6 +413,13 @@ export function useParking() {
   };
 
   const resetParking = async () => {
+    if (!isAuthenticated) {
+      if (!import.meta.env.DEV) {
+        window.location.href = '/login';
+        return;
+      }
+    }
+
     try {
       const { error: spotError } = await supabase
         .from('parking_spots')
@@ -429,5 +483,6 @@ export function useParking() {
     occupiedSpots: parkingLot.spots.filter(s => s.status === 'occupied').length,
     resetParking,
     knownVehicles,
+    isAuthenticated,
   };
 }
