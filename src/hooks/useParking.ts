@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ParkingLot, ParkingSpot, Vehicle } from '../types';
+import { supabase } from '../lib/supabase';
 
 const initialParkingLot: ParkingLot = {
   id: 'main',
@@ -207,103 +208,147 @@ export function useParking() {
   const [knownVehicles, setKnownVehicles] = useState<Omit<Vehicle, 'id' | 'timeParked' | 'parkingSpotId'>[]>([]);
 
   useEffect(() => {
-    const savedParkingLot = localStorage.getItem('parkingLot');
-    const savedVehicles = localStorage.getItem('vehicles');
-    const savedKnownVehicles = localStorage.getItem('knownVehicles');
-
-    if (savedParkingLot) {
-      setParkingLot(JSON.parse(savedParkingLot));
-    }
-    
-    if (savedVehicles) {
-      setVehicles(JSON.parse(savedVehicles));
-    }
-
-    if (savedKnownVehicles) {
-      setKnownVehicles(JSON.parse(savedKnownVehicles));
-    }
+    loadParkingData();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('parkingLot', JSON.stringify(parkingLot));
-    localStorage.setItem('vehicles', JSON.stringify(vehicles));
-    localStorage.setItem('knownVehicles', JSON.stringify(knownVehicles));
-  }, [parkingLot, vehicles, knownVehicles]);
+  const loadParkingData = async () => {
+    try {
+      const { data: parkingLots, error: parkingLotError } = await supabase
+        .from('parking_lots')
+        .select('*')
+        .limit(1)
+        .single();
 
-  const updateVehicle = (vehicleData: Omit<Vehicle, 'id' | 'timeParked'>, spotId: string) => {
-    const now = new Date().toISOString();
-    const spot = parkingLot.spots.find(s => s.id === spotId);
-    
-    if (!spot) return;
+      if (parkingLotError) throw parkingLotError;
 
-    const vehicleInfo = {
-      driverName: vehicleData.driverName,
-      phoneNumber: vehicleData.phoneNumber,
-      licensePlate: vehicleData.licensePlate,
-      make: vehicleData.make,
-      color: vehicleData.color,
-    };
+      const { data: spots, error: spotsError } = await supabase
+        .from('parking_spots')
+        .select('*')
+        .eq('parking_lot_id', parkingLots.id);
 
-    setKnownVehicles(prev => {
-      const exists = prev.some(v => v.licensePlate === vehicleInfo.licensePlate);
-      if (!exists) {
-        return [...prev, vehicleInfo];
-      }
-      return prev;
-    });
+      if (spotsError) throw spotsError;
 
-    const existingVehicleIndex = vehicles.findIndex(v => v.parkingSpotId === spotId);
-    
-    if (existingVehicleIndex >= 0) {
-      const updatedVehicles = [...vehicles];
-      updatedVehicles[existingVehicleIndex] = {
-        ...updatedVehicles[existingVehicleIndex],
-        ...vehicleData,
-        timeParked: now
-      };
-      setVehicles(updatedVehicles);
-    } else {
-      const newVehicle: Vehicle = {
-        id: `vehicle-${Date.now()}`,
-        ...vehicleData,
-        parkingSpotId: spotId,
-        timeParked: now
-      };
-      setVehicles([...vehicles, newVehicle]);
+      const { data: vehiclesData, error: vehiclesError } = await supabase
+        .from('vehicles')
+        .select('*')
+        .eq('parking_lot_id', parkingLots.id);
+
+      if (vehiclesError) throw vehiclesError;
+
+      setParkingLot({
+        id: parkingLots.id,
+        name: parkingLots.name,
+        spots: spots.map((spot: any) => ({
+          id: spot.id,
+          label: spot.label,
+          status: spot.status,
+          position: { x: spot.position_x, y: spot.position_y },
+          size: { width: spot.width, height: spot.height },
+          rotation: spot.rotation,
+        })),
+      });
+
+      setVehicles(vehiclesData);
+    } catch (error) {
+      console.error('Error loading parking data:', error);
     }
-
-    updateSpotStatus(spotId, 'occupied', vehicleData.licensePlate);
   };
 
-  const removeVehicle = (spotId: string) => {
-    setVehicles(vehicles.filter(v => v.parkingSpotId !== spotId));
-    updateSpotStatus(spotId, 'available');
+  const updateVehicle = async (vehicleData: Omit<Vehicle, 'id' | 'timeParked'>, spotId: string) => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const now = new Date().toISOString();
+      const spot = parkingLot.spots.find(s => s.id === spotId);
+      if (!spot) return;
+
+      const { error: spotError } = await supabase
+        .from('parking_spots')
+        .update({ status: 'occupied' })
+        .eq('id', spotId);
+
+      if (spotError) throw spotError;
+
+      const existingVehicle = vehicles.find(v => v.parkingSpotId === spotId);
+      
+      if (existingVehicle) {
+        const { error: vehicleError } = await supabase
+          .from('vehicles')
+          .update({
+            ...vehicleData,
+            time_parked: now,
+          })
+          .eq('id', existingVehicle.id);
+
+        if (vehicleError) throw vehicleError;
+      } else {
+        const { error: vehicleError } = await supabase
+          .from('vehicles')
+          .insert({
+            ...vehicleData,
+            parking_spot_id: spotId,
+            time_parked: now,
+            user_id: user.id,
+          });
+
+        if (vehicleError) throw vehicleError;
+      }
+
+      await loadParkingData();
+    } catch (error) {
+      console.error('Error updating vehicle:', error);
+    }
   };
 
-  const updateSpotStatus = (spotId: string, status: 'available' | 'occupied', vehicleId?: string) => {
-    setParkingLot(prevLot => ({
-      ...prevLot,
-      spots: prevLot.spots.map(spot => 
-        spot.id === spotId 
-          ? { ...spot, status, vehicleId: vehicleId || undefined } 
-          : spot
-      )
-    }));
+  const removeVehicle = async (spotId: string) => {
+    try {
+      const { error: spotError } = await supabase
+        .from('parking_spots')
+        .update({ status: 'available' })
+        .eq('id', spotId);
+
+      if (spotError) throw spotError;
+
+      const { error: vehicleError } = await supabase
+        .from('vehicles')
+        .delete()
+        .eq('parking_spot_id', spotId);
+
+      if (vehicleError) throw vehicleError;
+
+      await loadParkingData();
+    } catch (error) {
+      console.error('Error removing vehicle:', error);
+    }
   };
 
-  const resetParking = () => {
-    setParkingLot(initialParkingLot);
-    setVehicles([]);
-    setSelectedSpot(null);
-    setSearchQuery('');
+  const resetParking = async () => {
+    try {
+      const { error: spotError } = await supabase
+        .from('parking_spots')
+        .update({ status: 'available' })
+        .eq('parking_lot_id', parkingLot.id);
+
+      if (spotError) throw spotError;
+
+      const { error: vehicleError } = await supabase
+        .from('vehicles')
+        .delete()
+        .eq('parking_lot_id', parkingLot.id);
+
+      if (vehicleError) throw vehicleError;
+
+      await loadParkingData();
+      setSelectedSpot(null);
+      setSearchQuery('');
+    } catch (error) {
+      console.error('Error resetting parking:', error);
+    }
   };
 
   const getVehicleBySpotId = (spotId: string): Vehicle | undefined => {
     return vehicles.find(v => v.parkingSpotId === spotId);
-  };
-
-  const getKnownVehicle = (licensePlate: string) => {
-    return knownVehicles.find(v => v.licensePlate === licensePlate);
   };
 
   const filteredResults = () => {
@@ -341,7 +386,6 @@ export function useParking() {
     availableSpots: parkingLot.spots.filter(s => s.status === 'available').length,
     occupiedSpots: parkingLot.spots.filter(s => s.status === 'occupied').length,
     resetParking,
-    getKnownVehicle,
     knownVehicles,
   };
 }
