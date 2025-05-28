@@ -206,9 +206,11 @@ export function useParking() {
   const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [knownVehicles, setKnownVehicles] = useState<Omit<Vehicle, 'id' | 'timeParked' | 'parkingSpotId'>[]>([]);
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('isAuthenticated') === 'true';
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -216,16 +218,28 @@ export function useParking() {
     }
   }, [isAuthenticated]);
 
-  const loadParkingData = async () => {
+  const checkAuth = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      setIsAuthenticated(!!user);
       
-      if (!user?.id) {
-        // Reset to initial state if no authenticated user
-        setParkingLot(initialParkingLot);
-        setVehicles([]);
+      if (!user) {
+        window.location.href = '/login';
+      }
+    } catch (error) {
+      console.error('Error checking auth:', error);
+      setIsAuthenticated(false);
+      window.location.href = '/login';
+    }
+  };
+
+  const loadParkingData = async () => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) {
         setIsAuthenticated(false);
-        localStorage.removeItem('isAuthenticated');
+        window.location.href = '/login';
         return;
       }
 
@@ -284,7 +298,7 @@ export function useParking() {
       const { data: vehiclesData, error: vehiclesError } = await supabase
         .from('vehicles')
         .select('*')
-        .eq('parking_lot_id', parkingLot.id);
+        .eq('user_id', user.id);
 
       if (vehiclesError) throw vehiclesError;
 
@@ -304,22 +318,17 @@ export function useParking() {
       setVehicles(vehiclesData || []);
     } catch (error) {
       console.error('Error loading parking data:', error);
-      throw error;
+      window.location.href = '/login';
     }
   };
 
   const updateVehicle = async (vehicleData: Omit<Vehicle, 'id' | 'timeParked'>, spotId: string) => {
-    if (!isAuthenticated) {
-      throw new Error('Not authenticated');
-    }
-
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user?.id) {
-        setIsAuthenticated(false);
-        localStorage.removeItem('isAuthenticated');
-        throw new Error('No authenticated user found');
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
+      if (!user) {
+        window.location.href = '/login';
+        return;
       }
 
       const now = new Date().toISOString();
@@ -352,7 +361,7 @@ export function useParking() {
             ...vehicleData,
             parking_spot_id: spotId,
             time_parked: now,
-            user_id: user.id
+            user_id: user.id,
           });
 
         if (vehicleError) throw vehicleError;
@@ -366,17 +375,12 @@ export function useParking() {
   };
 
   const removeVehicle = async (spotId: string) => {
-    if (!isAuthenticated) {
-      throw new Error('Not authenticated');
-    }
-
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user?.id) {
-        setIsAuthenticated(false);
-        localStorage.removeItem('isAuthenticated');
-        throw new Error('No authenticated user found');
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
+      if (!user) {
+        window.location.href = '/login';
+        return;
       }
 
       const { error: spotError } = await supabase
@@ -401,17 +405,12 @@ export function useParking() {
   };
 
   const resetParking = async () => {
-    if (!isAuthenticated) {
-      throw new Error('Not authenticated');
-    }
-
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user?.id) {
-        setIsAuthenticated(false);
-        localStorage.removeItem('isAuthenticated');
-        throw new Error('No authenticated user found');
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
+      if (!user) {
+        window.location.href = '/login';
+        return;
       }
 
       const { error: spotError } = await supabase
@@ -424,7 +423,7 @@ export function useParking() {
       const { error: vehicleError } = await supabase
         .from('vehicles')
         .delete()
-        .eq('parking_lot_id', parkingLot.id);
+        .eq('user_id', user.id);
 
       if (vehicleError) throw vehicleError;
 
@@ -478,6 +477,5 @@ export function useParking() {
     resetParking,
     knownVehicles,
     isAuthenticated,
-    setIsAuthenticated,
   };
 }

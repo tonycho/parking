@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { Lock, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useParking } from '../hooks/useParking';
+import { supabase } from '../lib/supabase';
 
 const Login = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { setIsAuthenticated } = useParking();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,14 +16,14 @@ const Login = () => {
     setError('');
 
     try {
-      // Hardcoded credentials check
-      if (username === 'admin' && password === 'parking123') {
-        localStorage.setItem('isAuthenticated', 'true');
-        setIsAuthenticated(true);
-        navigate('/', { replace: true });
-      } else {
-        setError('Invalid credentials');
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      navigate('/', { replace: true });
     } catch (error: any) {
       setError(error.message || 'An error occurred during login');
     } finally {
@@ -45,15 +44,15 @@ const Login = () => {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               <div className="flex items-center">
                 <User className="w-4 h-4 mr-2" />
-                Username
+                Email
               </div>
             </label>
             <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter username"
+              placeholder="Enter email"
               required
             />
           </div>
@@ -91,11 +90,7 @@ const Login = () => {
         </form>
 
         <div className="mt-4 text-center text-sm text-gray-500">
-          Use shared credentials:
-          <br />
-          Username: admin
-          <br />
-          Password: parking123
+          Don't have an account? Contact your administrator.
         </div>
       </div>
     </div>

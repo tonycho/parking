@@ -14,13 +14,3 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: false
   }
 });
-
-// Initialize shared session
-supabase.auth.signInWithPassword({
-  email: import.meta.env.VITE_ADMIN_EMAIL,
-  password: 'parking123'
-}).then(() => {
-  console.log('Supabase session initialized');
-}).catch(error => {
-  console.error('Error initializing Supabase session:', error);
-});
