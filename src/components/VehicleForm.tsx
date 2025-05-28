@@ -161,8 +161,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       <form onSubmit={handleSubmit} className="p-4">
         <div className="space-y-4">
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-              <Tag className="mr-2" size={16} />
+            <label className="block text-sm font-medium text-gray-700">
+              <Tag className="mr-2 inline" size={16} />
               License Plate
             </label>
             <input
@@ -175,7 +175,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               required
             />
             {suggestions.length > 0 && (
-              <div className="absolute z-10 w-full bottom-full bg-white border border-gray-300 rounded-md shadow-lg">
+              <div className="absolute z-10 w-full bottom-[calc(100%+1px)] bg-white border border-gray-300 rounded-md shadow-lg">
                 {suggestions.map((vehicle, index) => (
                   <div
                     key={index}
@@ -193,8 +193,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-              <User className="mr-2" size={16} />
+            <label className="block text-sm font-medium text-gray-700">
+              <User className="mr-2 inline" size={16} />
               Driver Name
             </label>
             <input
@@ -209,8 +209,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-              <Phone className="mr-2" size={16} />
+            <label className="block text-sm font-medium text-gray-700">
+              <Phone className="mr-2 inline" size={16} />
               Phone Number
             </label>
             <input
@@ -226,7 +226,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
           
           <div className="grid grid-cols-2 gap-4">
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Make</label>
+              <label className="block text-sm font-medium text-gray-700">Make</label>
               <input
                 ref={makeInputRef}
                 type="text"
@@ -244,7 +244,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               {showMakeSuggestions && (
                 <div 
                   ref={makeDropdownRef}
-                  className="absolute z-10 w-full bottom-full bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
+                  className="absolute z-10 w-full bottom-[calc(100%+1px)] bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
                 >
                   {filteredManufacturers.map((manufacturer, index) => (
                     <div
@@ -260,8 +260,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
             </div>
             
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                <Palette className="mr-2" size={16} />
+              <label className="block text-sm font-medium text-gray-700">
+                <Palette className="mr-2 inline" size={16} />
                 Color
               </label>
               <input
@@ -281,7 +281,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               {showColorSuggestions && (
                 <div 
                   ref={colorDropdownRef}
-                  className="absolute z-10 w-full bottom-full bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
+                  className="absolute z-10 w-full bottom-[calc(100%+1px)] bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
                 >
                   {filteredColors.map((color, index) => (
                     <div
