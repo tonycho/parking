@@ -133,13 +133,13 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       setSuggestions(matchingSuggestions);
     } else if (name === 'licensePlate') {
       setSuggestions([]);
-    } else if (name === 'contact' && value.trim()) {
+    } else if ((name === 'contact' || name === 'phoneNumber') && value.trim()) {
       const matchingSuggestions = knownVehicles.filter(v => 
         v.contact.toLowerCase().includes(value.toLowerCase()) ||
         v.phoneNumber.toLowerCase().includes(value.toLowerCase())
       );
       setContactSuggestions(matchingSuggestions);
-    } else if (name === 'contact') {
+    } else if (name === 'contact' || name === 'phoneNumber') {
       setContactSuggestions([]);
     } else if (name === 'make') {
       const filtered = carManufacturers.filter(manufacturer =>
@@ -179,19 +179,6 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   };
 
   const handleSuggestionClick = (vehicle: typeof knownVehicles[0]) => {
-    setFormData({
-      contact: vehicle.contact,
-      phoneNumber: vehicle.phoneNumber,
-      licensePlate: vehicle.licensePlate,
-      make: vehicle.make,
-      model: vehicle.model || '',
-      color: vehicle.color
-    });
-    setSuggestions([]);
-    setContactSuggestions([]);
-  };
-
-  const handleContactSuggestionClick = (vehicle: typeof knownVehicles[0]) => {
     setFormData({
       contact: vehicle.contact,
       phoneNumber: vehicle.phoneNumber,
@@ -282,7 +269,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                   <div
                     key={index}
                     className="p-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => handleContactSuggestionClick(vehicle)}
+                    onClick={() => handleSuggestionClick(vehicle)}
                   >
                     <div className="font-medium">{vehicle.contact}</div>
                     <div className="text-sm text-gray-600">
