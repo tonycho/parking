@@ -77,12 +77,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   const formRef = useRef<HTMLFormElement>(null);
   const licensePlateRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
-  const makeInputRef = useRef<HTMLInputElement>(null);
-  const makeDropdownRef = useRef<HTMLDivElement>(null);
-  const modelInputRef = useRef<HTMLInputElement>(null);
-  const modelDropdownRef = useRef<HTMLDivElement>(null);
-  const colorInputRef = useRef<HTMLInputElement>(null);
-  const colorDropdownRef = useRef<HTMLDivElement>(null);
+  const makeRef = useRef<HTMLDivElement>(null);
+  const modelRef = useRef<HTMLDivElement>(null);
+  const colorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (existingVehicle) {
@@ -93,37 +90,11 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // License plate suggestions
-      if (licensePlateRef.current && !licensePlateRef.current.contains(event.target as Node)) {
+      if (!formRef.current?.contains(event.target as Node)) {
         setSuggestions([]);
-      }
-
-      // Contact suggestions
-      if (contactRef.current && !contactRef.current.contains(event.target as Node)) {
         setContactSuggestions([]);
-      }
-
-      // Make suggestions
-      if (makeInputRef.current && 
-          makeDropdownRef.current && 
-          !makeInputRef.current.contains(event.target as Node) &&
-          !makeDropdownRef.current.contains(event.target as Node)) {
         setShowMakeSuggestions(false);
-      }
-
-      // Model suggestions
-      if (modelInputRef.current && 
-          modelDropdownRef.current && 
-          !modelInputRef.current.contains(event.target as Node) &&
-          !modelDropdownRef.current.contains(event.target as Node)) {
         setShowModelSuggestions(false);
-      }
-
-      // Color suggestions
-      if (colorInputRef.current && 
-          colorDropdownRef.current && 
-          !colorInputRef.current.contains(event.target as Node) &&
-          !colorDropdownRef.current.contains(event.target as Node)) {
         setShowColorSuggestions(false);
       }
     };
@@ -145,7 +116,6 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
     const { name, value } = e.target;
 
     if (name === 'phoneNumber') {
-      // Only allow digits
       const digitsOnly = value.replace(/\D/g, '');
       
       if (digitsOnly.length > 10) {
@@ -184,43 +154,29 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       const filtered = carManufacturers.filter(manufacturer =>
         manufacturer.toLowerCase().includes(value.toLowerCase())
       );
-      setFilteredManufacturers(filtered.length > 0 ? filtered : []);
+      setFilteredManufacturers(filtered);
       setShowMakeSuggestions(true);
+      setFormData(prev => ({ ...prev, model: '' }));
     } else if (name === 'model' && formData.make) {
       const availableModels = carModels[formData.make] || carModels['Other'];
       const filtered = availableModels.filter(model =>
         model.toLowerCase().includes(value.toLowerCase())
       );
-      setFilteredModels(filtered.length > 0 ? filtered : availableModels);
+      setFilteredModels(filtered);
       setShowModelSuggestions(true);
     } else if (name === 'color') {
       const filtered = carColors.filter(color =>
         color.name.toLowerCase().includes(value.toLowerCase())
       );
-      setFilteredColors(filtered.length > 0 ? filtered : carColors);
+      setFilteredColors(filtered);
       setShowColorSuggestions(true);
     }
-  };
-
-  const handleManufacturerSelect = (manufacturer: string) => {
-    setFormData(prev => ({ ...prev, make: manufacturer }));
-    setShowMakeSuggestions(false);
-  };
-
-  const handleModelSelect = (model: string) => {
-    setFormData(prev => ({ ...prev, model }));
-    setShowModelSuggestions(false);
-  };
-
-  const handleColorSelect = (colorName: string) => {
-    setFormData(prev => ({ ...prev, color: colorName }));
-    setShowColorSuggestions(false);
   };
 
   const handleSuggestionClick = (vehicle: typeof knownVehicles[0]) => {
     setFormData({
       contact: vehicle.contact,
-      phoneNumber: vehicle.phoneNumber.replace(/\D/g, ''), // Strip any non-digits
+      phoneNumber: vehicle.phoneNumber.replace(/\D/g, ''),
       licensePlate: vehicle.licensePlate,
       make: vehicle.make,
       model: vehicle.model || '',
@@ -233,7 +189,6 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate phone number if provided
     if (formData.phoneNumber && formData.phoneNumber.length !== 10) {
       setPhoneError('Phone number must be 10 digits');
       return;
@@ -252,11 +207,11 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
     if (formData.phoneNumber && formData.phoneNumber.length !== 10) {
       return false;
     }
-    return formData.licensePlate.trim() !== '';
+    return formData.licensePlate.trim() !== '' && formData.make !== '' && formData.model !== '';
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden animate-fade-in">
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="bg-blue-500 p-4 text-white">
         <h3 className="text-xl font-semibold flex items-center">
           <CarFront className="mr-2" size={20} />
@@ -354,10 +309,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
           </div>
           
           <div className="grid grid-cols-2 gap-4">
-            <div className="relative">
+            <div className="relative" ref={makeRef}>
               <label className="block text-sm font-medium text-gray-700">Make</label>
               <input
-                ref={makeInputRef}
                 type="text"
                 name="make"
                 value={formData.make}
@@ -367,30 +321,32 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                   setShowMakeSuggestions(true);
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Vehicle make"
+                placeholder="Select manufacturer"
+                required
+                autoComplete="off"
               />
               {showMakeSuggestions && (
-                <div 
-                  ref={makeDropdownRef}
-                  className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
-                >
-                  {filteredManufacturers.map((manufacturer, index) => (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                  {filteredManufacturers.map((make, index) => (
                     <div
                       key={index}
                       className="p-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => handleManufacturerSelect(manufacturer)}
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, make, model: '' }));
+                        setShowMakeSuggestions(false);
+                        setShowModelSuggestions(true);
+                      }}
                     >
-                      {manufacturer}
+                      {make}
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            <div className="relative">
+            <div className="relative" ref={modelRef}>
               <label className="block text-sm font-medium text-gray-700">Model</label>
               <input
-                ref={modelInputRef}
                 type="text"
                 name="model"
                 value={formData.model}
@@ -401,19 +357,21 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                   }
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder={formData.make ? "Vehicle model" : "Select make first"}
+                placeholder={formData.make ? "Select model" : "Select make first"}
+                required
                 disabled={!formData.make}
+                autoComplete="off"
               />
               {showModelSuggestions && formData.make && (
-                <div 
-                  ref={modelDropdownRef}
-                  className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
-                >
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
                   {filteredModels.map((model, index) => (
                     <div
                       key={index}
                       className="p-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => handleModelSelect(model)}
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, model }));
+                        setShowModelSuggestions(false);
+                      }}
                     >
                       {model}
                     </div>
@@ -422,13 +380,12 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               )}
             </div>
             
-            <div className="relative col-span-2">
+            <div className="relative col-span-2" ref={colorRef}>
               <label className="block text-sm font-medium text-gray-700">
                 <Palette className="mr-2 inline" size={16} />
                 Color
               </label>
               <input
-                ref={colorInputRef}
                 type="text"
                 name="color"
                 value={formData.color}
@@ -438,18 +395,20 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                   setShowColorSuggestions(true);
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Vehicle color"
+                placeholder="Select color"
+                required
+                autoComplete="off"
               />
               {showColorSuggestions && (
-                <div 
-                  ref={colorDropdownRef}
-                  className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
-                >
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
                   {filteredColors.map((color, index) => (
                     <div
                       key={index}
                       className="p-2 hover:bg-gray-100 cursor-pointer flex items-center"
-                      onClick={() => handleColorSelect(color.name)}
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, color: color.name }));
+                        setShowColorSuggestions(false);
+                      }}
                     >
                       {color.name !== 'Other' && (
                         <div 
