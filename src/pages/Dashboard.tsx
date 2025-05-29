@@ -184,9 +184,6 @@ function Dashboard() {
               </button>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-500">
-                Click on a spot to manage vehicle information
-              </div>
               <button
                 onClick={() => setShowResetConfirm(true)}
                 className="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
