@@ -42,6 +42,14 @@ export function useParking() {
           schema: 'public',
           table: 'vehicle_parking_spot'
         }, (payload) => {
+          console.log('Vehicle parking change:', payload);
+          loadParkingData();
+        })
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'vehicles'
+        }, (payload) => {
           console.log('Vehicle change:', payload);
           loadParkingData();
         })
