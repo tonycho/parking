@@ -72,6 +72,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   const [filteredManufacturers, setFilteredManufacturers] = useState<string[]>(carManufacturers);
   const [filteredModels, setFilteredModels] = useState<string[]>([]);
   const [filteredColors, setFilteredColors] = useState(carColors);
+  const [phoneError, setPhoneError] = useState('');
 
   const makeInputRef = useRef<HTMLInputElement>(null);
   const makeDropdownRef = useRef<HTMLDivElement>(null);
@@ -124,6 +125,26 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
+    if (name === 'phoneNumber') {
+      // Only allow digits
+      const digitsOnly = value.replace(/\D/g, '');
+      
+      if (digitsOnly.length > 10) {
+        setPhoneError('Phone number cannot exceed 10 digits');
+        return;
+      }
+
+      setPhoneError('');
+      setFormData(prev => ({ ...prev, [name]: digitsOnly }));
+      
+      if (digitsOnly.length < 10 && digitsOnly.length > 0) {
+        setPhoneError('Phone number must be 10 digits');
+      }
+      
+      return;
+    }
+
     setFormData(prev => ({ ...prev, [name]: value }));
 
     if (name === 'licensePlate' && value.trim()) {
@@ -136,7 +157,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
     } else if ((name === 'contact' || name === 'phoneNumber') && value.trim()) {
       const matchingSuggestions = knownVehicles.filter(v => 
         v.contact.toLowerCase().includes(value.toLowerCase()) ||
-        v.phoneNumber.toLowerCase().includes(value.toLowerCase())
+        v.phoneNumber.includes(value)
       );
       setContactSuggestions(matchingSuggestions);
     } else if (name === 'contact' || name === 'phoneNumber') {
@@ -181,7 +202,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   const handleSuggestionClick = (vehicle: typeof knownVehicles[0]) => {
     setFormData({
       contact: vehicle.contact,
-      phoneNumber: vehicle.phoneNumber,
+      phoneNumber: vehicle.phoneNumber.replace(/\D/g, ''), // Strip any non-digits
       licensePlate: vehicle.licensePlate,
       make: vehicle.make,
       model: vehicle.model || '',
@@ -193,6 +214,13 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate phone number if provided
+    if (formData.phoneNumber && formData.phoneNumber.length !== 10) {
+      setPhoneError('Phone number must be 10 digits');
+      return;
+    }
+
     onSave(formData, spot.id);
   };
 
@@ -203,6 +231,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   };
 
   const isFormComplete = () => {
+    if (formData.phoneNumber && formData.phoneNumber.length !== 10) {
+      return false;
+    }
     return formData.licensePlate.trim() !== '';
   };
 
@@ -294,9 +325,14 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter phone number"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                phoneError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+              }`}
+              placeholder="Enter 10-digit phone number"
             />
+            {phoneError && (
+              <p className="mt-1 text-sm text-red-600">{phoneError}</p>
+            )}
           </div>
           
           <div className="grid grid-cols-2 gap-4">
