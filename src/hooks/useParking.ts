@@ -276,6 +276,27 @@ export function useParking() {
         const spot = parkingLot.spots.find(s => s.id === spotId);
         if (!spot) return;
 
+        // First, free up any spot this vehicle might be occupying
+        const currentVehicle = vehicles.find(v => v.licensePlate === vehicleData.licensePlate);
+        if (currentVehicle) {
+          // Update old spot to available
+          const { error: oldSpotError } = await supabase
+            .from('parking_spots')
+            .update({ status: 'available' })
+            .eq('id', currentVehicle.parkingSpotId);
+
+          if (oldSpotError) throw oldSpotError;
+
+          // Remove vehicle from old spot
+          const { error: removeError } = await supabase
+            .from('vehicle_parking_spot')
+            .delete()
+            .eq('parking_spot_id', currentVehicle.parkingSpotId);
+
+          if (removeError) throw removeError;
+        }
+
+        // Update new spot status
         const { error: spotError } = await supabase
           .from('parking_spots')
           .update({ status: 'occupied' })
@@ -283,29 +304,16 @@ export function useParking() {
 
         if (spotError) throw spotError;
 
-        const existingVehicle = vehicles.find(v => v.parkingSpotId === spotId);
-        
-        if (existingVehicle) {
-          const { error: vehicleError } = await supabase
-            .from('vehicle_parking_spot')
-            .update({
-              ...dbVehicleData,
-              time_parked: now,
-            })
-            .eq('id', existingVehicle.id);
+        // Add vehicle to new spot
+        const { error: vehicleError } = await supabase
+          .from('vehicle_parking_spot')
+          .insert({
+            ...dbVehicleData,
+            parking_spot_id: spotId,
+            time_parked: now,
+          });
 
-          if (vehicleError) throw vehicleError;
-        } else {
-          const { error: vehicleError } = await supabase
-            .from('vehicle_parking_spot')
-            .insert({
-              ...dbVehicleData,
-              parking_spot_id: spotId,
-              time_parked: now,
-            });
-
-          if (vehicleError) throw vehicleError;
-        }
+        if (vehicleError) throw vehicleError;
       }
 
       await loadParkingData();
