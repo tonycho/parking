@@ -347,24 +347,24 @@ export function useParking() {
         })),
       });
 
-      // Get vehicles
-      const { data: vehiclesData, error: vehiclesError } = await supabase
+      // Get currently parked vehicles
+      const { data: parkedVehicles, error: parkedVehiclesError } = await supabase
         .from('vehicle_parking_spot')
         .select('*')
         .eq('user_id', userId);
 
-      if (vehiclesError) throw vehiclesError;
+      if (parkedVehiclesError) throw parkedVehiclesError;
 
-      // Get vehicle history
-      const { data: vehicleHistory, error: historyError } = await supabase
+      // Get all known vehicles
+      const { data: knownVehiclesData, error: knownVehiclesError } = await supabase
         .from('vehicles')
         .select('*')
         .eq('user_id', userId);
 
-      if (historyError) throw historyError;
+      if (knownVehiclesError) throw knownVehiclesError;
 
       // Map snake_case to camelCase for vehicles
-      const mappedVehicles = (vehiclesData || []).map(vehicle => ({
+      const mappedVehicles = (parkedVehicles || []).map(vehicle => ({
         id: vehicle.id,
         contact: vehicle.contact,
         phoneNumber: vehicle.phone_number,
@@ -394,7 +394,7 @@ export function useParking() {
       });
 
       // Then add historical vehicles
-      vehicleHistory.forEach((vehicle: any) => {
+      knownVehiclesData.forEach((vehicle: any) => {
         if (!knownVehiclesMap.has(vehicle.license_plate)) {
           knownVehiclesMap.set(vehicle.license_plate, {
             contact: vehicle.contact,
@@ -430,7 +430,7 @@ export function useParking() {
       // Map camelCase to snake_case for database
       const dbVehicleData = {
         contact: vehicleData.contact,
-        phone_number: vehicleData.phoneNumber,
+        phone_number: vehicleData.phoneNumber.replace(/\D/g, ''),
         license_plate: vehicleData.licensePlate,
         make: vehicleData.make,
         model: vehicleData.model || '',
@@ -438,14 +438,14 @@ export function useParking() {
         user_id: session.user.id
       };
 
-      // Update or insert into vehicles
-      const { error: historyError } = await supabase
+      // Update or insert into vehicles (known vehicles)
+      const { error: vehiclesError } = await supabase
         .from('vehicles')
         .upsert([dbVehicleData], {
           onConflict: 'license_plate,user_id'
         });
 
-      if (historyError) throw historyError;
+      if (vehiclesError) throw vehiclesError;
 
       // Only update parking spot and add vehicle if a spot is provided
       if (spotId) {
