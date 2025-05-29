@@ -16,7 +16,7 @@ const carModels: { [key: string]: string[] } = {
   'Chevrolet': ['Camaro', 'Corvette', 'Malibu', 'Silverado', 'Tahoe', 'Other'],
   'Ford': ['F-150', 'Mustang', 'Explorer', 'Escape', 'Focus', 'Other'],
   'Honda': ['Accord', 'Civic', 'CR-V', 'Pilot', 'Odyssey', 'Other'],
-  'Mazda': ['CX50, ']
+  'Mazda': ['CX-50'],
   'Toyota': ['Camry', 'Corolla', 'RAV4', 'Highlander', 'Sienna', 'Tacoma', 'Other'],
   'Tesla': ['Model 3', 'Model S', 'Model X', 'Model Y', 'Other'],
   'Volkswagen': ['iQ', 'Passat', 'Other'],
