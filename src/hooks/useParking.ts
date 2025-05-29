@@ -233,11 +233,12 @@ export function useParking() {
 
   useEffect(() => {
     if (isAuthenticated) {
+      // Initial data load
       loadParkingData();
-      
+
       // Set up real-time subscriptions
       const parkingSpotsSubscription = supabase
-        .channel('parking-changes')
+        .channel('parking-spots-changes')
         .on(
           'postgres_changes',
           {
@@ -245,12 +246,14 @@ export function useParking() {
             schema: 'public',
             table: 'parking_spots'
           },
-          () => {
-            // Reload parking data when spots change
+          (payload) => {
+            console.log('Parking spot change detected:', payload);
             loadParkingData();
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          console.log('Parking spots subscription status:', status);
+        });
 
       const vehiclesSubscription = supabase
         .channel('vehicle-changes')
@@ -261,15 +264,18 @@ export function useParking() {
             schema: 'public',
             table: 'vehicle_parking_spot'
           },
-          () => {
-            // Reload parking data when vehicles change
+          (payload) => {
+            console.log('Vehicle change detected:', payload);
             loadParkingData();
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          console.log('Vehicles subscription status:', status);
+        });
 
       // Cleanup subscriptions
       return () => {
+        console.log('Cleaning up subscriptions');
         parkingSpotsSubscription.unsubscribe();
         vehiclesSubscription.unsubscribe();
       };
