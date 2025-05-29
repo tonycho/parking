@@ -229,6 +229,11 @@ export function useParking() {
 
   useEffect(() => {
     checkAuth();
+    
+    // Cleanup function to remove all subscriptions when component unmounts
+    return () => {
+      supabase.removeAllChannels();
+    };
   }, []);
 
   useEffect(() => {
@@ -237,8 +242,10 @@ export function useParking() {
       loadParkingData();
 
       // Set up real-time subscriptions
-      const parkingSpotsSubscription = supabase
-        .channel('parking-spots-changes')
+      const parkingSpotsChannel = supabase.channel('parking-spots');
+      const vehiclesChannel = supabase.channel('vehicles');
+
+      parkingSpotsChannel
         .on(
           'postgres_changes',
           {
@@ -246,17 +253,13 @@ export function useParking() {
             schema: 'public',
             table: 'parking_spots'
           },
-          (payload) => {
-            console.log('Parking spot change detected:', payload);
+          () => {
             loadParkingData();
           }
         )
-        .subscribe((status) => {
-          console.log('Parking spots subscription status:', status);
-        });
+        .subscribe();
 
-      const vehiclesSubscription = supabase
-        .channel('vehicle-changes')
+      vehiclesChannel
         .on(
           'postgres_changes',
           {
@@ -264,20 +267,16 @@ export function useParking() {
             schema: 'public',
             table: 'vehicle_parking_spot'
           },
-          (payload) => {
-            console.log('Vehicle change detected:', payload);
+          () => {
             loadParkingData();
           }
         )
-        .subscribe((status) => {
-          console.log('Vehicles subscription status:', status);
-        });
+        .subscribe();
 
       // Cleanup subscriptions
       return () => {
-        console.log('Cleaning up subscriptions');
-        parkingSpotsSubscription.unsubscribe();
-        vehiclesSubscription.unsubscribe();
+        parkingSpotsChannel.unsubscribe();
+        vehiclesChannel.unsubscribe();
       };
     }
   }, [isAuthenticated]);
