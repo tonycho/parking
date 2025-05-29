@@ -18,7 +18,10 @@ function Vehicles() {
     const parkedVehicle = vehicles.find(v => v.licensePlate === licensePlate);
     if (parkedVehicle) {
       const spot = parkingLot.spots.find(s => s.id === parkedVehicle.parkingSpotId);
-      return spot?.label;
+      return {
+        label: spot?.label,
+        priority: spot?.priority
+      };
     }
     return null;
   };
@@ -27,11 +30,11 @@ function Vehicles() {
     const query = searchQuery.toLowerCase();
     return (
       vehicle.contact.toLowerCase().includes(query) ||
-      vehicle.phoneNumber.toLowerCase().includes(query) ||
       vehicle.licensePlate.toLowerCase().includes(query) ||
       vehicle.make.toLowerCase().includes(query) ||
       (vehicle.model && vehicle.model.toLowerCase().includes(query)) ||
-      vehicle.color.toLowerCase().includes(query)
+      vehicle.color.toLowerCase().includes(query) ||
+      vehicle.phoneNumber.includes(query)
     );
   });
 
@@ -83,6 +86,25 @@ function Vehicles() {
     } catch (error) {
       console.error('Error updating vehicle:', error);
     }
+  };
+
+  const getColorHex = (colorName: string): string => {
+    const colorMap: { [key: string]: string } = {
+      'Black': '#000000',
+      'White': '#FFFFFF',
+      'Silver': '#C0C0C0',
+      'Gray': '#808080',
+      'Red': '#FF0000',
+      'Blue': '#0000FF',
+      'Brown': '#964B00',
+      'Green': '#008000',
+      'Beige': '#F5F5DC',
+      'Gold': '#FFD700',
+      'Orange': '#FFA500',
+      'Yellow': '#FFFF00',
+      'Purple': '#800080'
+    };
+    return colorMap[colorName] || '#808080';
   };
 
   return (
@@ -167,6 +189,7 @@ function Vehicles() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredVehicles.map((vehicle, index) => {
                   const parkedSpot = getParkedSpot(vehicle.licensePlate);
+                  const colorHex = getColorHex(vehicle.color);
                   
                   return (
                     <tr key={vehicle.licensePlate} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
@@ -188,9 +211,14 @@ function Vehicles() {
                         <div className="flex items-center">
                           <Car className="h-4 w-4 text-gray-400 mr-2" />
                           {vehicle.make} {vehicle.model}
-                          <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            {vehicle.color}
-                          </span>
+                          <div 
+                            className="ml-2 w-4 h-4 rounded-full" 
+                            style={{ 
+                              backgroundColor: colorHex,
+                              border: vehicle.color === 'White' ? '1px solid #e5e7eb' : 'none'
+                            }}
+                            title={vehicle.color}
+                          />
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -205,8 +233,10 @@ function Vehicles() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {parkedSpot ? (
                           <div className="flex items-center">
-                            <ParkingSquare className="h-4 w-4 text-blue-500 mr-2" />
-                            <span className="font-medium text-blue-600">Spot {parkedSpot}</span>
+                            <ParkingSquare className="h-4 w-4 mr-2" style={{ color: parkedSpot.priority === 2 ? '#22c55e' : '#f97316' }} />
+                            <span className="font-medium" style={{ color: parkedSpot.priority === 2 ? '#16a34a' : '#ea580c' }}>
+                              Spot {parkedSpot.label}
+                            </span>
                           </div>
                         ) : (
                           <span className="text-gray-400">Not parked</span>
