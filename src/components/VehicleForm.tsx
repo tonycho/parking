@@ -18,7 +18,7 @@ const carModels: { [key: string]: string[] } = {
   'Honda': ['Accord', 'Civic', 'CR-V', 'Pilot', 'Odyssey', 'Other'],
   'Toyota': ['Camry', 'Corolla', 'RAV4', 'Highlander', 'Sienna', 'Tacoma', 'Other'],
   'Tesla': ['Model 3', 'Model S', 'Model X', 'Model Y', 'Other'],
-  'Volkswagen': ['iQ', 'Passat', 'Other']
+  'Volkswagen': ['iQ', 'Passat', 'Other'],
   'Other': ['Other']
 };
 
