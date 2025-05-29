@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ParkingSpot, Vehicle } from '../types';
-import { CarFront, User, Phone, Tag, Palette, RotateCcw } from 'lucide-react';
+import { CarFront, User, Phone, Tag, Palette } from 'lucide-react';
 
 const carManufacturers = [
   'Acura', 'Audi', 'BMW', 'Buick', 'Cadillac', 'Chevrolet', 'Chrysler', 
