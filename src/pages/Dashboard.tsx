@@ -218,24 +218,28 @@ function Dashboard() {
         </div>
         
         {/* Right column (sidebar) - Hidden on mobile */}
-        <div className="hidden md:block md:w-96 bg-gray-50 p-4 overflow-y-auto border-l border-gray-200">
-          <SearchBar 
-            value={searchQuery} 
-            onChange={setSearchQuery}
-          />
-          
-          <div className="mt-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Vehicles</h2>
-            <VehicleList 
-              vehicles={filteredVehicles}
-              spots={parkingLot.spots}
-              onVehicleClick={(spotId) => {
-                const spot = parkingLot.spots.find(s => s.id === spotId);
-                if (spot) {
-                  setSelectedSpot(spot);
-                }
-              }}
+        <div className="hidden md:flex md:w-96 bg-gray-50 border-l border-gray-200 flex-col">
+          <div className="p-4 border-b border-gray-200">
+            <SearchBar 
+              value={searchQuery} 
+              onChange={setSearchQuery}
             />
+          </div>
+          
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-4">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Vehicles</h2>
+              <VehicleList 
+                vehicles={filteredVehicles}
+                spots={parkingLot.spots}
+                onVehicleClick={(spotId) => {
+                  const spot = parkingLot.spots.find(s => s.id === spotId);
+                  if (spot) {
+                    setSelectedSpot(spot);
+                  }
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
