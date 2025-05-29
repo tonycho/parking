@@ -35,6 +35,7 @@ export function useParking() {
           schema: 'public',
           table: 'parking_spots'
         }, () => {
+          console.log('postgres_changes', 'parking_spots')
           loadParkingData();
         })
         .on('postgres_changes', {
@@ -42,6 +43,7 @@ export function useParking() {
           schema: 'public',
           table: 'vehicle_parking_spot'
         }, () => {
+          console.log('postgres_changes', 'vehicle_parking_spot')
           loadParkingData();
         });
 
