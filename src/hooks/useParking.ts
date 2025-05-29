@@ -502,13 +502,13 @@ export function useParking() {
       }
 
       // Delete from vehicles
-      const { error: historyError } = await supabase
+      const { error: deleteError } = await supabase
         .from('vehicles')
         .delete()
         .eq('license_plate', licensePlate)
         .eq('user_id', session.user.id);
 
-      if (historyError) throw historyError;
+      if (deleteError) throw deleteError;
 
       await loadParkingData();
     } catch (error) {
