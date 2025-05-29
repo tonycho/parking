@@ -49,6 +49,8 @@ export function useParking() {
 
       // Subscribe to the channel
       channel.subscribe((status) => {
+        console.log('status', status);
+        
         if (status === 'SUBSCRIBED') {
           console.log('Successfully subscribed to real-time changes');
         }
