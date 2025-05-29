@@ -96,12 +96,32 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (!formRef.current?.contains(event.target as Node)) {
+      // Handle license plate suggestions
+      if (licensePlateRef.current && !licensePlateRef.current.contains(event.target as Node)) {
         setSuggestions([]);
+      }
+
+      // Handle contact suggestions
+      if (contactRef.current && !contactRef.current.contains(event.target as Node)) {
         setContactSuggestions([]);
+      }
+
+      // Handle make dropdown
+      if (makeRef.current && !makeRef.current.contains(event.target as Node)) {
         setShowMakeSuggestions(false);
+        setMakeSearch('');
+      }
+
+      // Handle model dropdown
+      if (modelRef.current && !modelRef.current.contains(event.target as Node)) {
         setShowModelSuggestions(false);
+        setModelSearch('');
+      }
+
+      // Handle color dropdown
+      if (colorRef.current && !colorRef.current.contains(event.target as Node)) {
         setShowColorSuggestions(false);
+        setColorSearch('');
       }
     };
 
@@ -251,7 +271,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div className="bg-white rounded-lg shadow-lg overflow-visible">
       <div className="bg-blue-500 p-4 text-white">
         <h3 className="text-xl font-semibold flex items-center">
           <CarFront className="mr-2" size={20} />
@@ -358,7 +378,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 {formData.make || 'Select manufacturer'}
               </div>
               {showMakeSuggestions && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-300 rounded-md shadow-lg z-50">
                   <div className="p-2 border-b">
                     <input
                       ref={makeSearchRef}
@@ -398,7 +418,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 {formData.model || (formData.make ? 'Select model' : 'Select make first')}
               </div>
               {showModelSuggestions && formData.make && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-300 rounded-md shadow-lg z-50">
                   <div className="p-2 border-b">
                     <input
                       ref={modelSearchRef}
@@ -441,7 +461,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 {formData.color || 'Select color'}
               </div>
               {showColorSuggestions && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-300 rounded-md shadow-lg z-50">
                   <div className="p-2 border-b">
                     <input
                       ref={colorSearchRef}
