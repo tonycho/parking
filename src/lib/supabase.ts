@@ -21,10 +21,5 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
   db: {
     schema: 'public'
-  },
-  global: {
-    headers: {
-      'X-Client-Info': 'supabase-js@2.39.7'
-    }
   }
 });
