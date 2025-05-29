@@ -69,7 +69,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   const [showMakeSuggestions, setShowMakeSuggestions] = useState(false);
   const [showModelSuggestions, setShowModelSuggestions] = useState(false);
   const [showColorSuggestions, setShowColorSuggestions] = useState(false);
-  const [filteredManufacturers, setFilteredManufacturers] = useState<string[]>(carManufacturers);
+  const [filteredManufacturers, setFilteredManufacturers] = useState(carManufacturers);
   const [filteredModels, setFilteredModels] = useState<string[]>([]);
   const [filteredColors, setFilteredColors] = useState(carColors);
   const [phoneError, setPhoneError] = useState('');
@@ -133,6 +133,10 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       return;
     }
 
+    if (name === 'make' || name === 'model' || name === 'color') {
+      return; // Prevent direct input for these fields
+    }
+
     setFormData(prev => ({ ...prev, [name]: value }));
 
     if (name === 'licensePlate' && value.trim()) {
@@ -150,27 +154,30 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       setContactSuggestions(matchingSuggestions);
     } else if (name === 'contact' || name === 'phoneNumber') {
       setContactSuggestions([]);
-    } else if (name === 'make') {
-      const filtered = carManufacturers.filter(manufacturer =>
-        manufacturer.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredManufacturers(filtered);
-      setShowMakeSuggestions(true);
-      setFormData(prev => ({ ...prev, model: '' }));
-    } else if (name === 'model' && formData.make) {
-      const availableModels = carModels[formData.make] || carModels['Other'];
-      const filtered = availableModels.filter(model =>
-        model.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredModels(filtered);
-      setShowModelSuggestions(true);
-    } else if (name === 'color') {
-      const filtered = carColors.filter(color =>
-        color.name.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredColors(filtered);
-      setShowColorSuggestions(true);
     }
+  };
+
+  const handleMakeClick = () => {
+    setFilteredManufacturers(carManufacturers);
+    setShowMakeSuggestions(true);
+    setShowModelSuggestions(false);
+    setShowColorSuggestions(false);
+  };
+
+  const handleModelClick = () => {
+    if (formData.make) {
+      setFilteredModels(carModels[formData.make] || carModels['Other']);
+      setShowModelSuggestions(true);
+      setShowMakeSuggestions(false);
+      setShowColorSuggestions(false);
+    }
+  };
+
+  const handleColorClick = () => {
+    setFilteredColors(carColors);
+    setShowColorSuggestions(true);
+    setShowMakeSuggestions(false);
+    setShowModelSuggestions(false);
   };
 
   const handleSuggestionClick = (vehicle: typeof knownVehicles[0]) => {
@@ -311,20 +318,12 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="relative" ref={makeRef}>
               <label className="block text-sm font-medium text-gray-700">Make</label>
-              <input
-                type="text"
-                name="make"
-                value={formData.make}
-                onChange={handleChange}
-                onFocus={() => {
-                  setFilteredManufacturers(carManufacturers);
-                  setShowMakeSuggestions(true);
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Select manufacturer"
-                required
-                autoComplete="off"
-              />
+              <div
+                className="w-full px-3 py-2 border border-gray-300 rounded-md cursor-pointer bg-white"
+                onClick={handleMakeClick}
+              >
+                {formData.make || 'Select manufacturer'}
+              </div>
               {showMakeSuggestions && (
                 <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
                   {filteredManufacturers.map((make, index) => (
@@ -346,22 +345,12 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
 
             <div className="relative" ref={modelRef}>
               <label className="block text-sm font-medium text-gray-700">Model</label>
-              <input
-                type="text"
-                name="model"
-                value={formData.model}
-                onChange={handleChange}
-                onFocus={() => {
-                  if (formData.make) {
-                    setShowModelSuggestions(true);
-                  }
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder={formData.make ? "Select model" : "Select make first"}
-                required
-                disabled={!formData.make}
-                autoComplete="off"
-              />
+              <div
+                className={`w-full px-3 py-2 border border-gray-300 rounded-md ${formData.make ? 'cursor-pointer bg-white' : 'bg-gray-100 text-gray-500'}`}
+                onClick={handleModelClick}
+              >
+                {formData.model || (formData.make ? 'Select model' : 'Select make first')}
+              </div>
               {showModelSuggestions && formData.make && (
                 <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
                   {filteredModels.map((model, index) => (
@@ -385,20 +374,12 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 <Palette className="mr-2 inline" size={16} />
                 Color
               </label>
-              <input
-                type="text"
-                name="color"
-                value={formData.color}
-                onChange={handleChange}
-                onFocus={() => {
-                  setFilteredColors(carColors);
-                  setShowColorSuggestions(true);
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Select color"
-                required
-                autoComplete="off"
-              />
+              <div
+                className="w-full px-3 py-2 border border-gray-300 rounded-md cursor-pointer bg-white"
+                onClick={handleColorClick}
+              >
+                {formData.color || 'Select color'}
+              </div>
               {showColorSuggestions && (
                 <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
                   {filteredColors.map((color, index) => (
