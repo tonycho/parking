@@ -83,6 +83,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   const makeRef = useRef<HTMLDivElement>(null);
   const modelRef = useRef<HTMLDivElement>(null);
   const colorRef = useRef<HTMLDivElement>(null);
+  const makeSearchRef = useRef<HTMLInputElement>(null);
+  const modelSearchRef = useRef<HTMLInputElement>(null);
+  const colorSearchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (existingVehicle) {
@@ -189,6 +192,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
     setShowModelSuggestions(false);
     setShowColorSuggestions(false);
     setMakeSearch('');
+    setTimeout(() => makeSearchRef.current?.focus(), 0);
   };
 
   const handleModelClick = () => {
@@ -197,6 +201,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       setShowMakeSuggestions(false);
       setShowColorSuggestions(false);
       setModelSearch('');
+      setTimeout(() => modelSearchRef.current?.focus(), 0);
     }
   };
 
@@ -205,6 +210,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
     setShowMakeSuggestions(false);
     setShowModelSuggestions(false);
     setColorSearch('');
+    setTimeout(() => colorSearchRef.current?.focus(), 0);
   };
 
   const handleSuggestionClick = (vehicle: typeof knownVehicles[0]) => {
@@ -352,16 +358,19 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 {formData.make || 'Select manufacturer'}
               </div>
               {showMakeSuggestions && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-hidden">
-                  <input
-                    type="text"
-                    value={makeSearch}
-                    onChange={(e) => setMakeSearch(e.target.value)}
-                    className="w-full p-2 border-b border-gray-200 focus:outline-none"
-                    placeholder="Type to search..."
-                    autoFocus
-                  />
-                  <div className="overflow-y-auto max-h-[160px]">
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                  <div className="p-2 border-b">
+                    <input
+                      ref={makeSearchRef}
+                      type="text"
+                      value={makeSearch}
+                      onChange={(e) => setMakeSearch(e.target.value)}
+                      className="w-full px-2 py-1 border border-gray-300 rounded"
+                      placeholder="Search manufacturer..."
+                      autoFocus
+                    />
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
                     {filteredManufacturers.map((make, index) => (
                       <div
                         key={index}
@@ -370,7 +379,6 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                           setFormData(prev => ({ ...prev, make, model: '' }));
                           setShowMakeSuggestions(false);
                           setMakeSearch('');
-                          setShowModelSuggestions(true);
                         }}
                       >
                         {make}
@@ -390,16 +398,19 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 {formData.model || (formData.make ? 'Select model' : 'Select make first')}
               </div>
               {showModelSuggestions && formData.make && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-hidden">
-                  <input
-                    type="text"
-                    value={modelSearch}
-                    onChange={(e) => setModelSearch(e.target.value)}
-                    className="w-full p-2 border-b border-gray-200 focus:outline-none"
-                    placeholder="Type to search..."
-                    autoFocus
-                  />
-                  <div className="overflow-y-auto max-h-[160px]">
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                  <div className="p-2 border-b">
+                    <input
+                      ref={modelSearchRef}
+                      type="text"
+                      value={modelSearch}
+                      onChange={(e) => setModelSearch(e.target.value)}
+                      className="w-full px-2 py-1 border border-gray-300 rounded"
+                      placeholder="Search model..."
+                      autoFocus
+                    />
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
                     {filteredModels.map((model, index) => (
                       <div
                         key={index}
@@ -430,16 +441,19 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 {formData.color || 'Select color'}
               </div>
               {showColorSuggestions && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-hidden">
-                  <input
-                    type="text"
-                    value={colorSearch}
-                    onChange={(e) => setColorSearch(e.target.value)}
-                    className="w-full p-2 border-b border-gray-200 focus:outline-none"
-                    placeholder="Type to search..."
-                    autoFocus
-                  />
-                  <div className="overflow-y-auto max-h-[160px]">
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                  <div className="p-2 border-b">
+                    <input
+                      ref={colorSearchRef}
+                      type="text"
+                      value={colorSearch}
+                      onChange={(e) => setColorSearch(e.target.value)}
+                      className="w-full px-2 py-1 border border-gray-300 rounded"
+                      placeholder="Search color..."
+                      autoFocus
+                    />
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
                     {filteredColors.map((color, index) => (
                       <div
                         key={index}
