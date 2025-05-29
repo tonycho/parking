@@ -34,7 +34,8 @@ const carColors = [
   { name: 'Gold', hex: '#FFD700' },
   { name: 'Orange', hex: '#FFA500' },
   { name: 'Yellow', hex: '#FFFF00' },
-  { name: 'Purple', hex: '#800080' }
+  { name: 'Purple', hex: '#800080' },
+  { name: 'Other', hex: 'gradient' }
 ];
 
 interface VehicleFormProps {
