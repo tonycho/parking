@@ -224,7 +224,6 @@ function Dashboard() {
           
           <div className="flex-1 overflow-y-auto">
             <div className="p-4">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Vehicles</h2>
               <VehicleList 
                 vehicles={filteredVehicles}
                 spots={parkingLot.spots}
