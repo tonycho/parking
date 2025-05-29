@@ -6,13 +6,22 @@ import { Link } from 'react-router-dom';
 import VehicleForm from '../components/VehicleForm';
 
 function Vehicles() {
-  const { knownVehicles, handleLogout, parkingLot, updateVehicle, removeVehicle, deleteVehicle } = useParking();
+  const { knownVehicles, handleLogout, parkingLot, updateVehicle, removeVehicle, deleteVehicle, vehicles } = useParking();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVehicle, setSelectedVehicle] = useState<typeof knownVehicles[0] | null>(null);
   const [showParkingModal, setShowParkingModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+
+  const getParkedSpot = (licensePlate: string) => {
+    const parkedVehicle = vehicles.find(v => v.licensePlate === licensePlate);
+    if (parkedVehicle) {
+      const spot = parkingLot.spots.find(s => s.id === parkedVehicle.parkingSpotId);
+      return spot?.label;
+    }
+    return null;
+  };
 
   const filteredVehicles = knownVehicles.filter(vehicle => {
     const query = searchQuery.toLowerCase();
@@ -147,66 +156,85 @@ function Vehicles() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Phone
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Current Spot
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredVehicles.map((vehicle, index) => (
-                  <tr key={vehicle.licensePlate} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      <div className="flex items-center">
-                        <Tag className="h-4 w-4 text-gray-400 mr-2" />
-                        <button
-                          onClick={() => {
-                            setSelectedVehicle(vehicle);
-                            setShowEditModal(true);
-                          }}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          {vehicle.licensePlate}
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex items-center">
-                        <Car className="h-4 w-4 text-gray-400 mr-2" />
-                        {vehicle.make} {vehicle.model}
-                        <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          {vehicle.color}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {vehicle.contact || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex items-center">
-                        <Phone className="h-4 w-4 text-gray-400 mr-2" />
-                        {vehicle.phoneNumber || '-'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        <button
-                          onClick={() => handlePark(vehicle)}
-                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 transition-colors"
-                        >
-                          <ParkingSquare className="h-4 w-4 mr-1" />
-                          Park
-                        </button>
-                        <button
-                          onClick={() => setShowDeleteConfirm(vehicle.licensePlate)}
-                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200 transition-colors"
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {filteredVehicles.map((vehicle, index) => {
+                  const parkedSpot = getParkedSpot(vehicle.licensePlate);
+                  
+                  return (
+                    <tr key={vehicle.licensePlate} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <div className="flex items-center">
+                          <Tag className="h-4 w-4 text-gray-400 mr-2" />
+                          <button
+                            onClick={() => {
+                              setSelectedVehicle(vehicle);
+                              setShowEditModal(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            {vehicle.licensePlate}
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div className="flex items-center">
+                          <Car className="h-4 w-4 text-gray-400 mr-2" />
+                          {vehicle.make} {vehicle.model}
+                          <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            {vehicle.color}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {vehicle.contact || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div className="flex items-center">
+                          <Phone className="h-4 w-4 text-gray-400 mr-2" />
+                          {vehicle.phoneNumber || '-'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {parkedSpot ? (
+                          <div className="flex items-center">
+                            <ParkingSquare className="h-4 w-4 text-blue-500 mr-2" />
+                            <span className="font-medium text-blue-600">Spot {parkedSpot}</span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">Not parked</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
+                          {!parkedSpot && (
+                            <button
+                              onClick={() => handlePark(vehicle)}
+                              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 transition-colors"
+                            >
+                              <ParkingSquare className="h-4 w-4 mr-1" />
+                              Park
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setShowDeleteConfirm(vehicle.licensePlate)}
+                            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
