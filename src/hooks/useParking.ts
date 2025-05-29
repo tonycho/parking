@@ -271,8 +271,7 @@ export function useParking() {
       // Get or create parking lot
       let { data: parkingLots, error: parkingLotError } = await supabase
         .from('parking_lots')
-        .select('*')
-        .eq('user_id', userId);
+        .select('*');
 
       if (parkingLotError) throw parkingLotError;
 
@@ -283,8 +282,7 @@ export function useParking() {
         const { data: newParkingLot, error: createError } = await supabase
           .from('parking_lots')
           .insert({
-            name: initialParkingLot.name,
-            user_id: userId
+            name: initialParkingLot.name
           })
           .select()
           .single();
@@ -350,16 +348,14 @@ export function useParking() {
       // Get currently parked vehicles
       const { data: parkedVehicles, error: parkedVehiclesError } = await supabase
         .from('vehicle_parking_spot')
-        .select('*')
-        .eq('user_id', userId);
+        .select('*');
 
       if (parkedVehiclesError) throw parkedVehiclesError;
 
       // Get all known vehicles
       const { data: knownVehiclesData, error: knownVehiclesError } = await supabase
         .from('vehicles')
-        .select('*')
-        .eq('user_id', userId);
+        .select('*');
 
       if (knownVehiclesError) throw knownVehiclesError;
 
@@ -434,15 +430,14 @@ export function useParking() {
         license_plate: vehicleData.licensePlate,
         make: vehicleData.make,
         model: vehicleData.model || '',
-        color: vehicleData.color,
-        user_id: session.user.id
+        color: vehicleData.color
       };
 
       // Update or insert into vehicles (known vehicles)
       const { error: vehiclesError } = await supabase
         .from('vehicles')
         .upsert([dbVehicleData], {
-          onConflict: 'license_plate,user_id'
+          onConflict: 'license_plate'
         });
 
       if (vehiclesError) throw vehiclesError;
@@ -506,7 +501,6 @@ export function useParking() {
         .from('vehicles')
         .delete()
         .eq('license_plate', licensePlate)
-        .eq('user_id', session.user.id);
 
       if (deleteError) throw deleteError;
 
