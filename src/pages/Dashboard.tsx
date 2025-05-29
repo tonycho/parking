@@ -146,7 +146,6 @@ function Dashboard() {
                 onChange={setSearchQuery}
               />
               <div>
-                <h2 className="text-lg font-medium text-gray-900 mb-4">Vehicles</h2>
                 <div className="space-y-2">
                   <VehicleList 
                     vehicles={filteredVehicles}
