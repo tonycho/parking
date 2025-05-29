@@ -20,7 +20,8 @@ function Vehicles() {
       const spot = parkingLot.spots.find(s => s.id === parkedVehicle.parkingSpotId);
       return {
         label: spot?.label,
-        priority: spot?.priority
+        priority: spot?.priority,
+        id: spot?.id
       };
     }
     return null;
@@ -100,6 +101,14 @@ function Vehicles() {
       setSelectedVehicle(null);
     } catch (error) {
       console.error('Error updating vehicle:', error);
+    }
+  };
+
+  const handleRemoveFromSpot = async (spotId: string) => {
+    try {
+      await removeVehicle(spotId);
+    } catch (error) {
+      console.error('Error removing vehicle from spot:', error);
     }
   };
 
@@ -246,17 +255,28 @@ function Vehicles() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <button
-                          onClick={() => handlePark(vehicle)}
-                          className={`inline-flex items-center px-3 py-1.5 rounded-full transition-colors ${
-                            parkedSpot
-                              ? `text-${parkedSpot.priority === 2 ? 'green' : 'orange'}-600 bg-${parkedSpot.priority === 2 ? 'green' : 'orange'}-100 hover:bg-${parkedSpot.priority === 2 ? 'green' : 'orange'}-200`
-                              : 'text-blue-600 bg-blue-100 hover:bg-blue-200'
-                          }`}
-                        >
-                          <ParkingSquare className="h-4 w-4 mr-1" />
-                          {parkedSpot ? `Spot ${parkedSpot.label}` : 'Park Vehicle'}
-                        </button>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => handlePark(vehicle)}
+                            className={`inline-flex items-center px-3 py-1.5 rounded-full transition-colors ${
+                              parkedSpot
+                                ? `text-${parkedSpot.priority === 2 ? 'green' : 'orange'}-600 bg-${parkedSpot.priority === 2 ? 'green' : 'orange'}-100 hover:bg-${parkedSpot.priority === 2 ? 'green' : 'orange'}-200`
+                                : 'text-blue-600 bg-blue-100 hover:bg-blue-200'
+                            }`}
+                          >
+                            <ParkingSquare className="h-4 w-4 mr-1" />
+                            {parkedSpot ? `Spot ${parkedSpot.label}` : 'Park Vehicle'}
+                          </button>
+                          {parkedSpot && (
+                            <button
+                              onClick={() => handleRemoveFromSpot(parkedSpot.id)}
+                              className="inline-flex items-center p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                              title="Remove from spot"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
