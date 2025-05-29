@@ -357,7 +357,7 @@ export function useParking() {
 
       // Get vehicle history
       const { data: vehicleHistory, error: historyError } = await supabase
-        .from('vehicles')
+        .from('vehicle_history')
         .select('*')
         .eq('user_id', userId);
 
@@ -438,9 +438,9 @@ export function useParking() {
         user_id: session.user.id
       };
 
-      // Update or insert into vehicles
+      // Update or insert into vehicle_history
       const { error: historyError } = await supabase
-        .from('vehicles')
+        .from('vehicle_history')
         .upsert([dbVehicleData], {
           onConflict: 'license_plate,user_id'
         });
@@ -501,9 +501,9 @@ export function useParking() {
         return;
       }
 
-      // Delete from vehicles
+      // Delete from vehicle_history
       const { error: historyError } = await supabase
-        .from('vehicles')
+        .from('vehicle_history')
         .delete()
         .eq('license_plate', licensePlate)
         .eq('user_id', session.user.id);
