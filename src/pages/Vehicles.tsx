@@ -12,6 +12,7 @@ function Vehicles() {
   const [showParkingModal, setShowParkingModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const filteredVehicles = knownVehicles.filter(vehicle => {
     const query = searchQuery.toLowerCase();
@@ -28,11 +29,9 @@ function Vehicles() {
   const availableSpots = parkingLot.spots
     .filter(spot => spot.status === 'available')
     .sort((a, b) => {
-      // First sort by priority (higher priority first)
       if (b.priority !== a.priority) {
         return b.priority - a.priority;
       }
-      // Then sort by label
       return a.label.localeCompare(b.label);
     });
 
@@ -60,11 +59,20 @@ function Vehicles() {
 
   const handleAddVehicle = async (vehicleData: any) => {
     try {
-      // Add the vehicle without assigning a spot
       await updateVehicle(vehicleData, '');
       setShowAddVehicleModal(false);
     } catch (error) {
       console.error('Error adding vehicle:', error);
+    }
+  };
+
+  const handleEditVehicle = async (vehicleData: any) => {
+    try {
+      await updateVehicle(vehicleData, '');
+      setShowEditModal(false);
+      setSelectedVehicle(null);
+    } catch (error) {
+      console.error('Error updating vehicle:', error);
     }
   };
 
@@ -151,7 +159,15 @@ function Vehicles() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         <div className="flex items-center">
                           <Tag className="h-4 w-4 text-gray-400 mr-2" />
-                          {vehicle.licensePlate}
+                          <button
+                            onClick={() => {
+                              setSelectedVehicle(vehicle);
+                              setShowEditModal(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            {vehicle.licensePlate}
+                          </button>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -215,6 +231,43 @@ function Vehicles() {
                 spot={{ id: '', label: '', status: 'available', position: { x: 0, y: 0 }, size: { width: 0, height: 0 }, priority: 1 }}
                 onSave={handleAddVehicle}
                 onCancel={() => setShowAddVehicleModal(false)}
+                knownVehicles={knownVehicles}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Vehicle Modal */}
+      {showEditModal && selectedVehicle && (
+        <div className="fixed z-50 inset-0 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity">
+              <div 
+                className="absolute inset-0 bg-gray-500 opacity-75"
+                onClick={() => {
+                  setShowEditModal(false);
+                  setSelectedVehicle(null);
+                }}
+              ></div>
+            </div>
+
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <VehicleForm
+                spot={{ id: '', label: '', status: 'available', position: { x: 0, y: 0 }, size: { width: 0, height: 0 }, priority: 1 }}
+                existingVehicle={{
+                  id: '',
+                  ...selectedVehicle,
+                  parkingSpotId: '',
+                  timeParked: new Date().toISOString()
+                }}
+                onSave={handleEditVehicle}
+                onCancel={() => {
+                  setShowEditModal(false);
+                  setSelectedVehicle(null);
+                }}
                 knownVehicles={knownVehicles}
               />
             </div>
