@@ -107,7 +107,7 @@ function Vehicles() {
         </div>
       </header>
 
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-6">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-4">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900 flex items-center">
             <Database className="mr-2 h-6 w-6 text-blue-500" />
