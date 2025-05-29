@@ -21,11 +21,6 @@ export function useParking() {
 
   useEffect(() => {
     checkAuth();
-    
-    // Cleanup function to remove all subscriptions when component unmounts
-    return () => {
-      supabase.removeAllChannels();
-    };
   }, []);
 
   useEffect(() => {
