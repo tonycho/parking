@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParking } from '../hooks/useParking';
 import SearchBar from '../components/SearchBar';
-import { Car, Phone, Tag, LogOut, Database, Map as MapIcon, X, Trash2, Plus } from 'lucide-react';
+import { Car, Phone, Tag, LogOut, Database, Map as MapIcon, X, Trash2, Plus, ParkingSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import VehicleForm from '../components/VehicleForm';
 
@@ -188,18 +188,20 @@ function Vehicles() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-4">
+                      <div className="flex items-center justify-end space-x-2">
                         <button
                           onClick={() => handlePark(vehicle)}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 transition-colors"
                         >
+                          <ParkingSquare className="h-4 w-4 mr-1" />
                           Park
                         </button>
                         <button
                           onClick={() => setShowDeleteConfirm(vehicle.licensePlate)}
-                          className="text-red-600 hover:text-red-900"
+                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200 transition-colors"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
                         </button>
                       </div>
                     </td>
