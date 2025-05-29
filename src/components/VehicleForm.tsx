@@ -74,6 +74,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   const [filteredColors, setFilteredColors] = useState(carColors);
   const [phoneError, setPhoneError] = useState('');
 
+  const formRef = useRef<HTMLFormElement>(null);
+  const licensePlateRef = useRef<HTMLDivElement>(null);
+  const contactRef = useRef<HTMLDivElement>(null);
   const makeInputRef = useRef<HTMLInputElement>(null);
   const makeDropdownRef = useRef<HTMLDivElement>(null);
   const modelInputRef = useRef<HTMLInputElement>(null);
@@ -90,18 +93,33 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // License plate suggestions
+      if (licensePlateRef.current && !licensePlateRef.current.contains(event.target as Node)) {
+        setSuggestions([]);
+      }
+
+      // Contact suggestions
+      if (contactRef.current && !contactRef.current.contains(event.target as Node)) {
+        setContactSuggestions([]);
+      }
+
+      // Make suggestions
       if (makeInputRef.current && 
           makeDropdownRef.current && 
           !makeInputRef.current.contains(event.target as Node) &&
           !makeDropdownRef.current.contains(event.target as Node)) {
         setShowMakeSuggestions(false);
       }
+
+      // Model suggestions
       if (modelInputRef.current && 
           modelDropdownRef.current && 
           !modelInputRef.current.contains(event.target as Node) &&
           !modelDropdownRef.current.contains(event.target as Node)) {
         setShowModelSuggestions(false);
       }
+
+      // Color suggestions
       if (colorInputRef.current && 
           colorDropdownRef.current && 
           !colorInputRef.current.contains(event.target as Node) &&
@@ -247,9 +265,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
         <p className="text-sm text-blue-100">Spot {spot.label}</p>
       </div>
       
-      <form onSubmit={handleSubmit} className="p-4">
+      <form ref={formRef} onSubmit={handleSubmit} className="p-4">
         <div className="space-y-4">
-          <div className="relative">
+          <div className="relative" ref={licensePlateRef}>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               <Tag className="mr-2 inline" size={16} />
               License Plate
@@ -281,7 +299,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
             )}
           </div>
 
-          <div className="relative">
+          <div className="relative" ref={contactRef}>
             <label className="block text-sm font-medium text-gray-700">
               <User className="mr-2 inline" size={16} />
               Contact
@@ -354,7 +372,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               {showMakeSuggestions && (
                 <div 
                   ref={makeDropdownRef}
-                  className="absolute z-10 w-full bottom-[calc(100%+1px)] bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
+                  className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
                 >
                   {filteredManufacturers.map((manufacturer, index) => (
                     <div
@@ -389,7 +407,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               {showModelSuggestions && formData.make && (
                 <div 
                   ref={modelDropdownRef}
-                  className="absolute z-10 w-full bottom-[calc(100%+1px)] bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
+                  className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
                 >
                   {filteredModels.map((model, index) => (
                     <div
@@ -425,7 +443,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               {showColorSuggestions && (
                 <div 
                   ref={colorDropdownRef}
-                  className="absolute z-10 w-full bottom-[calc(100%+1px)] bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
+                  className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
                 >
                   {filteredColors.map((color, index) => (
                     <div
@@ -433,13 +451,15 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                       className="p-2 hover:bg-gray-100 cursor-pointer flex items-center"
                       onClick={() => handleColorSelect(color.name)}
                     >
-                      <div 
-                        className="w-6 h-6 rounded-full mr-2" 
-                        style={{ 
-                          backgroundColor: color.hex,
-                          border: color.name === 'White' ? '1px solid #e5e7eb' : 'none'
-                        }} 
-                      />
+                      {color.name !== 'Other' && (
+                        <div 
+                          className="w-6 h-6 rounded-full mr-2" 
+                          style={{ 
+                            backgroundColor: color.hex,
+                            border: color.name === 'White' ? '1px solid #e5e7eb' : 'none'
+                          }} 
+                        />
+                      )}
                       {color.name}
                     </div>
                   ))}
