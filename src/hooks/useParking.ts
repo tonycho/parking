@@ -242,7 +242,12 @@ export function useParking() {
       loadParkingData();
 
       // Set up real-time subscriptions
-      const channel = supabase.channel('parking-changes');
+      const channel = supabase.channel('parking-changes', {
+        config: {
+          broadcast: { self: true },
+          presence: { key: 'parking' },
+        },
+      });
 
       channel
         .on(
@@ -267,7 +272,12 @@ export function useParking() {
             loadParkingData();
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            // Channel is ready
+            loadParkingData();
+          }
+        });
 
       // Cleanup subscription
       return () => {
