@@ -39,7 +39,11 @@ function Vehicles() {
   });
 
   const availableSpots = parkingLot.spots
-    .filter(spot => spot.status === 'available')
+    .filter(spot => {
+      // If the spot is occupied by the selected vehicle, include it
+      const currentVehicle = vehicles.find(v => v.parkingSpotId === spot.id);
+      return spot.status === 'available' || (currentVehicle && selectedVehicle && currentVehicle.licensePlate === selectedVehicle.licensePlate);
+    })
     .sort((a, b) => {
       if (b.priority !== a.priority) {
         return b.priority - a.priority;
@@ -54,7 +58,18 @@ function Vehicles() {
 
   const handleSpotSelect = async (spotId: string) => {
     if (selectedVehicle) {
-      await updateVehicle(selectedVehicle, spotId);
+      // Get the currently parked vehicle data if it exists
+      const parkedVehicle = vehicles.find(v => v.licensePlate === selectedVehicle.licensePlate);
+      
+      // If the vehicle is already parked, include its ID in the update
+      const vehicleData = {
+        ...selectedVehicle,
+        ...(parkedVehicle && { id: parkedVehicle.id }),
+        parkingSpotId: spotId,
+        timeParked: new Date().toISOString()
+      };
+
+      await updateVehicle(vehicleData, spotId);
       setShowParkingModal(false);
       setSelectedVehicle(null);
     }
@@ -233,7 +248,7 @@ function Vehicles() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <button
                           onClick={() => handlePark(vehicle)}
-                          className={`inline-flex items-center px-3 py-1.5 rounded transition-colors ${
+                          className={`inline-flex items-center px-3 py-1.5 rounded-full transition-colors ${
                             parkedSpot
                               ? `text-${parkedSpot.priority === 2 ? 'green' : 'orange'}-600 bg-${parkedSpot.priority === 2 ? 'green' : 'orange'}-100 hover:bg-${parkedSpot.priority === 2 ? 'green' : 'orange'}-200`
                               : 'text-blue-600 bg-blue-100 hover:bg-blue-200'
