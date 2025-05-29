@@ -272,7 +272,7 @@ function Vehicles() {
                           {parkedSpot && (
                             <button
                               onClick={() => handleRemoveFromSpot(parkedSpot.id)}
-                              className="inline-flex items-center p-1 text-gray-500 hover:text-gray-700 transition-colors"
+                              className="inline-flex items-center text-gray-500 hover:text-gray-700 transition-colors"
                               title="Remove from spot"
                             >
                               <X className="h-4 w-4" />
