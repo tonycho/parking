@@ -242,13 +242,9 @@ export function useParking() {
       loadParkingData();
 
       // Set up real-time subscriptions
-      const channel = supabase.channel('parking-changes', {
-        config: {
-          broadcast: { self: true },
-          presence: { key: 'parking' },
-        },
-      });
+      const channel = supabase.channel('parking-changes');
 
+      // Subscribe to both tables in a single channel
       channel
         .on(
           'postgres_changes',
@@ -272,10 +268,9 @@ export function useParking() {
             loadParkingData();
           }
         )
-        .subscribe((status) => {
+        .subscribe(async (status) => {
           if (status === 'SUBSCRIBED') {
-            // Channel is ready
-            loadParkingData();
+            await loadParkingData();
           }
         });
 
