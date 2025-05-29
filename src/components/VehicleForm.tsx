@@ -73,6 +73,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   const [filteredModels, setFilteredModels] = useState<string[]>([]);
   const [filteredColors, setFilteredColors] = useState(carColors);
   const [phoneError, setPhoneError] = useState('');
+  const [makeSearch, setMakeSearch] = useState('');
+  const [modelSearch, setModelSearch] = useState('');
+  const [colorSearch, setColorSearch] = useState('');
 
   const formRef = useRef<HTMLFormElement>(null);
   const licensePlateRef = useRef<HTMLDivElement>(null);
@@ -111,6 +114,30 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       setFilteredModels([]);
     }
   }, [formData.make]);
+
+  useEffect(() => {
+    const filtered = carManufacturers.filter(make => 
+      make.toLowerCase().includes(makeSearch.toLowerCase())
+    );
+    setFilteredManufacturers(filtered.length > 0 ? filtered : carManufacturers);
+  }, [makeSearch]);
+
+  useEffect(() => {
+    if (formData.make) {
+      const availableModels = carModels[formData.make] || carModels['Other'];
+      const filtered = availableModels.filter(model =>
+        model.toLowerCase().includes(modelSearch.toLowerCase())
+      );
+      setFilteredModels(filtered.length > 0 ? filtered : availableModels);
+    }
+  }, [modelSearch, formData.make]);
+
+  useEffect(() => {
+    const filtered = carColors.filter(color =>
+      color.name.toLowerCase().includes(colorSearch.toLowerCase())
+    );
+    setFilteredColors(filtered.length > 0 ? filtered : carColors);
+  }, [colorSearch]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -158,26 +185,26 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   };
 
   const handleMakeClick = () => {
-    setFilteredManufacturers(carManufacturers);
     setShowMakeSuggestions(true);
     setShowModelSuggestions(false);
     setShowColorSuggestions(false);
+    setMakeSearch('');
   };
 
   const handleModelClick = () => {
     if (formData.make) {
-      setFilteredModels(carModels[formData.make] || carModels['Other']);
       setShowModelSuggestions(true);
       setShowMakeSuggestions(false);
       setShowColorSuggestions(false);
+      setModelSearch('');
     }
   };
 
   const handleColorClick = () => {
-    setFilteredColors(carColors);
     setShowColorSuggestions(true);
     setShowMakeSuggestions(false);
     setShowModelSuggestions(false);
+    setColorSearch('');
   };
 
   const handleSuggestionClick = (vehicle: typeof knownVehicles[0]) => {
@@ -325,20 +352,31 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 {formData.make || 'Select manufacturer'}
               </div>
               {showMakeSuggestions && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
-                  {filteredManufacturers.map((make, index) => (
-                    <div
-                      key={index}
-                      className="p-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => {
-                        setFormData(prev => ({ ...prev, make, model: '' }));
-                        setShowMakeSuggestions(false);
-                        setShowModelSuggestions(true);
-                      }}
-                    >
-                      {make}
-                    </div>
-                  ))}
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-hidden">
+                  <input
+                    type="text"
+                    value={makeSearch}
+                    onChange={(e) => setMakeSearch(e.target.value)}
+                    className="w-full p-2 border-b border-gray-200 focus:outline-none"
+                    placeholder="Type to search..."
+                    autoFocus
+                  />
+                  <div className="overflow-y-auto max-h-[160px]">
+                    {filteredManufacturers.map((make, index) => (
+                      <div
+                        key={index}
+                        className="p-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, make, model: '' }));
+                          setShowMakeSuggestions(false);
+                          setMakeSearch('');
+                          setShowModelSuggestions(true);
+                        }}
+                      >
+                        {make}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -352,19 +390,30 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 {formData.model || (formData.make ? 'Select model' : 'Select make first')}
               </div>
               {showModelSuggestions && formData.make && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
-                  {filteredModels.map((model, index) => (
-                    <div
-                      key={index}
-                      className="p-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => {
-                        setFormData(prev => ({ ...prev, model }));
-                        setShowModelSuggestions(false);
-                      }}
-                    >
-                      {model}
-                    </div>
-                  ))}
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-hidden">
+                  <input
+                    type="text"
+                    value={modelSearch}
+                    onChange={(e) => setModelSearch(e.target.value)}
+                    className="w-full p-2 border-b border-gray-200 focus:outline-none"
+                    placeholder="Type to search..."
+                    autoFocus
+                  />
+                  <div className="overflow-y-auto max-h-[160px]">
+                    {filteredModels.map((model, index) => (
+                      <div
+                        key={index}
+                        className="p-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, model }));
+                          setShowModelSuggestions(false);
+                          setModelSearch('');
+                        }}
+                      >
+                        {model}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -381,28 +430,39 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 {formData.color || 'Select color'}
               </div>
               {showColorSuggestions && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
-                  {filteredColors.map((color, index) => (
-                    <div
-                      key={index}
-                      className="p-2 hover:bg-gray-100 cursor-pointer flex items-center"
-                      onClick={() => {
-                        setFormData(prev => ({ ...prev, color: color.name }));
-                        setShowColorSuggestions(false);
-                      }}
-                    >
-                      {color.name !== 'Other' && (
-                        <div 
-                          className="w-6 h-6 rounded-full mr-2" 
-                          style={{ 
-                            backgroundColor: color.hex,
-                            border: color.name === 'White' ? '1px solid #e5e7eb' : 'none'
-                          }} 
-                        />
-                      )}
-                      {color.name}
-                    </div>
-                  ))}
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-hidden">
+                  <input
+                    type="text"
+                    value={colorSearch}
+                    onChange={(e) => setColorSearch(e.target.value)}
+                    className="w-full p-2 border-b border-gray-200 focus:outline-none"
+                    placeholder="Type to search..."
+                    autoFocus
+                  />
+                  <div className="overflow-y-auto max-h-[160px]">
+                    {filteredColors.map((color, index) => (
+                      <div
+                        key={index}
+                        className="p-2 hover:bg-gray-100 cursor-pointer flex items-center"
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, color: color.name }));
+                          setShowColorSuggestions(false);
+                          setColorSearch('');
+                        }}
+                      >
+                        {color.name !== 'Other' && (
+                          <div 
+                            className="w-6 h-6 rounded-full mr-2" 
+                            style={{ 
+                              backgroundColor: color.hex,
+                              border: color.name === 'White' ? '1px solid #e5e7eb' : 'none'
+                            }} 
+                          />
+                        )}
+                        {color.name}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
