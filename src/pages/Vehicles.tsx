@@ -233,29 +233,26 @@ function Vehicles() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {parkedSpot ? (
                           <div className="flex items-center">
-                            <ParkingSquare className="h-4 w-4 mr-2\" style={{ color: parkedSpot.priority === 2 ? '#22c55e' : '#f97316' }} />
+                            <ParkingSquare className="h-4 w-4 mr-2" style={{ color: parkedSpot.priority === 2 ? '#22c55e' : '#f97316' }} />
                             <span className="font-medium" style={{ color: parkedSpot.priority === 2 ? '#16a34a' : '#ea580c' }}>
                               Spot {parkedSpot.label}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-gray-400">Not parked</span>
+                          <button
+                            onClick={() => handlePark(vehicle)}
+                            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200 transition-colors"
+                          >
+                            <ParkingSquare className="h-4 w-4 mr-1" />
+                            Park Vehicle
+                          </button>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
-                          {!parkedSpot && (
-                            <button
-                              onClick={() => handlePark(vehicle)}
-                              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 transition-colors"
-                            >
-                              <ParkingSquare className="h-4 w-4 mr-1" />
-                              Park
-                            </button>
-                          )}
                           <button
                             onClick={() => setShowDeleteConfirm(vehicle.licensePlate)}
-                            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200 transition-colors"
+                            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 bg-red-100 rounded hover:bg-red-200 transition-colors"
                           >
                             <Trash2 className="h-4 w-4 mr-1" />
                             Delete
