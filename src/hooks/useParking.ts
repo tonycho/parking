@@ -595,6 +595,17 @@ export function useParking() {
         return;
       }
 
+      // Get all parking spot IDs for the current parking lot
+      const { data: spots, error: spotsError } = await supabase
+        .from('parking_spots')
+        .select('id')
+        .eq('parking_lot_id', parkingLot.id);
+
+      if (spotsError) throw spotsError;
+
+      const spotIds = spots.map(spot => spot.id);
+
+      // Update all spots to available
       const { error: spotError } = await supabase
         .from('parking_spots')
         .update({ status: 'available' })
@@ -602,9 +613,11 @@ export function useParking() {
 
       if (spotError) throw spotError;
 
+      // Delete vehicles from spots in the current parking lot
       const { error: vehicleError } = await supabase
         .from('vehicle_parking_spot')
-        .delete();
+        .delete()
+        .in('parking_spot_id', spotIds);
 
       if (vehicleError) throw vehicleError;
 
