@@ -10,14 +10,15 @@ const carManufacturers = [
 ];
 
 const carModels: { [key: string]: string[] } = {
-  'Acura': ['ILX', 'MDX', 'RDX', 'TLX'],
-  'Audi': ['A3', 'A4', 'A5', 'A6', 'Q3', 'Q5', 'Q7'],
-  'BMW': ['3 Series', '5 Series', 'X3', 'X5'],
-  'Chevrolet': ['Camaro', 'Corvette', 'Malibu', 'Silverado', 'Tahoe'],
-  'Ford': ['F-150', 'Mustang', 'Explorer', 'Escape', 'Focus'],
-  'Honda': ['Accord', 'Civic', 'CR-V', 'Pilot'],
-  'Toyota': ['Camry', 'Corolla', 'RAV4', 'Highlander', 'Tacoma'],
-  'Tesla': ['Model 3', 'Model S', 'Model X', 'Model Y'],
+  'Acura': ['ILX', 'MDX', 'RDX', 'TLX', 'Other'],
+  'Audi': ['A3', 'A4', 'A5', 'A6', 'Q3', 'Q5', 'Q7', 'Other'],
+  'BMW': ['3 Series', '5 Series', 'X3', 'X5', 'X7', 'iX', 'Other'],
+  'Chevrolet': ['Camaro', 'Corvette', 'Malibu', 'Silverado', 'Tahoe', 'Other'],
+  'Ford': ['F-150', 'Mustang', 'Explorer', 'Escape', 'Focus', 'Other'],
+  'Honda': ['Accord', 'Civic', 'CR-V', 'Pilot', 'Odyssey', 'Other'],
+  'Toyota': ['Camry', 'Corolla', 'RAV4', 'Highlander', 'Sienna', 'Tacoma', 'Other'],
+  'Tesla': ['Model 3', 'Model S', 'Model X', 'Model Y', 'Other'],
+  'Volkswagen': ['iQ', 'Passat', 'Other']
   'Other': ['Other']
 };
 
