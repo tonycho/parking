@@ -234,6 +234,45 @@ export function useParking() {
   useEffect(() => {
     if (isAuthenticated) {
       loadParkingData();
+      
+      // Set up real-time subscriptions
+      const parkingSpotsSubscription = supabase
+        .channel('parking-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'parking_spots'
+          },
+          () => {
+            // Reload parking data when spots change
+            loadParkingData();
+          }
+        )
+        .subscribe();
+
+      const vehiclesSubscription = supabase
+        .channel('vehicle-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'vehicle_parking_spot'
+          },
+          () => {
+            // Reload parking data when vehicles change
+            loadParkingData();
+          }
+        )
+        .subscribe();
+
+      // Cleanup subscriptions
+      return () => {
+        parkingSpotsSubscription.unsubscribe();
+        vehiclesSubscription.unsubscribe();
+      };
     }
   }, [isAuthenticated]);
 
