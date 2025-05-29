@@ -266,8 +266,6 @@ export function useParking() {
         return;
       }
 
-      const userId = session.user.id;
-
       // Get or create parking lot
       let { data: parkingLots, error: parkingLotError } = await supabase
         .from('parking_lots')
@@ -500,7 +498,7 @@ export function useParking() {
       const { error: deleteError } = await supabase
         .from('vehicles')
         .delete()
-        .eq('license_plate', licensePlate)
+        .eq('license_plate', licensePlate);
 
       if (deleteError) throw deleteError;
 
@@ -561,8 +559,7 @@ export function useParking() {
 
       const { error: vehicleError } = await supabase
         .from('vehicle_parking_spot')
-        .delete()
-        .eq('user_id', session.user.id);
+        .delete();
 
       if (vehicleError) throw vehicleError;
 

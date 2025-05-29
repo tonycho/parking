@@ -432,17 +432,13 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                       className="p-2 hover:bg-gray-100 cursor-pointer flex items-center"
                       onClick={() => handleColorSelect(color.name)}
                     >
-                      {color.hex === 'gradient' ? (
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-r from-red-500 via-green-500 to-blue-500 mr-2" />
-                      ) : (
-                        <div 
-                          className="w-6 h-6 rounded-full mr-2" 
-                          style={{ 
-                            backgroundColor: color.hex,
-                            border: color.name === 'White' ? '1px solid #e5e7eb' : 'none'
-                          }} 
-                        />
-                      )}
+                      <div 
+                        className="w-6 h-6 rounded-full mr-2" 
+                        style={{ 
+                          backgroundColor: color.hex,
+                          border: color.name === 'White' ? '1px solid #e5e7eb' : 'none'
+                        }} 
+                      />
                       {color.name}
                     </div>
                   ))}
