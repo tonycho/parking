@@ -39,7 +39,7 @@ function Vehicles() {
         vehicle.phoneNumber.includes(query)
       );
     })
-    .sort((a, b) => (a.contact || '').localeCompare(b.contact || ''));
+    .sort((a, b) => a.licensePlate.localeCompare(b.licensePlate));
 
   const availableSpots = parkingLot.spots
     .filter(spot => {
