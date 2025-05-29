@@ -242,10 +242,9 @@ export function useParking() {
       loadParkingData();
 
       // Set up real-time subscriptions
-      const parkingSpotsChannel = supabase.channel('parking-spots');
-      const vehiclesChannel = supabase.channel('vehicles');
+      const channel = supabase.channel('parking-changes');
 
-      parkingSpotsChannel
+      channel
         .on(
           'postgres_changes',
           {
@@ -257,9 +256,6 @@ export function useParking() {
             loadParkingData();
           }
         )
-        .subscribe();
-
-      vehiclesChannel
         .on(
           'postgres_changes',
           {
@@ -273,10 +269,9 @@ export function useParking() {
         )
         .subscribe();
 
-      // Cleanup subscriptions
+      // Cleanup subscription
       return () => {
-        parkingSpotsChannel.unsubscribe();
-        vehiclesChannel.unsubscribe();
+        channel.unsubscribe();
       };
     }
   }, [isAuthenticated]);
