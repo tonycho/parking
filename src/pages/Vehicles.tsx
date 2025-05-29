@@ -231,22 +231,17 @@ function Vehicles() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {parkedSpot ? (
-                          <div className="flex items-center">
-                            <ParkingSquare className="h-4 w-4 mr-2\" style={{ color: parkedSpot.priority === 2 ? '#22c55e' : '#f97316' }} />
-                            <span className="font-medium" style={{ color: parkedSpot.priority === 2 ? '#16a34a' : '#ea580c' }}>
-                              Spot {parkedSpot.label}
-                            </span>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => handlePark(vehicle)}
-                            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200 transition-colors"
-                          >
-                            <ParkingSquare className="h-4 w-4 mr-1" />
-                            Park Vehicle
-                          </button>
-                        )}
+                        <button
+                          onClick={() => handlePark(vehicle)}
+                          className={`inline-flex items-center px-3 py-1.5 rounded transition-colors ${
+                            parkedSpot
+                              ? `text-${parkedSpot.priority === 2 ? 'green' : 'orange'}-600 bg-${parkedSpot.priority === 2 ? 'green' : 'orange'}-100 hover:bg-${parkedSpot.priority === 2 ? 'green' : 'orange'}-200`
+                              : 'text-blue-600 bg-blue-100 hover:bg-blue-200'
+                          }`}
+                        >
+                          <ParkingSquare className="h-4 w-4 mr-1" />
+                          {parkedSpot ? `Spot ${parkedSpot.label}` : 'Park Vehicle'}
+                        </button>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
