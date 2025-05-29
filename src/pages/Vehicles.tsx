@@ -233,7 +233,7 @@ function Vehicles() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {parkedSpot ? (
                           <div className="flex items-center">
-                            <ParkingSquare className="h-4 w-4 mr-2" style={{ color: parkedSpot.priority === 2 ? '#22c55e' : '#f97316' }} />
+                            <ParkingSquare className="h-4 w-4 mr-2\" style={{ color: parkedSpot.priority === 2 ? '#22c55e' : '#f97316' }} />
                             <span className="font-medium" style={{ color: parkedSpot.priority === 2 ? '#16a34a' : '#ea580c' }}>
                               Spot {parkedSpot.label}
                             </span>
