@@ -3,23 +3,24 @@ import { ParkingSpot, Vehicle } from '../types';
 import { CarFront, User, Phone, Tag, Palette } from 'lucide-react';
 
 const carManufacturers = [
-  'Acura', 'Audi', 'BMW', 'Buick', 'Cadillac', 'Chevrolet', 'Chrysler', 
-  'Dodge', 'Ford', 'GMC', 'Honda', 'Hyundai', 'Infiniti', 'Jaguar', 'Jeep', 
-  'Kia', 'Lexus', 'Lincoln', 'Mazda', 'Mercedes-Benz', 'Mini', 'Mitsubishi', 
-  'Nissan', 'Porsche', 'Ram', 'Subaru', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo', 'Other'
+  'Acura', 'Audi', 'BMW', 'Honda', 'Lexus', 'Mazda', 'Mercedes', 
+  'Nissan', 'Subaru', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo', 'Other'
 ];
 
 const carModels: { [key: string]: string[] } = {
-  'Acura': ['ILX', 'MDX', 'RDX', 'TLX', 'Other'],
-  'Audi': ['A3', 'A4', 'A5', 'A6', 'Q3', 'Q5', 'Q7', 'Other'],
+  'Acura': ['MDX', 'TSX', 'Other'],
+  'Audi': ['A4', 'Other'],
   'BMW': ['3 Series', '5 Series', 'X3', 'X5', 'X7', 'iX', 'Other'],
-  'Chevrolet': ['Camaro', 'Corvette', 'Malibu', 'Silverado', 'Tahoe', 'Other'],
-  'Ford': ['F-150', 'Mustang', 'Explorer', 'Escape', 'Focus', 'Other'],
-  'Honda': ['Accord', 'Civic', 'CR-V', 'Pilot', 'Odyssey', 'Other'],
-  'Mazda': ['CX-50'],
-  'Toyota': ['Camry', 'Corolla', 'RAV4', 'Highlander', 'Sienna', 'Tacoma', 'Other'],
+  'Honda': ['Accord', 'Civic', 'CR-V', 'Clarity', 'Fit', 'HR-V', 'Odyssey', 'Other'],
+  'Lexus': ['CT 200', 'ES 350', 'GX 460', 'NX 200', 'RX 350', 'Other'],
+  'Mazda': ['CX-9', 'CX-50', 'Other'],
+  'Mercedes': ['GLC 300', 'GLE 350', 'Other'],
+  'Nissan': ['Leaf', 'Pathfinder', 'Rogue', 'Other'],
+  'Subaru': ['Forester', 'Outback', 'Other'],
   'Tesla': ['Model 3', 'Model S', 'Model X', 'Model Y', 'Other'],
-  'Volkswagen': ['iQ', 'Passat', 'Other'],
+  'Toyota': ['Camry', 'Corolla', 'Highlander', 'Prius', 'Rav4', 'Scion', 'Sienna', 'Other'],
+  'Volkswagen': ['ID.4', 'Other'],
+  'Volvo': ['S60', 'Other'],
   'Other': ['Other']
 };
 
