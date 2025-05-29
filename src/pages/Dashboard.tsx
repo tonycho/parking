@@ -218,7 +218,7 @@ function Dashboard() {
         </div>
         
         {/* Right column (sidebar) - Hidden on mobile */}
-        <div className="hidden md:flex md:w-96 bg-gray-50 border-l border-gray-200 flex-col">
+        <div style={{height: 'calc(100vh - 64px);'}} className="hidden md:flex md:w-96 bg-gray-50 border-l border-gray-200 flex-col">
           <div className="p-4 border-b border-gray-200">
             <SearchBar 
               value={searchQuery} 
