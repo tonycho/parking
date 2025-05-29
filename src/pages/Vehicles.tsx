@@ -27,17 +27,19 @@ function Vehicles() {
     return null;
   };
 
-  const filteredVehicles = knownVehicles.filter(vehicle => {
-    const query = searchQuery.toLowerCase();
-    return (
-      vehicle.contact.toLowerCase().includes(query) ||
-      vehicle.licensePlate.toLowerCase().includes(query) ||
-      vehicle.make.toLowerCase().includes(query) ||
-      (vehicle.model && vehicle.model.toLowerCase().includes(query)) ||
-      vehicle.color.toLowerCase().includes(query) ||
-      vehicle.phoneNumber.includes(query)
-    );
-  });
+  const filteredVehicles = knownVehicles
+    .filter(vehicle => {
+      const query = searchQuery.toLowerCase();
+      return (
+        vehicle.contact.toLowerCase().includes(query) ||
+        vehicle.licensePlate.toLowerCase().includes(query) ||
+        vehicle.make.toLowerCase().includes(query) ||
+        (vehicle.model && vehicle.model.toLowerCase().includes(query)) ||
+        vehicle.color.toLowerCase().includes(query) ||
+        vehicle.phoneNumber.includes(query)
+      );
+    })
+    .sort((a, b) => (a.contact || '').localeCompare(b.contact || ''));
 
   const availableSpots = parkingLot.spots
     .filter(spot => {
@@ -258,7 +260,7 @@ function Vehicles() {
                         <div className="flex items-center space-x-2">
                           <button
                             onClick={() => handlePark(vehicle)}
-                            className={`inline-flex items-center px-3 py-1.5 rounded-full transition-colors ${
+                            className={`inline-flex items-center px-3 py-1.5 rounded-md transition-colors ${
                               parkedSpot
                                 ? `text-${parkedSpot.priority === 2 ? 'green' : 'orange'}-600 bg-${parkedSpot.priority === 2 ? 'green' : 'orange'}-100 hover:bg-${parkedSpot.priority === 2 ? 'green' : 'orange'}-200`
                                 : 'text-blue-600 bg-blue-100 hover:bg-blue-200'
@@ -270,7 +272,7 @@ function Vehicles() {
                           {parkedSpot && (
                             <button
                               onClick={() => handleRemoveFromSpot(parkedSpot.id)}
-                              className="inline-flex items-center p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200 transition-colors"
                               title="Remove from spot"
                             >
                               <X className="h-4 w-4" />
@@ -282,7 +284,7 @@ function Vehicles() {
                         <div className="flex items-center justify-end space-x-2">
                           <button
                             onClick={() => setShowDeleteConfirm(vehicle.licensePlate)}
-                            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 bg-red-100 rounded hover:bg-red-200 transition-colors"
+                            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200 transition-colors"
                           >
                             <Trash2 className="h-4 w-4 mr-1" />
                             Delete
