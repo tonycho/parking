@@ -25,36 +25,33 @@ export function useParking() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      // Initial data load
       loadParkingData();
 
       // Set up real-time subscription
-      const channel = supabase.channel('any')
+      const channel = supabase.channel('db-changes')
         .on('postgres_changes', {
           event: '*',
           schema: 'public',
           table: 'parking_spots'
-        }, () => {
-          console.log('postgres_changes', 'parking_spots')
+        }, (payload) => {
+          console.log('Parking spot change:', payload);
           loadParkingData();
         })
         .on('postgres_changes', {
           event: '*',
           schema: 'public',
           table: 'vehicle_parking_spot'
-        }, () => {
-          console.log('postgres_changes', 'vehicle_parking_spot')
+        }, (payload) => {
+          console.log('Vehicle change:', payload);
           loadParkingData();
+        })
+        .subscribe((status, error) => {
+          if (error) {
+            console.error('Subscription error:', error);
+            return;
+          }
+          console.log('Subscription status:', status);
         });
-
-      // Subscribe to the channel
-      channel.subscribe((status) => {
-        console.log('status', status);
-        
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to real-time changes');
-        }
-      });
 
       // Cleanup subscription
       return () => {
