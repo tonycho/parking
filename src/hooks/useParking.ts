@@ -97,16 +97,16 @@ export function useParking() {
         return;
       }
 
-      // Get or create parking lot
+      // Get parking lots
       let { data: parkingLots, error: parkingLotError } = await supabase
         .from('parking_lots')
         .select('*');
 
       if (parkingLotError) throw parkingLotError;
 
-      let currentParkingLot;
+      let currentParkingLot = parkingLots?.[0];
 
-      if (!parkingLots || parkingLots.length === 0) {
+      if (!currentParkingLot) {
         // Create new parking lot
         const { data: newParkingLot, error: createError } = await supabase
           .from('parking_lots')
@@ -118,44 +118,14 @@ export function useParking() {
 
         if (createError) throw createError;
         currentParkingLot = newParkingLot;
-
-        // Create initial parking spots
-        const spotsToCreate = initialParkingLot.spots.map(spot => ({
-          label: spot.label,
-          status: 'available',
-          position_x: spot.position.x,
-          position_y: spot.position.y,
-          width: spot.size.width,
-          height: spot.size.height,
-          rotation: spot.rotation || 0,
-          priority: spot.priority || 1,
-          parking_lot_id: newParkingLot.id
-        }));
-
-        const { error: spotsError } = await supabase
-          .from('parking_spots')
-          .insert(spotsToCreate);
-
-        if (spotsError) throw spotsError;
-
-        // Fetch the newly created parking lot
-        const { data: refreshedLot, error: refreshError } = await supabase
-          .from('parking_lots')
-          .select('*')
-          .eq('id', newParkingLot.id)
-          .single();
-
-        if (refreshError) throw refreshError;
-        currentParkingLot = refreshedLot;
-      } else {
-        currentParkingLot = parkingLots[0];
       }
 
       // Get parking spots
       const { data: spots, error: spotsError } = await supabase
         .from('parking_spots')
         .select('*')
-        .eq('parking_lot_id', currentParkingLot.id);
+        .eq('parking_lot_id', currentParkingLot.id)
+        .order('order');
 
       if (spotsError) throw spotsError;
 
@@ -171,6 +141,7 @@ export function useParking() {
           size: { width: spot.width, height: spot.height },
           rotation: spot.rotation,
           priority: spot.priority || 1,
+          order: spot.order
         })),
       });
 
