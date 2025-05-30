@@ -42,12 +42,15 @@ function Vehicles() {
     .sort((a, b) => a.licensePlate.localeCompare(b.licensePlate));
 
   const availableSpots = parkingLot.spots
-    .filter(spot => {
-      // If the spot is occupied by the selected vehicle, include it
-      const currentVehicle = vehicles.find(v => v.parkingSpotId === spot.id);
-      return spot.status === 'available' || (currentVehicle && selectedVehicle && currentVehicle.licensePlate === selectedVehicle.licensePlate);
-    })
+    // .filter(spot => {
+    //   // If the spot is occupied by the selected vehicle, include it
+    //   const currentVehicle = vehicles.find(v => v.parkingSpotId === spot.id);
+    //   return spot.status === 'available' || (currentVehicle && selectedVehicle && currentVehicle.licensePlate === selectedVehicle.licensePlate);
+    // })
     .sort((a, b) => a.order - b.order);
+
+  console.log('p', parkingLot.spots);
+  console.log('a', availableSpots)
 
   const handlePark = (vehicle: typeof knownVehicles[0]) => {
     setSelectedVehicle(vehicle);
