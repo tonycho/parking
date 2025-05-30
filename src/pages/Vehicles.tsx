@@ -47,12 +47,7 @@ function Vehicles() {
       const currentVehicle = vehicles.find(v => v.parkingSpotId === spot.id);
       return spot.status === 'available' || (currentVehicle && selectedVehicle && currentVehicle.licensePlate === selectedVehicle.licensePlate);
     })
-    .sort((a, b) => {
-      if (b.priority !== a.priority) {
-        return b.priority - a.priority;
-      }
-      return a.label.localeCompare(b.label);
-    });
+    .sort((a, b) => a.order - b.order);
 
   const handlePark = (vehicle: typeof knownVehicles[0]) => {
     setSelectedVehicle(vehicle);
