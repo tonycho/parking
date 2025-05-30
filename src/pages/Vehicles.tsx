@@ -27,27 +27,11 @@ function Vehicles() {
     return null;
   };
 
-  const filteredVehicles = knownVehicles
-    .filter(vehicle => {
-      const query = searchQuery.toLowerCase();
-      return (
-        vehicle.contact.toLowerCase().includes(query) ||
-        vehicle.licensePlate.toLowerCase().includes(query) ||
-        vehicle.make.toLowerCase().includes(query) ||
-        (vehicle.model && vehicle.model.toLowerCase().includes(query)) ||
-        vehicle.color.toLowerCase().includes(query) ||
-        vehicle.phoneNumber.includes(query)
-      );
-    })
-    .sort((a, b) => a.licensePlate.localeCompare(b.licensePlate));
+  const getVehicleBySpotId = (spotId: string) => {
+    return vehicles.find(v => v.parkingSpotId === spotId);
+  };
 
-  const availableSpots = parkingLot.spots
-    .filter(spot => {
-      // If the spot is occupied by the selected vehicle, include it
-      const currentVehicle = vehicles.find(v => v.parkingSpotId === spot.id);
-      return spot.status === 'available' || (currentVehicle && selectedVehicle && currentVehicle.licensePlate === selectedVehicle.licensePlate);
-    })
-    .sort((a, b) => a.order - b.order);
+  const allSpots = parkingLot.spots.sort((a, b) => a.order - b.order);
 
   const handlePark = (vehicle: typeof knownVehicles[0]) => {
     setSelectedVehicle(vehicle);
@@ -127,6 +111,20 @@ function Vehicles() {
     };
     return colorMap[colorName] || '#808080';
   };
+
+  const filteredVehicles = knownVehicles
+    .filter(vehicle => {
+      const query = searchQuery.toLowerCase();
+      return (
+        vehicle.contact.toLowerCase().includes(query) ||
+        vehicle.licensePlate.toLowerCase().includes(query) ||
+        vehicle.make.toLowerCase().includes(query) ||
+        (vehicle.model && vehicle.model.toLowerCase().includes(query)) ||
+        vehicle.color.toLowerCase().includes(query) ||
+        vehicle.phoneNumber.includes(query)
+      );
+    })
+    .sort((a, b) => a.licensePlate.localeCompare(b.licensePlate));
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -248,7 +246,17 @@ function Vehicles() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex items-center">
                           <Phone className="h-4 w-4 text-gray-400 mr-2" />
-                          {vehicle.phoneNumber || '-'}
+                          {vehicle.phoneNumber ? (
+                            <a 
+                              href={`tel:${vehicle.phoneNumber}`}
+                              className="text-blue-600 hover:text-blue-800"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {vehicle.phoneNumber}
+                            </a>
+                          ) : (
+                            '-'
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -390,19 +398,35 @@ function Vehicles() {
                       </div>
                       
                       <div className="grid grid-cols-3 gap-4">
-                        {availableSpots.map(spot => (
-                          <button
-                            key={spot.id}
-                            onClick={() => handleSpotSelect(spot.id)}
-                            className={`p-4 text-center rounded-lg border-2 transition-colors
-                              ${spot.priority === 2 
-                                ? 'border-green-600 bg-green-100 hover:bg-green-200' 
-                                : 'border-orange-500 bg-orange-100 hover:bg-orange-200'
+                        {allSpots.map(spot => {
+                          const occupyingVehicle = getVehicleBySpotId(spot.id);
+                          const isOccupied = spot.status === 'occupied';
+                          const isCurrentVehicleSpot = occupyingVehicle?.licensePlate === selectedVehicle.licensePlate;
+                          
+                          return (
+                            <button
+                              key={spot.id}
+                              onClick={() => !isOccupied && handleSpotSelect(spot.id)}
+                              disabled={isOccupied && !isCurrentVehicleSpot}
+                              className={`p-4 text-center rounded-lg border-2 transition-colors relative ${
+                                isOccupied
+                                  ? isCurrentVehicleSpot
+                                    ? 'border-blue-600 bg-blue-100'
+                                    : 'border-red-600 bg-red-100 cursor-not-allowed'
+                                  : spot.priority === 2
+                                    ? 'border-green-600 bg-green-100 hover:bg-green-200'
+                                    : 'border-orange-500 bg-orange-100 hover:bg-orange-200'
                               }`}
-                          >
-                            {spot.label}
-                          </button>
-                        ))}
+                            >
+                              <div>{spot.label}</div>
+                              {isOccupied && !isCurrentVehicleSpot && (
+                                <div className="text-xs mt-1 text-red-600 font-medium">
+                                  {occupyingVehicle?.contact || 'Occupied'}
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
