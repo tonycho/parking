@@ -12,7 +12,7 @@ const carModels: { [key: string]: string[] } = {
   'Audi': ['A4', 'Other'],
   'BMW': ['3 Series', '5 Series', 'X3', 'X5', 'X7', 'iX', 'Other'],
   'Honda': ['Accord', 'Civic', 'CR-V', 'Clarity', 'Fit', 'HR-V', 'Odyssey', 'Other'],
-  'Ford': ["F-150","Mustang","Explorer","Escape","Edge","Bronco","Expedition","Maverick","Ranger","Transit","EcoSport","Fusion","Taurus","Focus","Flex"],
+  'Ford': ["F-150","Mustang","Explorer","Escape","Edge","Bronco","Expedition","Maverick","Ranger","Transit","EcoSport","Fusion","Taurus","Focus","Flex", "Other"],
   'Lexus': ['CT 200', 'ES 350', 'GX 460', 'NX 200', 'RX 350', 'Other'],
   'Mazda': ['CX-9', 'CX-50', 'Other'],
   'Mercedes': ['GLC 300', 'GLE 350', 'Other'],
