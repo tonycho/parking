@@ -20,6 +20,26 @@ const VehicleList: React.FC<VehicleListProps> = ({ vehicles, onVehicleClick, spo
     return spots.find(s => s.id === spotId);
   };
 
+  // Get color hex value
+  const getColorHex = (colorName: string): string => {
+    const colorMap: { [key: string]: string } = {
+      'Black': '#000000',
+      'White': '#FFFFFF',
+      'Silver': '#C0C0C0',
+      'Gray': '#808080',
+      'Red': '#FF0000',
+      'Blue': '#0000FF',
+      'Brown': '#964B00',
+      'Green': '#008000',
+      'Beige': '#F5F5DC',
+      'Gold': '#FFD700',
+      'Orange': '#FFA500',
+      'Yellow': '#FFFF00',
+      'Purple': '#800080'
+    };
+    return colorMap[colorName] || '#808080';
+  };
+
   // Sort vehicles by their parking spot's order
   const sortedVehicles = [...vehicles].sort((a, b) => {
     const spotA = getSpot(a.parkingSpotId);
@@ -44,6 +64,7 @@ const VehicleList: React.FC<VehicleListProps> = ({ vehicles, onVehicleClick, spo
     <div className="bg-white rounded-lg shadow divide-y">
       {sortedVehicles.map((vehicle) => {
         const spot = getSpot(vehicle.parkingSpotId);
+        const colorHex = getColorHex(vehicle.color);
         
         return (
           <div 
@@ -55,7 +76,17 @@ const VehicleList: React.FC<VehicleListProps> = ({ vehicles, onVehicleClick, spo
               <div className="flex items-center">
                 <CarFront className="w-5 h-5 text-blue-500 mr-2" />
                 <div>
-                  <p className="font-medium text-gray-900">{vehicle.make} {vehicle.model} ({vehicle.color})</p>
+                  <div className="flex items-center">
+                    <p className="font-medium text-gray-900">{vehicle.make} {vehicle.model}</p>
+                    <div 
+                      className="ml-2 w-4 h-4 rounded-full" 
+                      style={{ 
+                        backgroundColor: colorHex,
+                        border: vehicle.color === 'White' ? '1px solid #e5e7eb' : 'none'
+                      }}
+                      title={vehicle.color}
+                    />
+                  </div>
                   <p className="text-sm text-gray-500">{vehicle.licensePlate}</p>
                 </div>
               </div>
