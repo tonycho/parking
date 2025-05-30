@@ -28,3 +28,5 @@ const carModels: { [key: string]: string[] } = {
   'Volvo': ['S60', 'S90', 'V60', 'XC40', 'XC60', 'XC90', 'Other'],
   'Other': ['Other']
 };
+
+export default carModels
