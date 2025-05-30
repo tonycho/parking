@@ -37,7 +37,7 @@ const ParkingSpotComponent: React.FC<ParkingSpotProps> = ({ spot, onClick, isSel
       <div>{spot.label}</div>
       {driverName && (
         <div className="text-xs mt-1 whitespace-nowrap overflow-hidden text-ellipsis px-1">
-          {driverName}
+          {driverName || }
         </div>
       )}
     </div>
