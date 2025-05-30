@@ -25,6 +25,7 @@ export interface ParkingSpot {
   rotation?: number;
   vehicleId?: string;
   priority: number;
+  order: number;
 }
 
 export interface ParkingLot {

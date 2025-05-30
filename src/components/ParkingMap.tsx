@@ -20,10 +20,13 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
     return spot.priority === 2 ? 'bg-green-500 border-green-600' : 'bg-orange-400 border-orange-500';
   }, [selectedSpotId]);
 
+  // Sort spots by order
+  const sortedSpots = [...spots].sort((a, b) => a.order - b.order);
+
   return (
     <div className="relative w-full h-full flex flex-col">
       <div className="relative flex-1 bg-gray-100">
-        {spots.map((spot) => {
+        {sortedSpots.map((spot) => {
           const driverName = getDriverName(spot.id);
           const colorClasses = getSpotColor(spot);
           const isOccupied = spot.status === 'occupied';
