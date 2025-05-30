@@ -40,6 +40,17 @@ const VehicleList: React.FC<VehicleListProps> = ({ vehicles, onVehicleClick, spo
     return colorMap[colorName] || '#808080';
   };
 
+  // Format phone number for display
+  const formatPhoneNumber = (phoneNumber: string) => {
+    if (!phoneNumber) return '';
+    const cleaned = phoneNumber.replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+    if (match) {
+      return `(${match[1]}) ${match[2]}-${match[3]}`;
+    }
+    return phoneNumber;
+  };
+
   // Sort vehicles by their parking spot's order
   const sortedVehicles = [...vehicles].sort((a, b) => {
     const spotA = getSpot(a.parkingSpotId);
@@ -65,6 +76,7 @@ const VehicleList: React.FC<VehicleListProps> = ({ vehicles, onVehicleClick, spo
       {sortedVehicles.map((vehicle) => {
         const spot = getSpot(vehicle.parkingSpotId);
         const colorHex = getColorHex(vehicle.color);
+        const formattedPhone = formatPhoneNumber(vehicle.phoneNumber);
         
         return (
           <div 
@@ -100,9 +112,27 @@ const VehicleList: React.FC<VehicleListProps> = ({ vehicles, onVehicleClick, spo
                 <User className="w-4 h-4 mr-1 text-gray-400" />
                 {vehicle.contact}
               </div>
-              <div className="flex items-center text-gray-700">
+              <div 
+                className="flex items-center text-gray-700"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (vehicle.phoneNumber) {
+                    window.location.href = `tel:${vehicle.phoneNumber}`;
+                  }
+                }}
+              >
                 <Phone className="w-4 h-4 mr-1 text-gray-400" />
-                {vehicle.phoneNumber}
+                {vehicle.phoneNumber ? (
+                  <a 
+                    href={`tel:${vehicle.phoneNumber}`}
+                    className="text-blue-600 hover:text-blue-800"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {formattedPhone}
+                  </a>
+                ) : (
+                  <span>-</span>
+                )}
               </div>
               <div className="flex items-center text-gray-700 col-span-2">
                 <Clock className="w-4 h-4 mr-1 text-gray-400" />
