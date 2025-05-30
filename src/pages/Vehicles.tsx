@@ -310,7 +310,7 @@ function Vehicles() {
 
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <VehicleForm
-                spot={{ id: '', label: '', status: 'available', position: { x: 0, y: 0 }, size: { width: 0, height: 0 }, priority: 1 }}
+                spot={{ id: '', label: '', status: 'available', position: { x: 0, y: 0 }, size: { width: 0, height: 0 }, priority: 1, order: 0 }}
                 onSave={handleAddVehicle}
                 onCancel={() => setShowAddVehicleModal(false)}
                 knownVehicles={knownVehicles}
@@ -338,7 +338,7 @@ function Vehicles() {
 
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <VehicleForm
-                spot={{ id: '', label: '', status: 'available', position: { x: 0, y: 0 }, size: { width: 0, height: 0 }, priority: 1 }}
+                spot={{ id: '', label: '', status: 'available', position: { x: 0, y: 0 }, size: { width: 0, height: 0 }, priority: 1, order: 0 }}
                 existingVehicle={{
                   id: '',
                   ...selectedVehicle,
