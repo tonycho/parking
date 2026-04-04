@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ParkingSpot, Vehicle } from '../types';
-import { CarFront, User, Phone, Tag, Palette } from 'lucide-react';
+import { CarFront, User, Phone, Tag, Palette, MessageSquare, Loader2 } from 'lucide-react';
 
 const carManufacturers = [
   'Acura', 'Audi', 'BMW', 'Chevrolet', 'Chrysler', 'Dodge', 'Ford', 'Honda', 'Hyundai',
@@ -88,6 +88,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   const [makeSearch, setMakeSearch] = useState('');
   const [modelSearch, setModelSearch] = useState('');
   const [colorSearch, setColorSearch] = useState('');
+  const [isSendingReminder, setIsSendingReminder] = useState(false);
+  const [reminderStatus, setReminderStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const formRef = useRef<HTMLFormElement>(null);
   const licensePlateRef = useRef<HTMLDivElement>(null);
@@ -271,6 +273,44 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       return false;
     }
     return formData.licensePlate.trim() !== '' && formData.make !== '' && formData.model !== '';
+  };
+
+  const handleSendReminder = async () => {
+    if (!formData.phoneNumber || formData.phoneNumber.length !== 10) {
+      setReminderStatus({ type: 'error', message: 'Valid phone number required' });
+      return;
+    }
+
+    setIsSendingReminder(true);
+    setReminderStatus(null);
+
+    try {
+      const response = await fetch('/api/send-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phoneNumber: formData.phoneNumber,
+          contact: formData.contact,
+          licensePlate: formData.licensePlate,
+          spotLabel: spot.label,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send reminder');
+      }
+
+      setReminderStatus({ type: 'success', message: 'Reminder sent successfully!' });
+    } catch (error) {
+      setReminderStatus({ 
+        type: 'error', 
+        message: error instanceof Error ? error.message : 'Failed to send reminder' 
+      });
+    } finally {
+      setIsSendingReminder(false);
+    }
   };
 
   return (
@@ -506,6 +546,17 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
           </div>
         </div>
         
+        {/* Reminder Status Message */}
+        {reminderStatus && (
+          <div className={`mt-4 p-3 rounded-md ${
+            reminderStatus.type === 'success' 
+              ? 'bg-green-50 text-green-800 border border-green-200' 
+              : 'bg-red-50 text-red-800 border border-red-200'
+          }`}>
+            {reminderStatus.message}
+          </div>
+        )}
+
         <div className="flex justify-between mt-6">
           <button
             type="button"
@@ -516,6 +567,23 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
           </button>
           
           <div className="flex space-x-2">
+            {/* Send Reminder Button - only show for occupied spots with phone numbers */}
+            {existingVehicle && formData.phoneNumber && formData.phoneNumber.length === 10 && (
+              <button
+                type="button"
+                onClick={handleSendReminder}
+                disabled={isSendingReminder}
+                className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSendingReminder ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                )}
+                {isSendingReminder ? 'Sending...' : 'Send Reminder'}
+              </button>
+            )}
+
             {existingVehicle && onRemove && (
               <button
                 type="button"
