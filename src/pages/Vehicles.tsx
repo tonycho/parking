@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParking } from '../hooks/useParking';
 import SearchBar from '../components/SearchBar';
-import { Car, Phone, Tag, LogOut, Database, Map as MapIcon, X, Trash2, Plus, ParkingSquare } from 'lucide-react';
+import { Car, Phone, Tag, LogOut, Database, Map as MapIcon, X, Trash2, Plus, ParkingSquare, MessageSquare, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import VehicleForm from '../components/VehicleForm';
 
@@ -13,6 +13,8 @@ function Vehicles() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState<string | null>(null);
+  const [reminderStatus, setReminderStatus] = useState<{ licensePlate: string; type: 'success' | 'error'; message: string } | null>(null);
 
   const getParkedSpot = (licensePlate: string) => {
     const parkedVehicle = vehicles.find(v => v.licensePlate === licensePlate);
@@ -90,6 +92,62 @@ function Vehicles() {
       await removeVehicle(spotId);
     } catch (error) {
       console.error('Error removing vehicle from spot:', error);
+    }
+  };
+
+  const handleSendReminder = async (vehicle: typeof knownVehicles[0]) => {
+    if (!vehicle.phoneNumber || vehicle.phoneNumber.length !== 10) {
+      setReminderStatus({ 
+        licensePlate: vehicle.licensePlate, 
+        type: 'error', 
+        message: 'Valid phone number required' 
+      });
+      return;
+    }
+
+    const parkedSpot = getParkedSpot(vehicle.licensePlate);
+    
+    setSendingReminder(vehicle.licensePlate);
+    setReminderStatus(null);
+
+    try {
+      const response = await fetch('/api/send-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phoneNumber: vehicle.phoneNumber,
+          contact: vehicle.contact,
+          licensePlate: vehicle.licensePlate,
+          spotLabel: parkedSpot?.label,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send reminder');
+      }
+
+      setReminderStatus({ 
+        licensePlate: vehicle.licensePlate, 
+        type: 'success', 
+        message: 'Reminder sent!' 
+      });
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setReminderStatus(prev => 
+          prev?.licensePlate === vehicle.licensePlate ? null : prev
+        );
+      }, 3000);
+    } catch (error) {
+      setReminderStatus({ 
+        licensePlate: vehicle.licensePlate, 
+        type: 'error', 
+        message: error instanceof Error ? error.message : 'Failed to send' 
+      });
+    } finally {
+      setSendingReminder(null);
     }
   };
 
@@ -285,6 +343,31 @@ function Vehicles() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
+                          {/* Send Reminder Button */}
+                          {vehicle.phoneNumber && vehicle.phoneNumber.length === 10 && (
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => handleSendReminder(vehicle)}
+                                disabled={sendingReminder === vehicle.licensePlate}
+                                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-green-600 bg-green-100 rounded-md hover:bg-green-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Send move reminder SMS"
+                              >
+                                {sendingReminder === vehicle.licensePlate ? (
+                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                ) : (
+                                  <MessageSquare className="h-4 w-4 mr-1" />
+                                )}
+                                {sendingReminder === vehicle.licensePlate ? 'Sending...' : 'Remind'}
+                              </button>
+                              {reminderStatus?.licensePlate === vehicle.licensePlate && (
+                                <span className={`text-xs ${
+                                  reminderStatus.type === 'success' ? 'text-green-600' : 'text-red-600'
+                                }`}>
+                                  {reminderStatus.message}
+                                </span>
+                              )}
+                            </div>
+                          )}
                           <button
                             onClick={() => setShowDeleteConfirm(vehicle.licensePlate)}
                             className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200 transition-colors"
