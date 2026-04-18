@@ -16,10 +16,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const access = await getRingCentralAccessToken();
     const v = await rc.validateRingCentralAccess(access);
-    if (!v.ok) {
-      return res.status(200).json({ ok: false, error: v.error });
+    if (v.ok) {
+      return res.status(200).json({ ok: true });
     }
-    return res.status(200).json({ ok: true });
+    return res.status(200).json({ ok: false, error: v.error });
   } catch (e) {
     console.error(e);
     return res.status(200).json({ ok: false, error: e instanceof Error ? e.message : 'Validation failed' });
