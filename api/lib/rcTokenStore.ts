@@ -1,5 +1,5 @@
-import { getSupabaseAdmin } from './supabaseAdmin';
-import * as rc from './ringcentral';
+import { getSupabaseAdmin } from './supabaseAdmin.js';
+import * as rc from './ringcentral.js';
 
 /** JWT credential string from RingCentral Developer Console (Credentials → Create JWT). */
 export function ringcentralJwtFromEnv(): string | undefined {

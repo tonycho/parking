@@ -2,7 +2,7 @@
  * Local development API server — runs the same handlers as Vercel `/api/*`
  * without the Vercel CLI. Use with `npm run dev:api` (port 3000) + `npm run dev` (Vite).
  */
-import { ringcentralJwtFromEnv } from '../api/lib/rcTokenStore';
+import { ringcentralJwtFromEnv } from '../api/lib/rcTokenStore.js';
 import { config } from 'dotenv';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import { dirname, join } from 'node:path';

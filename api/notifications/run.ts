@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getAuthUserFromBearer, sendAuthUnauthorized } from '../lib/auth';
-import { getSupabaseAdmin } from '../lib/supabaseAdmin';
-import { executeNotificationJob, type NotificationSetting } from '../lib/notificationRunEngine';
+import { getAuthUserFromBearer, sendAuthUnauthorized } from '../lib/auth.js';
+import { getSupabaseAdmin } from '../lib/supabaseAdmin.js';
+import { executeNotificationJob, type NotificationSetting } from '../lib/notificationRunEngine.js';
 
 function authorizeCron(req: VercelRequest): boolean {
   const secret = process.env.CRON_SECRET;

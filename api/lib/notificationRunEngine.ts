@@ -1,10 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { DateTime } from 'luxon';
 import { CronExpressionParser } from 'cron-parser';
-import { CHURCH_NOTIFICATION_TIMEZONE } from './churchNotification';
-import { getRingCentralAccessToken } from './rcTokenStore';
-import * as rc from './ringcentral';
-import { loadSmsRecipients, renderTemplate } from './recipients';
+import { CHURCH_NOTIFICATION_TIMEZONE } from './churchNotification.js';
+import { getRingCentralAccessToken } from './rcTokenStore.js';
+import * as rc from './ringcentral.js';
+import { loadSmsRecipients, renderTemplate } from './recipients.js';
 
 export type NotificationSetting = {
   id: string;

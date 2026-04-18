@@ -1,4 +1,4 @@
-import { getSupabaseAnon } from './supabaseAdmin';
+import { getSupabaseAnon } from './supabaseAdmin.js';
 
 type JsonResponder = { status: (code: number) => { json: (body: unknown) => unknown } };
 

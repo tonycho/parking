@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getSupabaseAdmin } from '../lib/supabaseAdmin';
-import { executeNotificationJob, type NotificationSetting } from '../lib/notificationRunEngine';
+import { getSupabaseAdmin } from '../lib/supabaseAdmin.js';
+import { executeNotificationJob, type NotificationSetting } from '../lib/notificationRunEngine.js';
 
 /**
  * Vercel Cron invokes this route with GET when configured in vercel.json.

@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getAuthUserFromBearer, sendAuthUnauthorized } from '../lib/auth';
-import { isRingCentralConnected, ringcentralJwtFromEnv } from '../lib/rcTokenStore';
+import { getAuthUserFromBearer, sendAuthUnauthorized } from '../lib/auth.js';
+import { isRingCentralConnected, ringcentralJwtFromEnv } from '../lib/rcTokenStore.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
