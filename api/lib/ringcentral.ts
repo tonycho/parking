@@ -145,7 +145,11 @@ export async function sendSms(params: {
   return { id: json.id, messageStatus: json.messageStatus };
 }
 
-export async function validateRingCentralAccess(accessToken: string): Promise<{ ok: true } | { ok: false; error: string }> {
+export type ValidateRingCentralResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
+export async function validateRingCentralAccess(accessToken: string): Promise<ValidateRingCentralResult> {
   try {
     const res = await fetch(`${serverBase()}/restapi/v1.0/account/~/extension/~`, {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -153,10 +157,10 @@ export async function validateRingCentralAccess(accessToken: string): Promise<{ 
     if (!res.ok) {
       const j = (await res.json().catch(() => ({}))) as RingCentralErrorJson;
       const base = formatRingCentralApiError(j, res.status);
-      return { ok: false, error: base + hintForPermissionError(base) };
+      return { ok: false as const, error: base + hintForPermissionError(base) };
     }
-    return { ok: true };
+    return { ok: true as const };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : 'Unknown error' };
+    return { ok: false as const, error: e instanceof Error ? e.message : 'Unknown error' };
   }
 }
