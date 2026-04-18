@@ -63,7 +63,7 @@ If the API listens on another port, set **`PORT`** when starting the API and **`
 
 ### Later: deploy to Vercel
 
-The **`api/`** folder is already structured for Vercel serverless. When you are ready:
+The **`api/`** folder holds **only route entry files** (one Serverless Function per file on Vercel). Shared handler code lives in **`lib/vercel-api/`** so it does not count toward the Hobby plan function limit. When you are ready:
 
 1. Create a Vercel project linked to this repo.
 2. Copy the same environment variables from `.env.local` into the Vercel project settings (including `RINGCENTRAL_JWT` and RingCentral client credentials).

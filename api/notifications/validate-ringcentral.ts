@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getAuthUserFromBearer, sendAuthUnauthorized } from '../lib/auth.js';
-import { getRingCentralAccessToken } from '../lib/rcTokenStore.js';
-import * as rc from '../lib/ringcentral.js';
+import { getAuthUserFromBearer, sendAuthUnauthorized } from '../../lib/vercel-api/auth.js';
+import { getRingCentralAccessToken } from '../../lib/vercel-api/rcTokenStore.js';
+import * as rc from '../../lib/vercel-api/ringcentral.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {

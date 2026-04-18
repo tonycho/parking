@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getAuthUserFromBearer, sendAuthUnauthorized } from '../lib/auth.js';
-import { getSupabaseAdmin } from '../lib/supabaseAdmin.js';
-import { loadSmsRecipients, sanitizePrefix } from '../lib/recipients.js';
+import { getAuthUserFromBearer, sendAuthUnauthorized } from '../../lib/vercel-api/auth.js';
+import { getSupabaseAdmin } from '../../lib/vercel-api/supabaseAdmin.js';
+import { loadSmsRecipients, sanitizePrefix } from '../../lib/vercel-api/recipients.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
