@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useParking } from '../hooks/useParking';
 import SearchBar from '../components/SearchBar';
-import { Car, Phone, Tag, LogOut, Database, Map as MapIcon, X, Trash2, Plus, ParkingSquare, MessageSquare, Loader2 } from 'lucide-react';
+import { Car, Phone, Tag, LogOut, Database, Map as MapIcon, X, Trash2, Plus, ParkingSquare, MessageSquare, Loader2, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import VehicleForm from '../components/VehicleForm';
+import { apiFetchJson } from '../lib/apiFetch';
 
 function Vehicles() {
   const { knownVehicles, handleLogout, parkingLot, updateVehicle, removeVehicle, deleteVehicle, vehicles } = useParking();
@@ -111,22 +112,15 @@ function Vehicles() {
     setReminderStatus(null);
 
     try {
-      const response = await fetch('/api/send-sms', {
+      await apiFetchJson('/api/send-reminder', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           phoneNumber: vehicle.phoneNumber,
           contact: vehicle.contact,
           licensePlate: vehicle.licensePlate,
           spotLabel: parkedSpot?.label,
-        }),
+        },
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to send reminder');
-      }
 
       setReminderStatus({ 
         licensePlate: vehicle.licensePlate, 
@@ -202,6 +196,13 @@ function Vehicles() {
               >
                 <MapIcon className="w-4 h-4 mr-2" />
                 Dashboard
+              </Link>
+              <Link
+                to="/settings/notifications"
+                className="flex items-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <Bell className="w-4 h-4 mr-2" />
+                Notifications
               </Link>
               <button
                 onClick={handleLogout}

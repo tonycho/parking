@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Vehicles from './pages/Vehicles';
+import NotificationSettings from './pages/NotificationSettings';
 import { useParking } from './hooks/useParking';
 
 function App() {
@@ -35,6 +36,12 @@ function App() {
         element={
           isAuthenticated ? <Vehicles /> : <Navigate to="/login" />
         } 
+      />
+      <Route
+        path="/settings/notifications"
+        element={
+          isAuthenticated ? <NotificationSettings /> : <Navigate to="/login" />
+        }
       />
     </Routes>
   );

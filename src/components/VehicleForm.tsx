@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { apiFetchJson } from '../lib/apiFetch';
 import { ParkingSpot, Vehicle } from '../types';
 import { CarFront, User, Phone, Tag, Palette, MessageSquare, Loader2 } from 'lucide-react';
 
@@ -285,22 +286,15 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
     setReminderStatus(null);
 
     try {
-      const response = await fetch('/api/send-sms', {
+      await apiFetchJson('/api/send-reminder', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           phoneNumber: formData.phoneNumber,
           contact: formData.contact,
           licensePlate: formData.licensePlate,
           spotLabel: spot.label,
-        }),
+        },
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to send reminder');
-      }
 
       setReminderStatus({ type: 'success', message: 'Reminder sent successfully!' });
     } catch (error) {

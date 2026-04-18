@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Car, Map as MapIcon, Menu, X, RotateCcw, LogOut, Database, Image } from 'lucide-react';
+import { Car, Map as MapIcon, Menu, X, RotateCcw, LogOut, Database, Image, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useParking } from '../hooks/useParking';
 import ParkingMap from '../components/ParkingMap';
@@ -95,6 +95,13 @@ function Dashboard() {
             </div>
             
             <div className="flex items-center space-x-4">
+              <Link
+                to="/settings/notifications"
+                className="flex items-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <Bell className="w-4 h-4 mr-2" />
+                Notifications
+              </Link>
               <Link
                 to="/vehicles"
                 className="flex items-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
