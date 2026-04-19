@@ -65,56 +65,55 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-xs">
-        <div className="flex items-center justify-center mb-4">
-          <Lock className="h-12 w-12 text-blue-500" />
+    <div className="min-h-screen h-full bg-secondary flex flex-col items-center justify-center px-4 py-8">
+      <div className="c3-card w-full max-w-sm">
+        <div className="flex flex-col items-center mb-6">
+          <div className="c3-logo mb-3" aria-hidden />
+          <Lock className="h-10 w-10 text-accent" aria-hidden />
         </div>
-        <h2 className="text-center text-xl font-bold text-gray-900 mb-4">ParkSmart Login</h2>
-        
+        <h2 className="text-center text-xl font-semibold text-primary mb-6">ParkSmart Login</h2>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              <div className="flex items-center">
-                <User className="w-4 h-4 mr-2" />
+            <label className="block text-sm font-medium text-primary mb-1">
+              <span className="flex items-center">
+                <User className="w-4 h-4 mr-2 text-secondary" />
                 Email
-              </div>
+              </span>
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-weak rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter email"
               required
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              <div className="flex items-center">
-                <Lock className="w-4 h-4 mr-2" />
+            <label className="block text-sm font-medium text-primary mb-1">
+              <span className="flex items-center">
+                <Lock className="w-4 h-4 mr-2 text-secondary" />
                 Password
-              </div>
+              </span>
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-weak rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter password"
               required
             />
           </div>
 
-          {error && (
-            <div className="text-red-600 text-sm text-center">{error}</div>
-          )}
-          
+          {error ? <div className="text-danger text-sm text-center">{error}</div> : null}
+
           <button
             type="submit"
             disabled={loading}
-            className={`w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors ${
+            className={`w-full rounded-sm py-2.5 px-4 text-sm font-medium text-inverse bg-accent hover:bg-accent-hover transition-colors ${
               loading ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
@@ -122,9 +121,7 @@ const Login = () => {
           </button>
         </form>
 
-        <div className="mt-4 text-center text-sm text-gray-500">
-          Don't have an account? Contact your administrator.
-        </div>
+        <p className="mt-6 text-center text-sm text-secondary">Don&apos;t have an account? Contact your administrator.</p>
       </div>
     </div>
   );

@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Car, Map as MapIcon, Menu, X, RotateCcw, LogOut, Database, Image, Bell } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Map as MapIcon, Menu, X, RotateCcw, Image } from 'lucide-react';
 import { useParking } from '../hooks/useParking';
 import ParkingMap from '../components/ParkingMap';
 import VehicleForm from '../components/VehicleForm';
-import Stats from '../components/Stats';
 import SearchBar from '../components/SearchBar';
 import VehicleList from '../components/VehicleList';
+import { PageHeader } from '../components/PageHeader/PageHeader';
 
 function Dashboard() {
   const {
@@ -19,11 +18,8 @@ function Dashboard() {
     searchQuery,
     setSearchQuery,
     filteredResults,
-    availableSpots,
-    occupiedSpots,
     resetParking,
     knownVehicles,
-    handleLogout,
   } = useParking();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -39,6 +35,8 @@ function Dashboard() {
           setShowResetConfirm(false);
         } else if (showMapImage) {
           setShowMapImage(false);
+        } else if (sidebarOpen) {
+          setSidebarOpen(false);
         }
       }
     };
@@ -48,7 +46,7 @@ function Dashboard() {
     return () => {
       window.removeEventListener('keydown', handleEscapeKey);
     };
-  }, [selectedSpot, showResetConfirm, showMapImage]);
+  }, [selectedSpot, showResetConfirm, showMapImage, sidebarOpen]);
 
   const { spots, filteredVehicles } = filteredResults();
 
@@ -84,68 +82,28 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 w-full">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center">
-              <Car className="h-8 w-8 text-blue-500" />
-              <h1 className="ml-2 text-xl font-semibold text-gray-900">ParkSmart</h1>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <Link
-                to="/settings/notifications"
-                className="flex items-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <Bell className="w-4 h-4 mr-2" />
-                Notifications
-              </Link>
-              <Link
-                to="/vehicles"
-                className="flex items-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <Database className="w-4 h-4 mr-2" />
-                Vehicles
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="flex items-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </button>
-              
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-              >
-                {sidebarOpen ? (
-                  <X className="block h-6 w-6\" aria-hidden="true" />
-                ) : (
-                  <Menu className="block h-6 w-6\" aria-hidden="true" />
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Sidebar for mobile */}
+    <div className="flex h-full min-h-0 flex-1 flex-col bg-secondary">
+      {/* Sidebar for mobile — slides in from the right */}
       <div
-        className={`fixed inset-0 z-40 md:hidden transition-opacity duration-300 ${
-          sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        className={`fixed inset-0 z-40 lg:hidden ${
+          sidebarOpen ? 'pointer-events-auto' : 'pointer-events-none'
         }`}
       >
-        <div className="absolute inset-0 bg-gray-600 opacity-75" onClick={() => setSidebarOpen(false)}></div>
-        <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white h-full">
+        <div
+          className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ease-out ${
+            sidebarOpen ? 'opacity-100' : 'opacity-0'
+          }`}
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden={!sidebarOpen}
+        />
+        <div
+          className={`absolute right-0 top-0 flex h-full w-full max-w-xs flex-col border-l border-weak bg-primary transition-transform duration-300 ease-out ${
+            sidebarOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
           <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
             <div className="px-2">
-              <div className="flex items-center">
-                <Car className="h-8 w-8 text-blue-500" />
-                <h1 className="ml-2 text-xl font-semibold text-gray-900">ParkSmart</h1>
-              </div>
+              <p className="text-sm font-semibold text-primary px-2">Vehicles</p>
             </div>
             <div className="mt-5 px-2 space-y-4">
               <SearchBar 
@@ -172,43 +130,52 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col md:flex-row">
-        {/* Left column (map) */}
-        <div className="flex-1 p-4 flex flex-col max-w-7xl mx-auto w-full">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                <MapIcon className="mr-2 h-6 w-6 text-blue-500" />
-                Parking Map
-              </h2>
-              <button 
-                onClick={() => setShowMapImage(true)}
-                className="ml-2 text-blue-500 hover:text-blue-600 transition-colors"
-              >
-                <Image className="h-6 w-6" />
-              </button>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setShowResetConfirm(true)}
-                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Reset All
-              </button>
-            </div>
-          </div>
-          
-          <div className="mb-6">
-            <Stats 
-              totalSpots={parkingLot.spots.length} 
-              availableSpots={availableSpots} 
-              occupiedSpots={occupiedSpots}
+      {/* Below nav: sidebar is full height; PageHeader lives only in the left column */}
+      <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden items-stretch">
+        {/* Left column — title + map stack (does not span the sidebar) */}
+        <div className="flex-1 flex flex-col min-h-0 min-w-0 lg:overflow-hidden">
+          <div className="flex-1 flex flex-col min-h-0 overflow-y-auto px-4 md:px-8 pb-6 max-w-7xl mx-auto w-full">
+          <div className="w-full">
+            <PageHeader
+              title="Parking map"
+              subtitle="Tap a spot to assign or edit a vehicle."
+              icon={MapIcon}
             />
           </div>
+
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 pt-2">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden inline-flex items-center rounded-sm border border-weak bg-primary p-2 text-secondary hover:text-primary hover:bg-tertiary"
+                title="Vehicle list"
+                aria-label="Open vehicle list"
+              >
+                <Menu className="h-5 w-5" aria-hidden />
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowMapImage(true)}
+                className="inline-flex items-center rounded-sm border border-weak bg-primary p-2 text-secondary hover:text-primary hover:bg-tertiary"
+                title="View map image"
+              >
+                <Image className="h-5 w-5" />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowResetConfirm(true)}
+              className="inline-flex shrink-0 items-center rounded-sm border border-danger bg-danger-weak px-2 py-2 text-xs font-medium text-danger hover:bg-danger hover:text-inverse sm:px-3 sm:text-sm"
+            >
+              <RotateCcw className="mr-1.5 h-4 w-4 shrink-0 sm:mr-2" />
+              Reset all
+            </button>
+          </div>
+
           
-          <div className="flex-1 relative h-0">
+          <div className="flex-1 min-h-[280px] relative rounded-sm border border-weak bg-primary overflow-hidden">
             <div className="absolute inset-0">
               <ParkingMap 
                 spots={spots} 
@@ -218,30 +185,29 @@ function Dashboard() {
               />
             </div>
           </div>
+          </div>
         </div>
         
-        {/* Right column (sidebar) - Hidden on mobile */}
-        <div style={{height: 'calc(100vh - 64px)'}} className="hidden md:flex md:w-96 bg-gray-50 border-l border-gray-200 flex-col">
-          <div className="p-4 border-b border-gray-200">
+        {/* Right column — full viewport band below nav (top/bottom flush with this row) */}
+        <div className="hidden lg:flex lg:w-96 lg:shrink-0 lg:self-stretch lg:min-h-0 bg-primary border-l border-weak flex-col">
+          <div className="px-4 pt-4 pb-4 shrink-0 border-b border-weak bg-primary">
             <SearchBar 
               value={searchQuery} 
               onChange={setSearchQuery}
             />
           </div>
           
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-4">
-              <VehicleList 
-                vehicles={filteredVehicles}
-                spots={parkingLot.spots}
-                onVehicleClick={(spotId) => {
-                  const spot = parkingLot.spots.find(s => s.id === spotId);
-                  if (spot) {
-                    setSelectedSpot(spot);
-                  }
-                }}
-              />
-            </div>
+          <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
+            <VehicleList 
+              vehicles={filteredVehicles}
+              spots={parkingLot.spots}
+              onVehicleClick={(spotId) => {
+                const spot = parkingLot.spots.find(s => s.id === spotId);
+                if (spot) {
+                  setSelectedSpot(spot);
+                }
+              }}
+            />
           </div>
         </div>
       </div>
@@ -249,19 +215,19 @@ function Dashboard() {
       {/* Map Image Modal */}
       {showMapImage && (
         <div className="fixed z-50 inset-0 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-2 pb-20 text-center sm:px-4">
             <div className="fixed inset-0 transition-opacity" aria-hidden="true">
               <div 
-                className="absolute inset-0 bg-gray-500 opacity-75"
+                className="absolute inset-0 bg-black/40"
                 onClick={() => setShowMapImage(false)}
-              ></div>
+              />
             </div>
 
-            <div className="relative inline-block bg-white rounded-lg overflow-hidden shadow-xl transform transition-all max-w-4xl w-full">
-              <div className="absolute top-0 right-0 pt-4 pr-4">
+            <div className="relative inline-block w-[calc(100vw-1rem)] max-w-none overflow-hidden rounded-sm border border-weak bg-primary text-left transform transition-all sm:max-w-4xl sm:w-full">
+              <div className="absolute top-0 right-0 pt-4 pr-4 z-10">
                 <button
                   type="button"
-                  className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
+                  className="bg-primary rounded-sm border border-weak p-1 text-secondary hover:text-primary focus:outline-none"
                   onClick={() => setShowMapImage(false)}
                 >
                   <span className="sr-only">Close</span>
@@ -281,14 +247,14 @@ function Dashboard() {
       {/* Modal for vehicle form */}
       {selectedSpot && (
         <div className="fixed z-50 inset-0 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          <div className="flex min-h-screen items-center justify-center px-2 pb-20 pt-4 text-center sm:block sm:px-4 sm:p-0">
             <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75" onClick={handleCancel}></div>
+              <div className="absolute inset-0 bg-black/40" onClick={handleCancel} />
             </div>
 
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="inline-block w-[calc(100vw-1rem)] max-w-none align-bottom overflow-hidden rounded-sm border border-weak bg-primary text-left transform transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
               <VehicleForm
                 spot={selectedSpot}
                 existingVehicle={getVehicleBySpotId(selectedSpot.id)}
@@ -305,41 +271,41 @@ function Dashboard() {
       {/* Reset confirmation modal */}
       {showResetConfirm && (
         <div className="fixed z-50 inset-0 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          <div className="flex min-h-screen items-center justify-center px-2 pb-20 pt-4 text-center sm:block sm:px-4 sm:p-0">
             <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+              <div className="absolute inset-0 bg-black/40" />
             </div>
 
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="inline-block w-[calc(100vw-1rem)] max-w-none align-bottom overflow-hidden rounded-sm border border-weak bg-primary text-left transform transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+              <div className="bg-primary px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                    <RotateCcw className="h-6 w-6 text-red-600" />
+                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-danger-weak sm:mx-0 sm:h-10 sm:w-10">
+                    <RotateCcw className="h-6 w-6 text-danger" />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">Reset Parking Lot</h3>
+                    <h3 className="text-lg leading-6 font-medium text-primary">Reset parking lot</h3>
                     <div className="mt-2">
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-secondary">
                         Are you sure you want to reset all parking spots? This will remove all current vehicles but keep the vehicle history for autocomplete.
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+              <div className="bg-tertiary px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-weak">
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  className="w-full inline-flex justify-center rounded-sm border border-transparent px-4 py-2 bg-danger text-base font-medium text-inverse hover:bg-danger-hover focus:outline-none focus:ring-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
                 >
                   Reset
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowResetConfirm(false)}
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  className="mt-3 w-full inline-flex justify-center rounded-sm border border-weak px-4 py-2 bg-primary text-base font-medium text-primary hover:bg-tertiary focus:outline-none focus:ring-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                 >
                   Cancel
                 </button>

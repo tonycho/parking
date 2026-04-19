@@ -1,0 +1,191 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/***
+ * KENDO TABSTRIP CUSTOMIZATIONS
+ **/
+
+/* Global tabstrip content styling */
+.k-tabstrip-content {
+  border: none !important;
+}
+
+/* Global k-item styling */
+.k-item {
+  border: none !important;
+
+  &.k-active::after {
+    border-color: var(--c3-style-kendo-color-primary) !important;
+  }
+}
+
+/**
+ * SCROLLABLE TABSTRIP STYLES
+ */
+.k-tabstrip {
+  /* Scrollable tabstrip container */
+  &.k-tabstrip-scrollable {
+    .k-tabstrip-items-wrapper {
+      position: relative;
+
+      /* Tab items container */
+      .k-tabstrip-items {
+        overflow: hidden;
+        scroll-behavior: smooth;
+
+        .k-item {
+          &.k-active {
+            .k-link {
+              font-weight: normal !important;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * KENDO GRID CUSTOMIZATIONS
+ */
+.k-grid {
+  background-color: inherit !important;
+
+  /* Row styling */
+  tr.k-master-row,
+  tr.k-alt {
+    background-color: inherit !important;
+  }
+
+  /* Header and footer styling */
+  .k-table-thead,
+  .k-grid-header,
+  .k-grouping-header,
+  .k-grid-add-row,
+  .k-grid-footer {
+    background-color: inherit !important;
+  }
+
+  /* Header text color */
+  .k-table-thead .k-header,
+  .k-grid-header .k-header,
+  .k-table-th,
+  .k-column-title,
+  .k-link {
+    color: var(--c3-style-fontColor) !important;
+  }
+
+  /* Pager text color */
+  .k-pager,
+  .k-pager-wrap,
+  .k-pager-info,
+  .k-pager-sizes,
+  .k-pager-numbers .k-link {
+    color: var(--c3-style-fontColor) !important;
+  }
+
+  /* Grid content area */
+  .k-grid-content,
+  .k-grid-container,
+  .k-table {
+    background-color: inherit !important;
+  }
+
+  /* Table body */
+  .k-table-tbody {
+    background-color: inherit !important;
+  }
+
+  /* Table cells */
+  td.k-table-td {
+    background-color: inherit !important;
+  }
+
+  /* Pager styling */
+  .k-pager,
+  .k-pager-wrap {
+    background-color: inherit !important;
+    border-color: var(--color-border-weak) !important;
+  }
+
+  /* Pager dropdown (page size selector) */
+  .k-pager .k-dropdown,
+  .k-pager .k-dropdownlist,
+  .k-pager .k-picker {
+    background-color: var(--c3-style-colorBgPrimary) !important;
+    border-color: var(--color-border-weak) !important;
+    color: var(--c3-style-fontColor) !important;
+  }
+
+  .k-pager .k-dropdown .k-input-inner,
+  .k-pager .k-dropdownlist .k-input-inner,
+  .k-pager .k-picker .k-input-inner {
+    background-color: transparent !important;
+    color: var(--c3-style-fontColor) !important;
+  }
+
+  .k-pager .k-dropdown .k-button,
+  .k-pager .k-dropdownlist .k-button,
+  .k-pager .k-picker .k-button {
+    background-color: transparent !important;
+    color: var(--c3-style-fontColor) !important;
+  }
+
+  /* Medium grid specific styling */
+  &.k-grid-md {
+    .k-table {
+      .k-table-tbody .k-master-row.k-table-row > td {
+        border-left: none !important;
+        border-right: none !important;
+        border-bottom: var(--tw-border-style) 1px var(--color-border-weak) !important;
+      }
+
+      .k-table-thead .k-table-row .k-header.k-table-th .k-cell-inner .k-link,
+      .k-grid-header .k-table-row .k-header.k-table-th .k-cell-inner .k-link {
+        border-left: none !important;
+        border-right: none !important;
+      }
+    }
+  }
+}
+
+/**
+ * KENDO POPOVER MENU CUSTOMIZATIONS
+ */
+.k-menu-item:active,
+.k-menu-item:active > .k-menu-link-text {
+  color: inherit !important;
+}
+
+/**
+ * KENDO POPUP/DROPDOWN LIST CUSTOMIZATIONS
+ */
+.k-popup,
+.k-animation-container {
+  .k-list {
+    background-color: var(--c3-style-colorBgPrimary) !important;
+    border-color: var(--color-border-weak) !important;
+  }
+
+  .k-list-item {
+    background-color: var(--c3-style-colorBgPrimary) !important;
+    color: var(--c3-style-fontColor) !important;
+
+    &:hover,
+    &.k-hover {
+      background-color: var(--c3-style-colorBgTertiary) !important;
+    }
+
+    &.k-selected,
+    &.k-focus.k-selected {
+      background-color: var(--c3-style-colorBgAccent) !important;
+      color: var(--c3-style-accentFontColor) !important;
+    }
+  }
+}

@@ -308,13 +308,13 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-visible">
-      <div className="bg-blue-500 p-4 text-white">
-        <h3 className="text-xl font-semibold flex items-center">
-          <CarFront className="mr-2" size={20} />
-          {spot.status === 'occupied' ? 'Edit Vehicle Information' : 'Register New Vehicle'}
+    <div className="bg-primary overflow-visible">
+      <div className="bg-accent border-b border-weak px-4 py-4 text-inverse">
+        <h3 className="text-lg font-semibold flex items-center">
+          <CarFront className="mr-2 shrink-0" size={20} aria-hidden />
+          {spot.status === 'occupied' ? 'Edit vehicle' : 'Register vehicle'}
         </h3>
-        <p className="text-sm text-blue-100">Spot {spot.label}</p>
+        <p className="text-sm opacity-90 mt-0.5">Spot {spot.label}</p>
       </div>
       
       <form ref={formRef} onSubmit={handleSubmit} className="p-4">
@@ -334,7 +334,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               required
             />
             {suggestions.length > 0 && (
-              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md max-h-48 overflow-y-auto">
                 {suggestions.map((vehicle, index) => (
                   <div
                     key={index}
@@ -365,7 +365,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               placeholder="Enter contact name"
             />
             {contactSuggestions.length > 0 && (
-              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md max-h-48 overflow-y-auto">
                 {contactSuggestions.map((vehicle, index) => (
                   <div
                     key={index}
@@ -415,7 +415,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 {formData.make || 'Select manufacturer'}
               </div>
               {showMakeSuggestions && (
-                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-300 rounded-md shadow-lg z-50">
+                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-300 rounded-md z-50">
                   <div className="p-2 border-b">
                     <input
                       ref={makeSearchRef}
@@ -455,7 +455,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 {formData.model || (formData.make ? 'Select model' : 'Select make first')}
               </div>
               {showModelSuggestions && formData.make && (
-                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-300 rounded-md shadow-lg z-50">
+                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-300 rounded-md z-50">
                   <div className="p-2 border-b">
                     <input
                       ref={modelSearchRef}
@@ -498,7 +498,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 {formData.color || 'Select color'}
               </div>
               {showColorSuggestions && (
-                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-300 rounded-md shadow-lg z-50">
+                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-300 rounded-md z-50">
                   <div className="p-2 border-b">
                     <input
                       ref={colorSearchRef}
@@ -551,30 +551,32 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
           </div>
         )}
 
-        <div className="flex justify-between mt-6">
+        <div className="mt-6 flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-2">
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            className="w-full shrink-0 px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors sm:w-auto"
           >
             Cancel
           </button>
-          
-          <div className="flex space-x-2">
+
+          <div className="flex min-w-0 w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end sm:gap-2">
             {/* Send Reminder Button - only show for occupied spots with phone numbers */}
             {existingVehicle && formData.phoneNumber && formData.phoneNumber.length === 10 && (
               <button
                 type="button"
                 onClick={handleSendReminder}
                 disabled={isSendingReminder}
-                className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex w-full min-w-0 items-center justify-center px-3 py-2 text-sm text-white bg-green-500 rounded-md hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto sm:px-4"
               >
                 {isSendingReminder ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 shrink-0 animate-spin" />
                 ) : (
-                  <MessageSquare className="w-4 h-4 mr-2" />
+                  <MessageSquare className="mr-2 h-4 w-4 shrink-0" />
                 )}
-                {isSendingReminder ? 'Sending...' : 'Send Reminder'}
+                <span className="truncate sm:whitespace-normal">
+                  {isSendingReminder ? 'Sending...' : 'Send Reminder'}
+                </span>
               </button>
             )}
 
@@ -582,16 +584,16 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               <button
                 type="button"
                 onClick={handleRemove}
-                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                className="w-full px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors sm:w-auto"
               >
                 Remove
               </button>
             )}
-            
+
             <button
               type="submit"
               disabled={!isFormComplete()}
-              className={`px-4 py-2 rounded-md transition-colors ${
+              className={`w-full px-4 py-2 rounded-md transition-colors sm:w-auto ${
                 isFormComplete()
                   ? 'bg-blue-500 text-white hover:bg-blue-600'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'

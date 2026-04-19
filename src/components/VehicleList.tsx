@@ -65,14 +65,12 @@ const VehicleList: React.FC<VehicleListProps> = ({ vehicles, onVehicleClick, spo
 
   if (vehicles.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow p-4 text-center text-gray-500">
-        No vehicles found.
-      </div>
+      <p className="py-6 text-center text-sm text-secondary">No vehicles found.</p>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow divide-y">
+    <div className="divide-y divide-border-weak">
       {sortedVehicles.map((vehicle) => {
         const spot = getSpot(vehicle.parkingSpotId);
         const colorHex = getColorHex(vehicle.color);
@@ -81,7 +79,7 @@ const VehicleList: React.FC<VehicleListProps> = ({ vehicles, onVehicleClick, spo
         return (
           <div 
             key={vehicle.id} 
-            className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+            className="p-4 hover:bg-tertiary transition-colors cursor-pointer"
             onClick={() => onVehicleClick(vehicle.parkingSpotId)}
           >
             <div className="flex justify-between items-start">

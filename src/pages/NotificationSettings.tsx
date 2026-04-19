@@ -1,15 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import {
   AlertCircle,
-  ArrowLeft,
   Bell,
   Calendar,
-  Car,
   CheckCircle2,
   Clock,
   Loader2,
-  LogOut,
   RefreshCw,
   Send,
   ShieldCheck,
@@ -19,6 +15,7 @@ import { CHURCH_NOTIFICATION_TIMEZONE } from '../lib/churchNotification';
 import { supabase } from '../lib/supabase';
 import { apiFetchJson } from '../lib/apiFetch';
 import type { NotificationJobLogRow, NotificationSettingsRow, RecurrenceType } from '../types';
+import { PageHeader } from '../components/PageHeader/PageHeader';
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -51,7 +48,6 @@ function toSendTime(hhmm: string): string {
 type RingCentralUiStatus = 'loading' | 'not_configured' | 'checking' | 'verified' | 'invalid';
 
 function NotificationSettings() {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [settingId, setSettingId] = useState<string | null>(null);
@@ -330,59 +326,39 @@ function NotificationSettings() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      <div className="flex flex-1 min-h-0 items-center justify-center bg-secondary">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 flex h-16 items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link
-              to="/"
-              className="flex items-center text-sm font-medium text-gray-600 hover:text-gray-900"
-            >
-              <ArrowLeft className="w-4 h-4 mr-1" />
-              Map
-            </Link>
-            <div className="flex items-center">
-              <Car className="h-8 w-8 text-blue-500" />
-              <h1 className="ml-2 text-xl font-semibold text-gray-900">Notification Settings</h1>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={async () => {
-              await supabase.auth.signOut();
-              navigate('/login');
-            }}
-            className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </button>
-        </div>
-      </header>
+    <div className="flex h-full min-h-0 flex-1 flex-col bg-secondary">
+      <PageHeader
+        title="Notification settings"
+        subtitle="RingCentral SMS, schedules, and job logs for church reminders."
+        icon={Bell}
+      />
 
-      <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+      <main className="flex-1 overflow-y-auto max-w-4xl w-full mx-auto px-4 md:px-8 py-6 space-y-6">
         {banner && (
           <div
-            className={`rounded-lg px-4 py-3 text-sm ${
-              banner.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+            className={`rounded-sm border px-4 py-3 text-sm ${
+              banner.type === 'success'
+                ? 'border-success bg-success-weak text-success'
+                : 'border-danger bg-danger-weak text-danger'
             }`}
           >
             {banner.text}
           </div>
         )}
 
-        <section className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
-            <ShieldCheck className="w-5 h-5 text-blue-500" />
+        <section className="c3-card">
+          <h2 className="text-sm font-semibold text-primary flex items-center gap-2 mb-1">
+            <ShieldCheck className="w-5 h-5 text-accent shrink-0" aria-hidden />
             RingCentral
           </h2>
+          <p className="text-xs text-secondary mb-4">Connection status and quick validation for outbound SMS.</p>
 
           <div
             className={`rounded-lg border p-4 mb-4 ${
@@ -494,11 +470,12 @@ function NotificationSettings() {
           </p>
         </section>
 
-        <section className="bg-white rounded-lg shadow p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <Bell className="w-5 h-5 text-blue-500" />
+        <section className="c3-card space-y-4">
+          <h2 className="text-sm font-semibold text-primary flex items-center gap-2 mb-1">
+            <Bell className="w-5 h-5 text-accent shrink-0" aria-hidden />
             Scheduled SMS
           </h2>
+          <p className="text-xs text-secondary mb-4">When and how reminders are sent for prefixed spots.</p>
 
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -518,10 +495,6 @@ function NotificationSettings() {
               onChange={(e) => setForm((f) => ({ ...f, spot_prefix: e.target.value }))}
               maxLength={8}
             />
-            <p className="text-xs text-gray-500 mt-1">
-              SMS sender number comes from <code className="text-gray-700">RINGCENTRAL_SMS_FROM_NUMBER</code> in the
-              server environment.
-            </p>
           </div>
 
           <div>
@@ -644,10 +617,11 @@ function NotificationSettings() {
           </div>
         </section>
 
-        <section className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Recent job logs</h2>
+        <section className="c3-card">
+          <h2 className="text-sm font-semibold text-primary mb-1">Recent job logs</h2>
+          <p className="text-xs text-secondary mb-4">Latest runs from the notification worker.</p>
           <div className="overflow-x-auto text-sm">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-border-weak">
               <thead>
                 <tr>
                   <th className="text-left py-2 pr-4 text-gray-500 font-medium">Time</th>
@@ -657,7 +631,7 @@ function NotificationSettings() {
                   <th className="text-left py-2 text-gray-500 font-medium">Error</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border-weak">
                 {logs.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-4 text-gray-500">

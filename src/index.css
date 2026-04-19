@@ -1,3 +1,86 @@
+/*
+ * C3 reference UI (Tailwind v4, @theme, dark variant): when upgrading parking, compare
+ * file:///Users/tonycho/C3/c3genesis/repo/genesis/ui/react/src/globals.css
+ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+
+@import './c3ui/c3FoundationTokens.css';
+@import './c3ui/c3SemanticTokensLight.css';
+@import './c3ui/c3SemanticTokensDark.css';
+@import './c3ui/c3RootSemanticMapping.css';
+@import './c3ui/c3Animations.css';
+@import './c3ui/c3UtilitiesV3.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Base parity with c3genesis (v3-safe flat rules; genesis uses Tailwind v4 + nested CSS). */
+@layer base {
+  *,
+  ::after,
+  ::before {
+    /* Theme-aware chrome: gray-100 maps to physical gray-20 and reads “white” on dark surfaces. */
+    border-color: var(--color-border-weak);
+  }
+
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg-secondary);
+    border-radius: 6px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 6px;
+    border: 2px solid var(--color-bg-secondary);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-border-strong);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: var(--color-bg-secondary);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) var(--color-bg-secondary);
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@layer utilities {
+  /**
+   * Main authenticated content: slightly longer than C3’s default `animate-fade-in`
+   * (0.2s) so the entrance is perceptible; `both` applies opacity 0 before first paint.
+   * Uses the same `fadeIn` keyframes from c3Animations.css.
+   */
+  .animate-fade-in-page {
+    animation: fadeIn 0.45s ease-out both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in,
+    .animate-fade-in-page,
+    .animate-fade-out,
+    .animate-slide-up,
+    .animate-slide-down,
+    .animate-scale-in,
+    .animate-scale-out {
+      animation: none;
+    }
+  }
+}

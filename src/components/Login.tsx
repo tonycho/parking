@@ -24,7 +24,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-xs">
+      <div className="bg-white p-8 rounded-lg w-full max-w-xs">
         <div className="flex items-center justify-center mb-4">
           <Lock className="h-12 w-12 text-blue-500" />
         </div>
