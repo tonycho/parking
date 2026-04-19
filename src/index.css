@@ -84,3 +84,16 @@
     }
   }
 }
+
+/*
+ * iOS Safari zooms the viewport when focusing inputs with computed font-size < 16px.
+ * Unlayered + !important so this wins over Tailwind `text-sm` / `text-xs` on controls.
+ * Narrow viewports only so desktop typography is unchanged.
+ */
+@media screen and (max-width: 640px) {
+  textarea,
+  select,
+  input:not([type='checkbox']):not([type='radio']):not([type='button']):not([type='submit']):not([type='reset']):not([type='range']):not([type='hidden']) {
+    font-size: 16px !important;
+  }
+}
