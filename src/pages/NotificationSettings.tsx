@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
   Bell,
@@ -98,6 +98,7 @@ function NotificationSettings() {
 
       if (error) throw error;
 
+      let r: NotificationSettingsRow;
       if (!row) {
         const ins = { ...defaultRow() };
         const { data: created, error: cErr } = await supabase
@@ -106,70 +107,64 @@ function NotificationSettings() {
           .select('*')
           .single();
         if (cErr) throw cErr;
-        const r = created as NotificationSettingsRow;
-        setSettingId(r.id);
-        setForm({
-          enabled: r.enabled,
-          spot_prefix: r.spot_prefix,
-          message_template: r.message_template,
-          send_time: r.send_time,
-          timezone: CHURCH_NOTIFICATION_TIMEZONE,
-          days_of_week: r.days_of_week || [0],
-          recurrence_type: r.recurrence_type as RecurrenceType,
-          cron_expression: r.cron_expression,
-          ringcentral_from_number: null,
-          parking_lot_id: r.parking_lot_id,
-        });
-        await loadLogs(r.id);
+        r = created as NotificationSettingsRow;
       } else {
-        const r = row as NotificationSettingsRow;
-        setSettingId(r.id);
-        setForm({
-          enabled: r.enabled,
-          spot_prefix: r.spot_prefix,
-          message_template: r.message_template,
-          send_time: r.send_time,
-          timezone: CHURCH_NOTIFICATION_TIMEZONE,
-          days_of_week: r.days_of_week || [0],
-          recurrence_type: r.recurrence_type as RecurrenceType,
-          cron_expression: r.cron_expression,
-          ringcentral_from_number: null,
-          parking_lot_id: r.parking_lot_id,
-        });
-        await loadLogs(r.id);
+        r = row as NotificationSettingsRow;
       }
 
-      try {
-        const j = await apiFetchJson<{ connected: boolean; usingJwtEnv?: boolean }>('/api/ringcentral/status');
-        const isConnected = Boolean(j.connected);
-        setConnected(isConnected);
-        setUsingJwtEnv(Boolean(j.usingJwtEnv));
-        if (!isConnected) {
-          setRcUiStatus('not_configured');
-        } else {
-          setRcUiStatus('checking');
-          void (async () => {
-            try {
-              const v = await fetchRingCentralValidation();
-              if (v.ok) {
-                setRcUiStatus('verified');
-                setRcUiDetail(null);
-              } else {
+      setSettingId(r.id);
+      setForm({
+        enabled: r.enabled,
+        spot_prefix: r.spot_prefix,
+        message_template: r.message_template,
+        send_time: r.send_time,
+        timezone: CHURCH_NOTIFICATION_TIMEZONE,
+        days_of_week: r.days_of_week || [0],
+        recurrence_type: r.recurrence_type as RecurrenceType,
+        cron_expression: r.cron_expression,
+        ringcentral_from_number: null,
+        parking_lot_id: r.parking_lot_id,
+      });
+
+      const loadRingCentralStatus = async () => {
+        try {
+          const j = await apiFetchJson<{ connected: boolean; usingJwtEnv?: boolean }>(
+            '/api/ringcentral/status'
+          );
+          const isConnected = Boolean(j.connected);
+          setConnected(isConnected);
+          setUsingJwtEnv(Boolean(j.usingJwtEnv));
+          if (!isConnected) {
+            setRcUiStatus('not_configured');
+          } else {
+            setRcUiStatus('checking');
+            void (async () => {
+              try {
+                const v = await fetchRingCentralValidation();
+                if (v.ok) {
+                  setRcUiStatus('verified');
+                  setRcUiDetail(null);
+                } else {
+                  setRcUiStatus('invalid');
+                  setRcUiDetail(v.error || 'RingCentral rejected the token request.');
+                }
+              } catch (e) {
                 setRcUiStatus('invalid');
-                setRcUiDetail(v.error || 'RingCentral rejected the token request.');
+                setRcUiDetail(
+                  e instanceof Error ? e.message : 'Could not reach RingCentral validation.'
+                );
               }
-            } catch (e) {
-              setRcUiStatus('invalid');
-              setRcUiDetail(e instanceof Error ? e.message : 'Could not reach RingCentral validation.');
-            }
-          })();
+            })();
+          }
+        } catch {
+          setConnected(false);
+          setUsingJwtEnv(false);
+          setRcUiStatus('not_configured');
+          setRcUiDetail('Could not load connection status from the API.');
         }
-      } catch {
-        setConnected(false);
-        setUsingJwtEnv(false);
-        setRcUiStatus('not_configured');
-        setRcUiDetail('Could not load connection status from the API.');
-      }
+      };
+
+      await Promise.all([loadLogs(r.id), loadRingCentralStatus()]);
     } catch (e) {
       setBanner({ type: 'error', text: e instanceof Error ? e.message : 'Failed to load settings' });
     } finally {

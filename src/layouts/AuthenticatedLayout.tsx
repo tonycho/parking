@@ -1,18 +1,17 @@
 import React, { useCallback } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
 import { AppContentTopNav } from '../components/AppContentTopNav';
 import { AppSideNav } from '../components/AppSideNav';
-import { supabase } from '../lib/supabase';
+import { useParking } from '../hooks/useParking';
 
 export function AuthenticatedLayout() {
-  const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { handleLogout } = useParking();
 
   const onLogout = useCallback(async () => {
-    await supabase.auth.signOut();
-    navigate('/login');
-  }, [navigate]);
+    await handleLogout();
+  }, [handleLogout]);
 
   return (
     <div className="flex h-screen max-w-full overflow-hidden bg-secondary">
