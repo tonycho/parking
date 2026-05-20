@@ -1,0 +1,9 @@
+{
+  "author": "Tony Cho",
+  "version": "8.10.0",
+  "name": "parking",
+  "dependencies": {
+    "mcpServer": "8.10"
+  },
+  "description": "Vibe-code C3 AI Applications with C3 Genesis"
+}
