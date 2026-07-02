@@ -198,23 +198,23 @@ function Vehicles() {
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col bg-secondary">
-      <PageHeader
-        title="Vehicles"
-        subtitle="Manage the vehicle directory, parking assignments, and SMS reminders."
-        icon={Database}
-        rightContent={
-          <button
-            type="button"
-            onClick={() => setShowAddVehicleModal(true)}
-            className="inline-flex items-center rounded-sm border border-weak bg-accent px-4 py-2 text-sm font-medium text-inverse hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add vehicle
-          </button>
-        }
-      />
-
       <div className="flex min-h-0 flex-1 flex-col px-4 py-6 md:px-8 max-w-7xl w-full mx-auto">
+        <PageHeader
+          title="Vehicles"
+          subtitle="Manage the vehicle directory, parking assignments, and SMS reminders."
+          icon={Database}
+          rightContent={
+            <button
+              type="button"
+              onClick={() => setShowAddVehicleModal(true)}
+              className="inline-flex items-center rounded-sm border border-weak bg-accent px-4 py-2 text-sm font-medium text-inverse hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add vehicle
+            </button>
+          }
+        />
+
         <div className="mb-6 shrink-0">
           <SearchBar 
             value={searchQuery}

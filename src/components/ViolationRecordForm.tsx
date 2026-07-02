@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, Tag, User, CarFront, Palette, FileText } from 'lucide-react';
-import { Vehicle } from '../types';
+import { AlertTriangle, Tag, CarFront, Palette, FileText } from 'lucide-react';
+import { Vehicle, Violation } from '../types';
 
 const carManufacturers = [
   'Acura', 'Audi', 'BMW', 'Chevrolet', 'Chrysler', 'Dodge', 'Ford', 'Honda', 'Hyundai',
@@ -46,60 +46,168 @@ interface ViolationRecordFormProps {
     make?: string;
     model?: string;
     color?: string;
-    contact?: string;
     notes?: string;
   }) => Promise<void>;
   onCancel: () => void;
   knownVehicles: Omit<Vehicle, 'id' | 'timeParked' | 'parkingSpotId'>[];
+  violations: Violation[];
 }
 
 const ViolationRecordForm: React.FC<ViolationRecordFormProps> = ({
   onSubmit,
   onCancel,
   knownVehicles,
+  violations,
 }) => {
   const [formData, setFormData] = useState({
     licensePlate: '',
     make: '',
     model: '',
     color: '',
-    contact: '',
     notes: '',
   });
 
-  const [suggestions, setSuggestions] = useState<typeof knownVehicles>([]);
+  const [suggestions, setSuggestions] = useState<Array<{
+    licensePlate: string;
+    make?: string;
+    model?: string;
+    color?: string;
+    contact?: string;
+    source: 'vehicle' | 'violation';
+  }>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [showMakeDropdown, setShowMakeDropdown] = useState(false);
+  const [showModelDropdown, setShowModelDropdown] = useState(false);
+  const [showColorDropdown, setShowColorDropdown] = useState(false);
+  const [makeSearch, setMakeSearch] = useState('');
+  const [modelSearch, setModelSearch] = useState('');
+  const [colorSearch, setColorSearch] = useState('');
+  const [filteredMakes, setFilteredMakes] = useState(carManufacturers);
+  const [filteredModels, setFilteredModels] = useState<string[]>([]);
+  const [filteredColors, setFilteredColors] = useState(carColors);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
-    if (name === 'make') {
-      setFormData(prev => ({ ...prev, make: value, model: '' }));
-      const models = carModels[value] || [];
-      setAvailableModels(models);
-      return;
-    }
-
     setFormData(prev => ({ ...prev, [name]: value }));
 
     if (name === 'licensePlate' && value.trim()) {
-      const matchingSuggestions = knownVehicles.filter(v => 
-        v.licensePlate.toLowerCase().includes(value.toLowerCase())
-      );
-      setSuggestions(matchingSuggestions);
+      // Get suggestions from both known vehicles and previous violations
+      const vehicleSuggestions = knownVehicles
+        .filter(v => v.licensePlate.toLowerCase().includes(value.toLowerCase()))
+        .map(v => ({ ...v, source: 'vehicle' as const }));
+      
+      // Get unique violations by license plate
+      const violationMap = new Map<string, Violation>();
+      violations.forEach(v => {
+        const key = v.licensePlate.toLowerCase();
+        if (key.includes(value.toLowerCase())) {
+          // Keep the most recent violation for each license plate
+          if (!violationMap.has(key) || new Date(v.violationTime) > new Date(violationMap.get(key)!.violationTime)) {
+            violationMap.set(key, v);
+          }
+        }
+      });
+      
+      const violationSuggestions = Array.from(violationMap.values()).map(v => ({
+        licensePlate: v.licensePlate,
+        make: v.make,
+        model: v.model,
+        color: v.color,
+        contact: v.contact,
+        source: 'violation' as const,
+      }));
+      
+      // Combine and deduplicate by license plate (prefer vehicle directory over violations)
+      const combinedMap = new Map();
+      violationSuggestions.forEach(v => combinedMap.set(v.licensePlate.toLowerCase(), v));
+      vehicleSuggestions.forEach(v => combinedMap.set(v.licensePlate.toLowerCase(), v));
+      
+      setSuggestions(Array.from(combinedMap.values()));
     } else if (name === 'licensePlate') {
       setSuggestions([]);
     }
   };
 
-  const handleSuggestionClick = (vehicle: typeof knownVehicles[0]) => {
+  const handleMakeClick = () => {
+    setShowMakeDropdown(true);
+    setShowModelDropdown(false);
+    setShowColorDropdown(false);
+    setMakeSearch('');
+  };
+
+  const handleModelClick = () => {
+    if (formData.make) {
+      setShowModelDropdown(true);
+      setShowMakeDropdown(false);
+      setShowColorDropdown(false);
+      setModelSearch('');
+    }
+  };
+
+  const handleColorClick = () => {
+    setShowColorDropdown(true);
+    setShowMakeDropdown(false);
+    setShowModelDropdown(false);
+    setColorSearch('');
+  };
+
+  const handleMakeSelect = (make: string) => {
+    setFormData(prev => ({ ...prev, make, model: '' }));
+    const models = carModels[make] || [];
+    setAvailableModels(models);
+    setFilteredModels(models);
+    setShowMakeDropdown(false);
+    setMakeSearch('');
+  };
+
+  const handleModelSelect = (model: string) => {
+    setFormData(prev => ({ ...prev, model }));
+    setShowModelDropdown(false);
+    setModelSearch('');
+  };
+
+  const handleColorSelect = (color: string) => {
+    setFormData(prev => ({ ...prev, color }));
+    setShowColorDropdown(false);
+    setColorSearch('');
+  };
+
+  useEffect(() => {
+    const filtered = carManufacturers.filter(make => 
+      make.toLowerCase().includes(makeSearch.toLowerCase())
+    );
+    setFilteredMakes(filtered.length > 0 ? filtered : carManufacturers);
+  }, [makeSearch]);
+
+  useEffect(() => {
+    if (formData.make) {
+      const models = carModels[formData.make] || [];
+      const filtered = models.filter(model =>
+        model.toLowerCase().includes(modelSearch.toLowerCase())
+      );
+      setFilteredModels(filtered.length > 0 ? filtered : models);
+    }
+  }, [modelSearch, formData.make]);
+
+  useEffect(() => {
+    const filtered = carColors.filter(color =>
+      color.toLowerCase().includes(colorSearch.toLowerCase())
+    );
+    setFilteredColors(filtered.length > 0 ? filtered : carColors);
+  }, [colorSearch]);
+
+  const handleSuggestionClick = (suggestion: typeof suggestions[0]) => {
+    const models = carModels[suggestion.make || ''] || [];
+    setAvailableModels(models);
+    setFilteredModels(models);
+    
     setFormData({
-      licensePlate: vehicle.licensePlate,
-      make: vehicle.make,
-      model: vehicle.model || '',
-      color: vehicle.color,
-      contact: vehicle.contact,
+      licensePlate: suggestion.licensePlate,
+      make: suggestion.make || '',
+      model: suggestion.model || '',
+      color: suggestion.color || '',
       notes: '',
     });
     setSuggestions([]);
@@ -115,7 +223,6 @@ const ViolationRecordForm: React.FC<ViolationRecordFormProps> = ({
         make: formData.make || undefined,
         model: formData.model || undefined,
         color: formData.color || undefined,
-        contact: formData.contact || undefined,
         notes: formData.notes || undefined,
       });
     } finally {
@@ -126,7 +233,7 @@ const ViolationRecordForm: React.FC<ViolationRecordFormProps> = ({
   const isFormValid = formData.licensePlate.trim() !== '';
 
   return (
-    <div className="bg-primary overflow-visible">
+    <div className="bg-primary">
       <div className="bg-accent border-b border-weak px-4 py-4 text-inverse">
         <h3 className="text-lg font-semibold flex items-center">
           <AlertTriangle className="mr-2 shrink-0" size={20} aria-hidden />
@@ -153,16 +260,23 @@ const ViolationRecordForm: React.FC<ViolationRecordFormProps> = ({
             />
             {suggestions.length > 0 && (
               <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
-                {suggestions.map((vehicle, index) => (
+                {suggestions.map((suggestion, index) => (
                   <div
                     key={index}
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                    onClick={() => handleSuggestionClick(vehicle)}
+                    onClick={() => handleSuggestionClick(suggestion)}
                   >
-                    <div className="font-medium text-gray-900 dark:text-gray-100">{vehicle.licensePlate}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      {vehicle.contact} - {vehicle.make} {vehicle.model} ({vehicle.color})
+                    <div className="flex items-center justify-between">
+                      <div className="font-medium text-gray-900 dark:text-gray-100">{suggestion.licensePlate}</div>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
+                        {suggestion.source === 'vehicle' ? 'Registered' : 'Violation'}
+                      </span>
                     </div>
+                    {(suggestion.make || suggestion.model) && (
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {suggestion.make} {suggestion.model} {suggestion.color && `(${suggestion.color})`}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -170,78 +284,121 @@ const ViolationRecordForm: React.FC<ViolationRecordFormProps> = ({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 <CarFront className="mr-2 inline" size={16} />
                 Make
               </label>
-              <select
-                name="make"
-                value={formData.make}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              <div
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md cursor-pointer bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                onClick={handleMakeClick}
               >
-                <option value="">Select make</option>
-                {carManufacturers.map(make => (
-                  <option key={make} value={make}>{make}</option>
-                ))}
-              </select>
+                {formData.make || 'Select make'}
+              </div>
+              {showMakeDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-50 max-h-60">
+                  <div className="p-2 border-b border-gray-300 dark:border-gray-600">
+                    <input
+                      type="text"
+                      value={makeSearch}
+                      onChange={(e) => setMakeSearch(e.target.value)}
+                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="Search make..."
+                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
+                    {filteredMakes.map((make) => (
+                      <div
+                        key={make}
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-gray-100"
+                        onClick={() => handleMakeSelect(make)}
+                      >
+                        {make}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Model
               </label>
-              <select
-                name="model"
-                value={formData.model}
-                onChange={handleChange}
-                disabled={!formData.make}
-                className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  formData.make 
-                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-500 cursor-not-allowed'
-                }`}
+              <div
+                className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md ${formData.make ? 'cursor-pointer bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-500'}`}
+                onClick={handleModelClick}
               >
-                <option value="">{formData.make ? 'Select model' : 'Select make first'}</option>
-                {availableModels.map(model => (
-                  <option key={model} value={model}>{model}</option>
-                ))}
-              </select>
+                {formData.model || (formData.make ? 'Select model' : 'Select make first')}
+              </div>
+              {showModelDropdown && formData.make && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-50 max-h-60">
+                  <div className="p-2 border-b border-gray-300 dark:border-gray-600">
+                    <input
+                      type="text"
+                      value={modelSearch}
+                      onChange={(e) => setModelSearch(e.target.value)}
+                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="Search model..."
+                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
+                    {filteredModels.map((model) => (
+                      <div
+                        key={model}
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-gray-100"
+                        onClick={() => handleModelSelect(model)}
+                      >
+                        {model}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          <div>
+          <div className="relative">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               <Palette className="mr-2 inline" size={16} />
               Color
             </label>
-            <select
-              name="color"
-              value={formData.color}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            <div
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md cursor-pointer bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              onClick={handleColorClick}
             >
-              <option value="">Select color</option>
-              {carColors.map(color => (
-                <option key={color} value={color}>{color}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              <User className="mr-2 inline" size={16} />
-              Contact Name
-            </label>
-            <input
-              type="text"
-              name="contact"
-              value={formData.contact}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter contact name"
-            />
+              {formData.color || 'Select color'}
+            </div>
+            {showColorDropdown && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-50 max-h-60">
+                <div className="p-2 border-b border-gray-300 dark:border-gray-600">
+                  <input
+                    type="text"
+                    value={colorSearch}
+                    onChange={(e) => setColorSearch(e.target.value)}
+                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    placeholder="Search color..."
+                    autoFocus
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+                <div className="max-h-48 overflow-y-auto">
+                  {filteredColors.map((color) => (
+                    <div
+                      key={color}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-gray-100"
+                      onClick={() => handleColorSelect(color)}
+                    >
+                      {color}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div>

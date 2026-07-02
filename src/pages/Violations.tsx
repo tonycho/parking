@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Plus, Tag, Phone, User, Trash2, Search, X } from 'lucide-react';
+import { AlertTriangle, Plus, Tag, Trash2, X } from 'lucide-react';
 import { useParking } from '../hooks/useParking';
 import { useViolations } from '../hooks/useViolations';
 import { PageHeader } from '../components/PageHeader/PageHeader';
@@ -22,7 +22,6 @@ function Violations() {
     make?: string;
     model?: string;
     color?: string;
-    contact?: string;
     notes?: string;
   }) => {
     if (!parkingLot?.id) return;
@@ -32,7 +31,6 @@ function Violations() {
       make: violationData.make,
       model: violationData.model,
       color: violationData.color,
-      contact: violationData.contact,
       notes: violationData.notes,
       parkingLotId: parkingLot.id,
     });
@@ -69,6 +67,44 @@ function Violations() {
     );
   });
 
+  // Group violations by license plate
+  const groupedViolations = filteredViolations.reduce((acc, violation) => {
+    const plate = violation.licensePlate.toLowerCase();
+    if (!acc[plate]) {
+      acc[plate] = {
+        licensePlate: violation.licensePlate,
+        make: violation.make,
+        model: violation.model,
+        color: violation.color,
+        violations: [],
+        latestViolation: violation.violationTime,
+      };
+    }
+    acc[plate].violations.push(violation);
+    
+    // Update to most recent violation time and vehicle info
+    if (new Date(violation.violationTime) > new Date(acc[plate].latestViolation)) {
+      acc[plate].latestViolation = violation.violationTime;
+      acc[plate].make = violation.make || acc[plate].make;
+      acc[plate].model = violation.model || acc[plate].model;
+      acc[plate].color = violation.color || acc[plate].color;
+    }
+    
+    return acc;
+  }, {} as Record<string, { 
+    licensePlate: string; 
+    make?: string; 
+    model?: string; 
+    color?: string; 
+    violations: Violation[]; 
+    latestViolation: string;
+  }>);
+
+  // Convert to array and sort by most recent violation
+  const groupedViolationsArray = Object.values(groupedViolations).sort((a, b) => 
+    new Date(b.latestViolation).getTime() - new Date(a.latestViolation).getTime()
+  );
+
   const historyViolations = violations.filter(v => 
     v.licensePlate.toLowerCase() === historyLicensePlate.toLowerCase()
   );
@@ -93,23 +129,23 @@ function Violations() {
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col bg-secondary">
-      <PageHeader
-        title="Violations"
-        subtitle="Loading zone violation tracking and repeat offender management."
-        icon={AlertTriangle}
-        rightContent={
-          <button
-            type="button"
-            onClick={() => setShowRecordModal(true)}
-            className="inline-flex items-center rounded-sm border border-weak bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Record Violation
-          </button>
-        }
-      />
-
       <div className="flex min-h-0 flex-1 flex-col px-4 py-6 md:px-8 max-w-7xl w-full mx-auto">
+        <PageHeader
+          title="Violations"
+          subtitle="Loading zone violation tracking and repeat offender management."
+          icon={AlertTriangle}
+          rightContent={
+            <button
+              type="button"
+              onClick={() => setShowRecordModal(true)}
+              className="inline-flex items-center rounded-sm border border-weak bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Record Violation
+            </button>
+          }
+        />
+
         <div className="mb-6 shrink-0">
           <SearchBar 
             value={searchQuery}
@@ -119,121 +155,84 @@ function Violations() {
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col bg-primary border border-weak rounded-sm overflow-hidden">
-          <div className="min-h-0 flex-1 overflow-auto">
+          <div className="min-h-0 flex-1 overflow-auto p-4">
             {loading ? (
               <div className="flex items-center justify-center h-64">
                 <div className="animate-pulse text-secondary">Loading violations...</div>
               </div>
-            ) : filteredViolations.length === 0 ? (
+            ) : groupedViolationsArray.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-64 text-secondary">
                 <AlertTriangle className="h-12 w-12 mb-4 opacity-50" />
                 <p className="text-lg">No violations recorded</p>
                 <p className="text-sm mt-2">Click "Record Violation" to add a new violation</p>
               </div>
             ) : (
-              <table className="min-w-full divide-y divide-border-weak">
-                <thead className="sticky top-0 z-10 border-b border-weak bg-primary">
-                  <tr>
-                    <th className="bg-primary px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
-                      License Plate
-                    </th>
-                    <th className="bg-primary px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
-                      Vehicle
-                    </th>
-                    <th className="bg-primary px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
-                      Contact
-                    </th>
-                    <th className="bg-primary px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
-                      Phone
-                    </th>
-                    <th className="bg-primary px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
-                      Violation Time
-                    </th>
-                    <th className="bg-primary px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
-                      Total Count
-                    </th>
-                    <th className="bg-primary px-6 py-3 text-right text-xs font-medium text-secondary uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border-weak">
-                  {filteredViolations.map((violation) => {
-                    const totalCount = getViolationCountByPlate(violation.licensePlate);
-                    
-                    return (
-                      <tr key={violation.id} className="bg-primary hover:bg-tertiary transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex items-center">
-                            <Tag className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
-                            <button
-                              onClick={() => handleViewHistory(violation.licensePlate)}
-                              className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
-                            >
-                              {violation.licensePlate}
-                            </button>
+              <div className="space-y-3">
+                {groupedViolationsArray.map((group) => {
+                  const totalCount = group.violations.length;
+                  
+                  return (
+                    <div key={group.licensePlate} className="bg-primary border border-border-weak rounded-sm p-4 hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
+                      {/* License Plate - Header */}
+                      <div className="flex items-center justify-between mb-3 pb-3 border-b border-border-weak">
+                        <button
+                          onClick={() => handleViewHistory(group.licensePlate)}
+                          className="flex items-center text-blue-600 dark:text-blue-400 font-medium text-lg hover:text-blue-800 dark:hover:text-blue-300"
+                        >
+                          <Tag className="h-5 w-5 mr-2" />
+                          {group.licensePlate}
+                        </button>
+                        <button
+                          onClick={() => handleViewHistory(group.licensePlate)}
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getViolationSeverity(totalCount)}`}
+                        >
+                          <AlertTriangle className="h-3 w-3 mr-1" />
+                          {totalCount} {totalCount === 1 ? 'violation' : 'violations'}
+                        </button>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {/* Vehicle Info */}
+                        {(group.make || group.model) && (
+                          <div>
+                            <span className="text-xs text-secondary uppercase">Vehicle</span>
+                            <p className="text-sm text-primary">
+                              {group.make} {group.model}
+                              {group.color && <span className="text-gray-500 dark:text-gray-400"> ({group.color})</span>}
+                            </p>
                           </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
-                          {violation.make && violation.model ? (
-                            <div className="flex items-center">
-                              {violation.make} {violation.model}
-                              {violation.color && (
-                                <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                                  ({violation.color})
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-gray-400 dark:text-gray-500">-</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
-                          <div className="flex items-center">
-                            <User className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
-                            {violation.contact || '-'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
-                          <div className="flex items-center">
-                            <Phone className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
-                            {violation.phoneNumber ? (
-                              <a 
-                                href={`tel:${violation.phoneNumber}`}
-                                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-                              >
-                                {violation.phoneNumber}
-                              </a>
-                            ) : (
-                              '-'
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
-                          {formatDateTime(violation.violationTime)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <button
-                            onClick={() => handleViewHistory(violation.licensePlate)}
-                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getViolationSeverity(totalCount)}`}
-                          >
-                            {totalCount} {totalCount === 1 ? 'violation' : 'violations'}
-                          </button>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button
-                            onClick={() => handleDeleteViolation(violation.id)}
-                            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 rounded-md hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        )}
+                        
+                        {/* Latest Violation Time */}
+                        <div>
+                          <span className="text-xs text-secondary uppercase">Latest Violation</span>
+                          <p className="text-sm text-primary">{formatDateTime(group.latestViolation)}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Individual Violations List */}
+                      <div className="mt-3 pt-3 border-t border-border-weak">
+                        <span className="text-xs text-secondary uppercase mb-2 block">All Violations</span>
+                        <div className="space-y-1">
+                          {group.violations
+                            .sort((a, b) => new Date(b.violationTime).getTime() - new Date(a.violationTime).getTime())
+                            .map((violation, idx) => (
+                              <div key={violation.id} className="flex items-center justify-between text-xs text-secondary py-1">
+                                <span>{idx + 1}. {formatDateTime(violation.violationTime)}</span>
+                                <button
+                                  onClick={() => handleDeleteViolation(violation.id)}
+                                  className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         </div>
@@ -252,11 +251,12 @@ function Violations() {
 
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
 
-            <div className="inline-block w-[calc(100vw-1rem)] max-w-none align-bottom overflow-hidden rounded-sm border border-weak bg-primary text-left transform transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+            <div className="inline-block w-[calc(100vw-1rem)] max-w-none align-bottom rounded-sm border border-weak bg-primary text-left transform transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle overflow-visible">
               <ViolationRecordForm
                 onSubmit={handleRecordViolation}
                 onCancel={() => setShowRecordModal(false)}
                 knownVehicles={knownVehicles}
+                violations={violations}
               />
             </div>
           </div>
