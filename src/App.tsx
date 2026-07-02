@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Vehicles from './pages/Vehicles';
+import Violations from './pages/Violations';
 import NotificationSettings from './pages/NotificationSettings';
 import { AuthenticatedLayout } from './layouts/AuthenticatedLayout';
 import { useParking } from './hooks/useParking';
@@ -33,6 +34,7 @@ function App() {
       <Route element={<AuthenticatedLayout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/vehicles" element={<Vehicles />} />
+        <Route path="/violations" element={<Violations />} />
         <Route path="/settings/notifications" element={<NotificationSettings />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,4 +1,4 @@
-import { Bell, Database, Map } from 'lucide-react';
+import { Bell, Database, Map, AlertTriangle } from 'lucide-react';
 
 import type { NavigationItem } from '../types/navigation';
 
@@ -18,6 +18,14 @@ export const navigationConfig: NavigationItem[] = [
     iconActive: Database,
     label: 'Vehicles',
     tooltip: 'Vehicle directory and assignments',
+  },
+  {
+    id: 'violations',
+    path: '/violations',
+    icon: AlertTriangle,
+    iconActive: AlertTriangle,
+    label: 'Violations',
+    tooltip: 'Loading zone violations',
   },
   {
     id: 'notifications',

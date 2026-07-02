@@ -4,14 +4,16 @@ import {
   parkingSpotPickerOrangeClass,
 } from '../constants/parkingSpotPalette';
 import { useParking } from '../hooks/useParking';
+import { useViolations } from '../hooks/useViolations';
 import SearchBar from '../components/SearchBar';
-import { Car, Phone, Tag, Database, X, Trash2, Plus, ParkingSquare, MessageSquare, Loader2 } from 'lucide-react';
+import { Car, Phone, Tag, Database, X, Trash2, Plus, ParkingSquare, MessageSquare, Loader2, AlertTriangle } from 'lucide-react';
 import VehicleForm from '../components/VehicleForm';
 import { apiFetchJson } from '../lib/apiFetch';
 import { PageHeader } from '../components/PageHeader/PageHeader';
 
 function Vehicles() {
   const { knownVehicles, parkingLot, updateVehicle, removeVehicle, deleteVehicle, vehicles } = useParking();
+  const { violations } = useViolations(parkingLot?.id || null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVehicle, setSelectedVehicle] = useState<typeof knownVehicles[0] | null>(null);
   const [showParkingModal, setShowParkingModal] = useState(false);
@@ -168,6 +170,18 @@ function Vehicles() {
     return colorMap[colorName] || '#808080';
   };
 
+  const getViolationCountForVehicle = (licensePlate: string) => {
+    return violations.filter(v => 
+      v.licensePlate.toLowerCase() === licensePlate.toLowerCase()
+    ).length;
+  };
+
+  const getViolationSeverityClass = (count: number) => {
+    if (count === 0) return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/30';
+    if (count <= 2) return 'text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-900/30';
+    return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/30';
+  };
+
   const filteredVehicles = knownVehicles
     .filter(vehicle => {
       const query = searchQuery.toLowerCase();
@@ -228,6 +242,9 @@ function Vehicles() {
                   </th>
                   <th className="bg-primary px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
                     Current Spot
+                  </th>
+                  <th className="bg-primary px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
+                    Violations
                   </th>
                   <th className="bg-primary px-6 py-3 text-right text-xs font-medium text-secondary uppercase tracking-wider">
                     Actions
@@ -314,6 +331,17 @@ function Vehicles() {
                             </button>
                           )}
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {(() => {
+                          const violationCount = getViolationCountForVehicle(vehicle.licensePlate);
+                          return (
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getViolationSeverityClass(violationCount)}`}>
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              {violationCount}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">

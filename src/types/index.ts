@@ -65,3 +65,18 @@ export interface NotificationJobLogRow {
   error_message: string | null;
   created_at: string;
 }
+
+export interface Violation {
+  id: string;
+  licensePlate: string;
+  make?: string;
+  model?: string;
+  color?: string;
+  contact?: string;
+  phoneNumber?: string;
+  violationTime: string;
+  notes?: string;
+  parkingLotId: string;
+  recordedBy: string;
+  createdAt: string;
+}

@@ -1,36 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { apiFetchJson } from '../lib/apiFetch';
 import { ParkingSpot, Vehicle } from '../types';
-import { CarFront, User, Phone, Tag, Palette, MessageSquare, Loader2 } from 'lucide-react';
+import { CarFront, User, Phone, Tag, Palette, MessageSquare, Loader2, AlertTriangle } from 'lucide-react';
+import { useViolations } from '../hooks/useViolations';
+import { useParking } from '../hooks/useParking';
 
 const carManufacturers = [
   'Acura', 'Audi', 'BMW', 'Chevrolet', 'Chrysler', 'Dodge', 'Ford', 'Honda', 'Hyundai',
-  'Jeep', 'Kia', 'Lexus', 'Mazda', 'Mercedes', 'Nissan', 'Ram', 'Subaru', 'Tesla',
-  'Toyota', 'Volkswagen', 'Volvo', 'Other'
+  'Jeep', 'Kia', 'Lexus', 'Lucid', 'Mazda', 'Mercedes', 'Nissan', 'Ram', 'Rivian', 'Subaru', 
+  'Tesla', 'Toyota', 'Volkswagen', 'Volvo', 'Other'
 ];
 
 const carModels: { [key: string]: string[] } = {
-  'Acura': ['MDX', 'RDX', 'TSX', 'TLX', 'ILX', 'Other'],
-  'Audi': ['A3', 'A4', 'A6', 'Q3', 'Q5', 'Q7', 'e-tron', 'Other'],
-  'BMW': ['3 Series', '4 Series', '5 Series', '7 Series', 'X1', 'X3', 'X5', 'X7', 'i3', 'i4', 'iX', 'Other'],
-  'Chevrolet': ['Bolt', 'Camaro', 'Colorado', 'Equinox', 'Malibu', 'Silverado', 'Suburban', 'Tahoe', 'Traverse', 'Trax', 'Other'],
-  'Chrysler': ['300', 'Pacifica', 'Voyager', 'Other'],
-  'Dodge': ['Challenger', 'Charger', 'Durango', 'Journey', 'Other'],
-  'Ford': ['F-150', 'F-250', 'F-350', 'Maverick', 'Ranger', 'Mustang', 'Mustang Mach-E', 'Explorer', 'Escape', 'Edge', 'Bronco', 'Bronco Sport', 'Expedition', 'Transit', 'Transit Connect', 'Fusion', 'Focus', 'Taurus', 'Flex', 'EcoSport', 'Other'],
-  'Honda': ['Accord', 'Civic', 'CR-V', 'Clarity', 'Fit', 'HR-V', 'Odyssey', 'Pilot', 'Ridgeline', 'Other'],
-  'Hyundai': ['Elantra', 'Ioniq 5', 'Kona', 'Palisade', 'Santa Fe', 'Sonata', 'Tucson', 'Veloster', 'Other'],
-  'Jeep': ['Cherokee', 'Compass', 'Gladiator', 'Grand Cherokee', 'Renegade', 'Wrangler', 'Wagoneer', 'Other'],
-  'Kia': ['Forte', 'K5', 'Niro', 'Seltos', 'Sorento', 'Soul', 'Sportage', 'Telluride', 'EV6', 'Other'],
-  'Lexus': ['CT 200', 'ES 350', 'GS 350', 'GX 460', 'IS 300', 'IS 350', 'NX 200', 'NX 300', 'RX 350', 'RX 500', 'UX 250', 'Other'],
-  'Mazda': ['Mazda3', 'Mazda6', 'CX-3', 'CX-30', 'CX-5', 'CX-50', 'CX-9', 'Other'],
-  'Mercedes': ['C-Class', 'E-Class', 'GLA 250', 'GLB 250', 'GLC 300', 'GLE 350', 'GLS 450', 'EQB', 'EQE', 'Other'],
-  'Nissan': ['Altima', 'Leaf', 'Maxima', 'Murano', 'Pathfinder', 'Rogue', 'Sentra', 'Versa', 'Titan', 'Frontier', 'Other'],
-  'Ram': ['1500', '2500', '3500', 'ProMaster', 'Other'],
-  'Subaru': ['Ascent', 'Crosstrek', 'Forester', 'Impreza', 'Legacy', 'Outback', 'WRX', 'Other'],
-  'Tesla': ['Model 3', 'Model S', 'Model X', 'Model Y', 'Cybertruck', 'Other'],
-  'Toyota': ['4Runner', 'Camry', 'Corolla', 'Highlander', 'Land Cruiser', 'Prius', 'RAV4', 'Sequoia', 'Sienna', 'Tacoma', 'Tundra', 'Scion', 'Venza', 'Other'],
-  'Volkswagen': ['Atlas', 'Golf', 'ID.4', 'Jetta', 'Passat', 'Tiguan', 'Taos', 'Other'],
-  'Volvo': ['S60', 'S90', 'V60', 'XC40', 'XC60', 'XC90', 'Other'],
+  'Acura': ['Integra', 'MDX', 'RDX', 'TLX', 'ZDX', 'ILX', 'NSX', 'TSX', 'Other'],
+  'Audi': ['A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'Q3', 'Q4 e-tron', 'Q5', 'Q7', 'Q8', 'e-tron', 'e-tron GT', 'RS e-tron GT', 'Other'],
+  'BMW': ['2 Series', '3 Series', '4 Series', '5 Series', '7 Series', '8 Series', 'X1', 'X2', 'X3', 'X4', 'X5', 'X6', 'X7', 'i3', 'i4', 'i5', 'i7', 'iX', 'iX1', 'iX3', 'Z4', 'Other'],
+  'Chevrolet': ['Blazer', 'Blazer EV', 'Bolt', 'Bolt EUV', 'Camaro', 'Colorado', 'Corvette', 'Equinox', 'Equinox EV', 'Malibu', 'Silverado', 'Silverado EV', 'Suburban', 'Tahoe', 'Trailblazer', 'Traverse', 'Trax', 'Other'],
+  'Chrysler': ['300', 'Pacifica', 'Pacifica Hybrid', 'Voyager', 'Other'],
+  'Dodge': ['Challenger', 'Charger', 'Durango', 'Hornet', 'Journey', 'Other'],
+  'Ford': ['Bronco', 'Bronco Sport', 'E-Transit', 'Edge', 'Escape', 'Escape Plug-In Hybrid', 'EcoSport', 'Expedition', 'Explorer', 'F-150', 'F-150 Lightning', 'F-250', 'F-350', 'Flex', 'Focus', 'Fusion', 'Maverick', 'Mustang', 'Mustang Mach-E', 'Ranger', 'Taurus', 'Transit', 'Transit Connect', 'Other'],
+  'Honda': ['Accord', 'Accord Hybrid', 'Civic', 'Clarity', 'CR-V', 'CR-V Hybrid', 'Fit', 'HR-V', 'Insight', 'Odyssey', 'Passport', 'Pilot', 'Prologue', 'Ridgeline', 'Other'],
+  'Hyundai': ['Accent', 'Elantra', 'Ioniq 5', 'Ioniq 6', 'Kona', 'Kona Electric', 'Palisade', 'Santa Cruz', 'Santa Fe', 'Santa Fe Hybrid', 'Sonata', 'Tucson', 'Tucson Hybrid', 'Veloster', 'Venue', 'Other'],
+  'Jeep': ['Cherokee', 'Compass', 'Gladiator', 'Grand Cherokee', 'Grand Cherokee 4xe', 'Grand Wagoneer', 'Renegade', 'Wagoneer', 'Wrangler', 'Wrangler 4xe', 'Other'],
+  'Kia': ['Carnival', 'EV6', 'EV9', 'Forte', 'K5', 'Niro', 'Niro EV', 'Rio', 'Seltos', 'Sorento', 'Sorento Hybrid', 'Soul', 'Sportage', 'Sportage Hybrid', 'Stinger', 'Telluride', 'Other'],
+  'Lexus': ['ES', 'ES 300h', 'ES 350', 'GS', 'GS 350', 'GX', 'GX 460', 'IS', 'IS 300', 'IS 350', 'IS 500', 'LC', 'LS', 'LX', 'NX', 'NX 250', 'NX 350', 'NX 350h', 'NX 450h+', 'RC', 'RX', 'RX 350', 'RX 450h', 'RX 500h', 'RZ 450e', 'TX', 'UX', 'UX 250h', 'Other'],
+  'Lucid': ['Air', 'Air Pure', 'Air Touring', 'Air Grand Touring', 'Air Sapphire', 'Gravity', 'Other'],
+  'Mazda': ['CX-3', 'CX-30', 'CX-5', 'CX-50', 'CX-70', 'CX-90', 'CX-9', 'Mazda3', 'Mazda6', 'MX-5 Miata', 'MX-30', 'Other'],
+  'Mercedes': ['A-Class', 'C-Class', 'E-Class', 'S-Class', 'CLA', 'CLS', 'EQB', 'EQE', 'EQE SUV', 'EQS', 'EQS SUV', 'G-Class', 'GLA', 'GLA 250', 'GLB', 'GLB 250', 'GLC', 'GLC 300', 'GLE', 'GLE 350', 'GLS', 'GLS 450', 'Maybach', 'Other'],
+  'Nissan': ['Altima', 'Ariya', 'Armada', 'Frontier', 'Kicks', 'Leaf', 'Maxima', 'Murano', 'Pathfinder', 'Rogue', 'Rogue Sport', 'Sentra', 'Titan', 'Versa', 'Z', 'Other'],
+  'Ram': ['1500', '1500 TRX', '2500', '3500', 'ProMaster', 'ProMaster City', 'Other'],
+  'Rivian': ['R1S', 'R1T', 'EDV', 'Other'],
+  'Subaru': ['Ascent', 'BRZ', 'Crosstrek', 'Crosstrek Hybrid', 'Forester', 'Impreza', 'Legacy', 'Outback', 'Solterra', 'WRX', 'Other'],
+  'Tesla': ['Model 3', 'Model S', 'Model X', 'Model Y', 'Cybertruck', 'Roadster', 'Other'],
+  'Toyota': ['4Runner', 'bZ4X', 'C-HR', 'Camry', 'Camry Hybrid', 'Corolla', 'Corolla Cross', 'Corolla Hybrid', 'Crown', 'GR Corolla', 'GR Supra', 'GR86', 'Grand Highlander', 'Highlander', 'Highlander Hybrid', 'Land Cruiser', 'Mirai', 'Prius', 'Prius Prime', 'RAV4', 'RAV4 Hybrid', 'RAV4 Prime', 'Sequoia', 'Sienna', 'Tacoma', 'Tundra', 'Venza', 'Other'],
+  'Volkswagen': ['Arteon', 'Atlas', 'Atlas Cross Sport', 'Golf', 'Golf GTI', 'ID.4', 'ID.Buzz', 'Jetta', 'Passat', 'Taos', 'Tiguan', 'Other'],
+  'Volvo': ['C40 Recharge', 'S60', 'S90', 'V60', 'V90', 'XC40', 'XC40 Recharge', 'XC60', 'XC90', 'EX30', 'EX90', 'Other'],
   'Other': ['Other']
 };
 
@@ -68,6 +72,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   onRemove,
   knownVehicles,
 }) => {
+  const { parkingLot } = useParking();
+  const { getViolationCount } = useViolations(parkingLot?.id || null);
+  
   const [formData, setFormData] = useState<Omit<Vehicle, 'id' | 'timeParked' | 'parkingSpotId'>>({
     contact: '',
     phoneNumber: '',
@@ -91,6 +98,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   const [colorSearch, setColorSearch] = useState('');
   const [isSendingReminder, setIsSendingReminder] = useState(false);
   const [reminderStatus, setReminderStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [violationCount, setViolationCount] = useState<number>(0);
+  const [checkingViolations, setCheckingViolations] = useState(false);
 
   const formRef = useRef<HTMLFormElement>(null);
   const licensePlateRef = useRef<HTMLDivElement>(null);
@@ -167,6 +176,22 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
     );
     setFilteredColors(filtered.length > 0 ? filtered : carColors);
   }, [colorSearch]);
+
+  useEffect(() => {
+    const checkViolations = async () => {
+      if (formData.licensePlate.trim().length >= 3) {
+        setCheckingViolations(true);
+        const count = await getViolationCount(formData.licensePlate);
+        setViolationCount(count);
+        setCheckingViolations(false);
+      } else {
+        setViolationCount(0);
+      }
+    };
+
+    const timeoutId = setTimeout(checkViolations, 500);
+    return () => clearTimeout(timeoutId);
+  }, [formData.licensePlate, getViolationCount]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -318,9 +343,25 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       </div>
       
       <form ref={formRef} onSubmit={handleSubmit} className="p-4">
+        {violationCount > 0 && (
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+            <div className="flex items-start">
+              <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 mr-2 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                  Warning: This vehicle has {violationCount} previous loading zone {violationCount === 1 ? 'violation' : 'violations'}
+                </p>
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                  Check violation history before parking assignment.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div className="space-y-4">
           <div className="relative" ref={licensePlateRef}>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               <Tag className="mr-2 inline" size={16} />
               License Plate
             </label>
@@ -329,20 +370,20 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               name="licensePlate"
               value={formData.licensePlate}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter license plate"
               required
             />
             {suggestions.length > 0 && (
-              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md max-h-48 overflow-y-auto">
+              <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
                 {suggestions.map((vehicle, index) => (
                   <div
                     key={index}
-                    className="p-2 hover:bg-gray-100 cursor-pointer"
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                     onClick={() => handleSuggestionClick(vehicle)}
                   >
-                    <div className="font-medium">{vehicle.licensePlate}</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="font-medium text-gray-900 dark:text-gray-100">{vehicle.licensePlate}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
                       {vehicle.contact} - {vehicle.make} {vehicle.model} ({vehicle.color})
                     </div>
                   </div>
@@ -352,7 +393,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
           </div>
 
           <div className="relative" ref={contactRef}>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               <User className="mr-2 inline" size={16} />
               Contact
             </label>
@@ -361,22 +402,22 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               name="contact"
               value={formData.contact}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter contact name"
             />
             {contactSuggestions.length > 0 && (
-              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md max-h-48 overflow-y-auto">
+              <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
                 {contactSuggestions.map((vehicle, index) => (
                   <div
                     key={index}
-                    className="p-2 hover:bg-gray-100 cursor-pointer"
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                     onClick={() => handleSuggestionClick(vehicle)}
                   >
-                    <div className="font-medium">{vehicle.contact}</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="font-medium text-gray-900 dark:text-gray-100">{vehicle.contact}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
                       {vehicle.phoneNumber} - {vehicle.licensePlate}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 dark:text-gray-500">
                       {vehicle.make} {vehicle.model} ({vehicle.color})
                     </div>
                   </div>
@@ -386,7 +427,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               <Phone className="mr-2 inline" size={16} />
               Phone Number
             </label>
@@ -395,8 +436,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                phoneError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+              className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                phoneError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
               }`}
               placeholder="Enter 10-digit phone number"
             />
@@ -407,22 +448,22 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
           
           <div className="grid grid-cols-2 gap-4">
             <div className="relative" ref={makeRef}>
-              <label className="block text-sm font-medium text-gray-700">Make</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Make</label>
               <div
-                className="w-full px-3 py-2 border border-gray-300 rounded-md cursor-pointer bg-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md cursor-pointer bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 onClick={handleMakeClick}
               >
                 {formData.make || 'Select manufacturer'}
               </div>
               {showMakeSuggestions && (
-                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-300 rounded-md z-50">
-                  <div className="p-2 border-b">
+                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-50">
+                  <div className="p-2 border-b border-gray-300 dark:border-gray-600">
                     <input
                       ref={makeSearchRef}
                       type="text"
                       value={makeSearch}
                       onChange={(e) => setMakeSearch(e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded"
+                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       placeholder="Search manufacturer..."
                       autoFocus
                     />
@@ -431,7 +472,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                     {filteredManufacturers.map((make, index) => (
                       <div
                         key={index}
-                        className="p-2 hover:bg-gray-100 cursor-pointer"
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-gray-100"
                         onClick={() => {
                           setFormData(prev => ({ ...prev, make, model: '' }));
                           setShowMakeSuggestions(false);
@@ -447,22 +488,22 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
             </div>
 
             <div className="relative" ref={modelRef}>
-              <label className="block text-sm font-medium text-gray-700">Model</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Model</label>
               <div
-                className={`w-full px-3 py-2 border border-gray-300 rounded-md ${formData.make ? 'cursor-pointer bg-white' : 'bg-gray-100 text-gray-500'}`}
+                className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md ${formData.make ? 'cursor-pointer bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-500'}`}
                 onClick={handleModelClick}
               >
                 {formData.model || (formData.make ? 'Select model' : 'Select make first')}
               </div>
               {showModelSuggestions && formData.make && (
-                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-300 rounded-md z-50">
-                  <div className="p-2 border-b">
+                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-50">
+                  <div className="p-2 border-b border-gray-300 dark:border-gray-600">
                     <input
                       ref={modelSearchRef}
                       type="text"
                       value={modelSearch}
                       onChange={(e) => setModelSearch(e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded"
+                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       placeholder="Search model..."
                       autoFocus
                     />
@@ -471,7 +512,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                     {filteredModels.map((model, index) => (
                       <div
                         key={index}
-                        className="p-2 hover:bg-gray-100 cursor-pointer"
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-gray-100"
                         onClick={() => {
                           setFormData(prev => ({ ...prev, model }));
                           setShowModelSuggestions(false);
@@ -487,25 +528,25 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
             </div>
             
             <div className="relative col-span-2" ref={colorRef}>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 <Palette className="mr-2 inline" size={16} />
                 Color
               </label>
               <div
-                className="w-full px-3 py-2 border border-gray-300 rounded-md cursor-pointer bg-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md cursor-pointer bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 onClick={handleColorClick}
               >
                 {formData.color || 'Select color'}
               </div>
               {showColorSuggestions && (
-                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-300 rounded-md z-50">
-                  <div className="p-2 border-b">
+                <div className="absolute bottom-full left-0 right-0 mb-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-50">
+                  <div className="p-2 border-b border-gray-300 dark:border-gray-600">
                     <input
                       ref={colorSearchRef}
                       type="text"
                       value={colorSearch}
                       onChange={(e) => setColorSearch(e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded"
+                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       placeholder="Search color..."
                       autoFocus
                     />
@@ -514,7 +555,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                     {filteredColors.map((color, index) => (
                       <div
                         key={index}
-                        className="p-2 hover:bg-gray-100 cursor-pointer flex items-center"
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center text-gray-900 dark:text-gray-100"
                         onClick={() => {
                           setFormData(prev => ({ ...prev, color: color.name }));
                           setShowColorSuggestions(false);
@@ -555,7 +596,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
           <button
             type="button"
             onClick={onCancel}
-            className="w-full shrink-0 px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors sm:w-auto"
+            className="w-full shrink-0 px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors sm:w-auto"
           >
             Cancel
           </button>
