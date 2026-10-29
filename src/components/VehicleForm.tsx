@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { apiFetchJson } from '../lib/apiFetch';
 import { ParkingSpot, Vehicle } from '../types';
-import { CarFront, User, Phone, Tag, Palette, MessageSquare, Loader2, AlertTriangle } from 'lucide-react';
+import { CarFront, User, Phone, Tag, Palette, MessageSquare, Loader2, AlertTriangle, BellRing } from 'lucide-react';
 import { useViolations } from '../hooks/useViolations';
 import { useParking } from '../hooks/useParking';
 
@@ -82,6 +82,8 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
     make: '',
     model: '',
     color: '',
+    notifyOnArrival: false,
+    arrivalNote: '',
   });
 
   const [suggestions, setSuggestions] = useState<typeof knownVehicles>([]);
@@ -113,8 +115,18 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
 
   useEffect(() => {
     if (existingVehicle) {
-      const { contact, phoneNumber, licensePlate, make, model, color } = existingVehicle;
-      setFormData({ contact, phoneNumber, licensePlate, make, model: model || '', color });
+      const { contact, phoneNumber, licensePlate, make, model, color, notifyOnArrival, arrivalNote } =
+        existingVehicle;
+      setFormData({
+        contact,
+        phoneNumber,
+        licensePlate,
+        make,
+        model: model || '',
+        color,
+        notifyOnArrival: notifyOnArrival ?? false,
+        arrivalNote: arrivalNote ?? '',
+      });
     }
   }, [existingVehicle]);
 
@@ -220,6 +232,19 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
 
     setFormData(prev => ({ ...prev, [name]: value }));
 
+    if (name === 'licensePlate') {
+      const exactMatch = knownVehicles.find(
+        (v) => v.licensePlate.toLowerCase() === value.trim().toLowerCase()
+      );
+      if (exactMatch) {
+        setFormData((prev) => ({
+          ...prev,
+          notifyOnArrival: exactMatch.notifyOnArrival ?? false,
+          arrivalNote: exactMatch.arrivalNote ?? '',
+        }));
+      }
+    }
+
     if (name === 'licensePlate' && value.trim()) {
       const matchingSuggestions = knownVehicles.filter(v => 
         v.licensePlate.toLowerCase().includes(value.toLowerCase())
@@ -271,7 +296,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       licensePlate: vehicle.licensePlate,
       make: vehicle.make,
       model: vehicle.model || '',
-      color: vehicle.color
+      color: vehicle.color,
+      notifyOnArrival: vehicle.notifyOnArrival ?? false,
+      arrivalNote: vehicle.arrivalNote ?? '',
     });
     setSuggestions([]);
     setContactSuggestions([]);
@@ -443,6 +470,36 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
             />
             {phoneError && (
               <p className="mt-1 text-sm text-red-600">{phoneError}</p>
+            )}
+          </div>
+
+          <div className="rounded-sm border border-weak bg-secondary p-3">
+            <label className="flex cursor-pointer items-start gap-2">
+              <input
+                type="checkbox"
+                checked={formData.notifyOnArrival ?? false}
+                onChange={(e) => setFormData((prev) => ({ ...prev, notifyOnArrival: e.target.checked }))}
+                className="mt-0.5 h-4 w-4 shrink-0 rounded-xs border-weak accent-blue-600"
+              />
+              <span>
+                <span className="flex items-center text-sm font-medium text-primary">
+                  <BellRing className="mr-1.5 shrink-0 text-accent" size={14} aria-hidden />
+                  Notify welcome team when this vehicle parks
+                </span>
+                <span className="mt-0.5 block text-xs text-secondary">
+                  Everyone on the welcome team gets a text each time this plate is parked (once per day).
+                </span>
+              </span>
+            </label>
+            {formData.notifyOnArrival && (
+              <input
+                type="text"
+                value={formData.arrivalNote ?? ''}
+                onChange={(e) => setFormData((prev) => ({ ...prev, arrivalNote: e.target.value }))}
+                className="mt-2 w-full rounded-xs border border-weak bg-primary px-3 py-2 text-sm text-primary placeholder:text-secondary focus:border-accent focus:outline-none"
+                placeholder="Note for the welcome team (optional), e.g. new couple from Rainbow Village"
+                maxLength={200}
+              />
             )}
           </div>
           

@@ -9,6 +9,9 @@ import React, {
 import { useNavigate } from 'react-router-dom';
 import { ParkingLot, ParkingSpot, Vehicle } from '../types';
 import { supabase } from '../lib/supabase';
+import { apiFetchJson } from '../lib/apiFetch';
+
+type ArrivalFlags = Pick<Vehicle, 'notifyOnArrival' | 'arrivalNote'>;
 
 const initialParkingLot: ParkingLot = {
   id: 'main',
@@ -128,6 +131,16 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
       if (parkedVehiclesError) throw parkedVehiclesError;
       if (knownVehiclesError) throw knownVehiclesError;
 
+      const arrivalFlagsByPlate = new Map<string, ArrivalFlags>(
+        (knownVehiclesData || []).map((vehicle: Record<string, unknown>) => [
+          vehicle.license_plate as string,
+          {
+            notifyOnArrival: Boolean(vehicle.notify_on_arrival),
+            arrivalNote: (vehicle.arrival_note as string) || '',
+          },
+        ])
+      );
+
       setParkingLot({
         id: currentParkingLot.id,
         name: currentParkingLot.name,
@@ -154,6 +167,7 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
           color: vehicle.color as string,
           parkingSpotId: vehicle.parking_spot_id as string,
           timeParked: vehicle.time_parked as string,
+          ...arrivalFlagsByPlate.get(vehicle.license_plate as string),
         })
       );
 
@@ -172,6 +186,8 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
           make: vehicle.make,
           model: vehicle.model || '',
           color: vehicle.color,
+          notifyOnArrival: vehicle.notifyOnArrival,
+          arrivalNote: vehicle.arrivalNote,
         });
       });
 
@@ -185,6 +201,7 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
             make: vehicle.make as string,
             model: (vehicle.model as string) || '',
             color: vehicle.color as string,
+            ...arrivalFlagsByPlate.get(plate),
           });
         }
       });
@@ -299,7 +316,22 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
         color: vehicleData.color,
       };
 
-      const { error: vehiclesError } = await supabase.from('vehicles').upsert([dbVehicleData], {
+      const knownFlags = knownVehicles.find((v) => v.licensePlate === vehicleData.licensePlate);
+      const arrivalFlags: ArrivalFlags = {
+        notifyOnArrival: vehicleData.notifyOnArrival ?? knownFlags?.notifyOnArrival ?? false,
+        arrivalNote: vehicleData.arrivalNote ?? knownFlags?.arrivalNote ?? '',
+      };
+
+      // Arrival flags live only on `vehicles`; `vehicle_parking_spot` has no such columns.
+      const vehiclesRow = {
+        ...dbVehicleData,
+        ...(vehicleData.notifyOnArrival !== undefined && {
+          notify_on_arrival: vehicleData.notifyOnArrival,
+          arrival_note: vehicleData.arrivalNote?.trim() || null,
+        }),
+      };
+
+      const { error: vehiclesError } = await supabase.from('vehicles').upsert([vehiclesRow], {
         onConflict: 'license_plate',
       });
 
@@ -363,7 +395,14 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
           insertedRow = insertRes.data as Record<string, unknown>;
         }
 
-        const mapped = mapVpsRowToVehicle(insertedRow);
+        const mapped = { ...mapVpsRowToVehicle(insertedRow), ...arrivalFlags };
+
+        if (arrivalFlags.notifyOnArrival) {
+          apiFetchJson('/api/arrival-alerts/notify', {
+            method: 'POST',
+            body: { licensePlate: vehicleData.licensePlate },
+          }).catch((err) => console.error('Error sending arrival alert:', err));
+        }
 
         setParkingLot((prev) => ({
           ...prev,
@@ -392,6 +431,7 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
             make: vehicleData.make,
             model: vehicleData.model || '',
             color: vehicleData.color,
+            ...arrivalFlags,
           });
           return Array.from(m.values());
         });

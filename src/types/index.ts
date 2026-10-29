@@ -8,6 +8,17 @@ export interface Vehicle {
   color: string;
   parkingSpotId: string;
   timeParked: string;
+  notifyOnArrival?: boolean;
+  arrivalNote?: string;
+}
+
+export interface AppUser {
+  id: string;
+  email: string;
+  name: string | null;
+  phoneNumber: string | null;
+  isWelcomeTeam: boolean;
+  createdAt: string;
 }
 
 export interface ParkingSpot {

@@ -28,6 +28,7 @@ const app = express();
 app.use(express.json({ limit: '1mb' }));
 
 app.post('/api/send-reminder', mount(() => import('../api/send-reminder.ts')));
+app.post('/api/arrival-alerts/notify', mount(() => import('../api/arrival-alerts/notify.ts')));
 
 app.get('/api/ringcentral/status', mount(() => import('../api/ringcentral/status.ts')));
 

@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Vehicles from './pages/Vehicles';
 import Violations from './pages/Violations';
 import NotificationSettings from './pages/NotificationSettings';
+import Users from './pages/Users';
 import { AuthenticatedLayout } from './layouts/AuthenticatedLayout';
 import { useParking } from './hooks/useParking';
 
@@ -36,6 +37,7 @@ function App() {
         <Route path="/vehicles" element={<Vehicles />} />
         <Route path="/violations" element={<Violations />} />
         <Route path="/settings/notifications" element={<NotificationSettings />} />
+        <Route path="/users" element={<Users />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

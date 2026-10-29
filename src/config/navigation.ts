@@ -1,4 +1,4 @@
-import { Bell, Database, Map, AlertTriangle } from 'lucide-react';
+import { Bell, Database, Map, AlertTriangle, Users } from 'lucide-react';
 
 import type { NavigationItem } from '../types/navigation';
 
@@ -34,5 +34,13 @@ export const navigationConfig: NavigationItem[] = [
     iconActive: Bell,
     label: 'Alerts',
     tooltip: 'SMS notification settings',
+  },
+  {
+    id: 'users',
+    path: '/users',
+    icon: Users,
+    iconActive: Users,
+    label: 'Users',
+    tooltip: 'Users and welcome team',
   },
 ];

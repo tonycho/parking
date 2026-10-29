@@ -6,7 +6,7 @@ import {
 import { useParking } from '../hooks/useParking';
 import { useViolations } from '../hooks/useViolations';
 import SearchBar from '../components/SearchBar';
-import { Car, Phone, Tag, Database, X, Trash2, Plus, ParkingSquare, MessageSquare, Loader2, AlertTriangle } from 'lucide-react';
+import { Car, Phone, Tag, Database, X, Trash2, Plus, ParkingSquare, MessageSquare, Loader2, AlertTriangle, BellRing } from 'lucide-react';
 import VehicleForm from '../components/VehicleForm';
 import { apiFetchJson } from '../lib/apiFetch';
 import { PageHeader } from '../components/PageHeader/PageHeader';
@@ -287,7 +287,14 @@ function Vehicles() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {vehicle.contact || '-'}
+                        <div className="flex items-center">
+                          {vehicle.contact || '-'}
+                          {vehicle.notifyOnArrival && (
+                            <span title={vehicle.arrivalNote || 'Welcome team is notified when this vehicle parks'}>
+                              <BellRing className="ml-2 h-4 w-4 text-accent" aria-label="Welcome team alert on" />
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex items-center">
