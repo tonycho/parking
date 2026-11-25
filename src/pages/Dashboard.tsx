@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Menu, X, RotateCcw, Image } from 'lucide-react';
 import { useParking } from '../hooks/useParking';
 import ParkingMap from '../components/ParkingMap';
 import VehicleForm from '../components/VehicleForm';
 import SearchBar from '../components/SearchBar';
 import VehicleList from '../components/VehicleList';
+import { ParkingLotTabs } from '../components/ParkingLotTabs';
 import {
   PageHeader,
   pageBodyScrollClassName,
@@ -12,7 +13,7 @@ import {
 
 function Dashboard() {
   const {
-    parkingLot,
+    parkingLots,
     selectedSpot,
     setSelectedSpot,
     updateVehicle,
@@ -20,14 +21,32 @@ function Dashboard() {
     getVehicleBySpotId,
     searchQuery,
     setSearchQuery,
-    filteredResults,
+    filteredResultsForLot,
     resetParking,
     knownVehicles,
   } = useParking();
 
+  const [mapLotId, setMapLotId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showMapImage, setShowMapImage] = useState(false);
+
+  useEffect(() => {
+    if (!parkingLots.length) return;
+    setMapLotId((current) =>
+      current && parkingLots.some((lot) => lot.id === current)
+        ? current
+        : parkingLots[0].id,
+    );
+  }, [parkingLots]);
+
+  const activeMapLot = useMemo(
+    () => parkingLots.find((lot) => lot.id === mapLotId) ?? parkingLots[0],
+    [mapLotId, parkingLots],
+  );
+
+  const mapReferenceImage =
+    activeMapLot?.name === 'Overflow Parking' ? '/c-lot.jpg' : '/image.jpg';
 
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
@@ -51,7 +70,9 @@ function Dashboard() {
     };
   }, [selectedSpot, showResetConfirm, showMapImage, sidebarOpen]);
 
-  const { spots, filteredVehicles } = filteredResults();
+  const { spots, filteredVehicles } = activeMapLot
+    ? filteredResultsForLot(activeMapLot.id)
+    : { spots: [], filteredVehicles: [] };
 
   const handleSpotClick = (spot: typeof spots[0]) => {
     setSelectedSpot(spot);
@@ -75,8 +96,15 @@ function Dashboard() {
   };
 
   const handleReset = () => {
-    resetParking();
+    if (activeMapLot) {
+      void resetParking(activeMapLot.id);
+    }
     setShowResetConfirm(false);
+  };
+
+  const handleMapLotChange = (lotId: string) => {
+    setMapLotId(lotId);
+    setSelectedSpot(null);
   };
 
   const getDriverName = (spotId: string) => {
@@ -117,9 +145,9 @@ function Dashboard() {
                 <div className="space-y-2">
                   <VehicleList 
                     vehicles={filteredVehicles}
-                    spots={parkingLot.spots}
+                    spots={activeMapLot?.spots ?? []}
                     onVehicleClick={(spotId) => {
-                      const spot = parkingLot.spots.find(s => s.id === spotId);
+                      const spot = activeMapLot?.spots.find(s => s.id === spotId);
                       if (spot) {
                         setSelectedSpot(spot);
                         setSidebarOpen(false);
@@ -143,6 +171,13 @@ function Dashboard() {
           />
 
           <div className={`${pageBodyScrollClassName} pt-0`}>
+          <ParkingLotTabs
+            lots={parkingLots}
+            value={activeMapLot?.id ?? ''}
+            onChange={handleMapLotChange}
+            className="mb-4"
+          />
+
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <button
@@ -175,13 +210,14 @@ function Dashboard() {
           </div>
 
           
-          <div className="flex-1 min-h-[280px] relative rounded-sm border border-weak bg-primary overflow-hidden">
+          <div className="flex-1 min-h-[280px] relative rounded-sm border border-weak bg-primary overflow-x-hidden overflow-y-visible">
             <div className="absolute inset-0">
-              <ParkingMap 
-                spots={spots} 
-                onSpotClick={handleSpotClick} 
+              <ParkingMap
+                spots={spots}
+                onSpotClick={handleSpotClick}
                 selectedSpotId={selectedSpot?.id}
                 getDriverName={getDriverName}
+                simpleLegend={activeMapLot?.name === 'Overflow Parking'}
               />
             </div>
           </div>
@@ -200,9 +236,9 @@ function Dashboard() {
           <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
             <VehicleList 
               vehicles={filteredVehicles}
-              spots={parkingLot.spots}
+              spots={activeMapLot?.spots ?? []}
               onVehicleClick={(spotId) => {
-                const spot = parkingLot.spots.find(s => s.id === spotId);
+                const spot = activeMapLot?.spots.find(s => s.id === spotId);
                 if (spot) {
                   setSelectedSpot(spot);
                 }
@@ -235,8 +271,8 @@ function Dashboard() {
                 </button>
               </div>
               <img 
-                src="/image.jpg" 
-                alt="Parking Map" 
+                src={mapReferenceImage}
+                alt={`${activeMapLot?.tabLabel ?? activeMapLot?.name ?? 'Parking'} map`}
                 className="w-full h-auto"
               />
             </div>
@@ -285,10 +321,12 @@ function Dashboard() {
                     <RotateCcw className="h-6 w-6 text-danger" />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <h3 className="text-lg leading-6 font-medium text-primary">Reset parking lot</h3>
+                    <h3 className="text-lg leading-6 font-medium text-primary">
+                      Reset {activeMapLot?.tabLabel ?? activeMapLot?.name ?? 'parking lot'}
+                    </h3>
                     <div className="mt-2">
                       <p className="text-sm text-secondary">
-                        Are you sure you want to reset all parking spots? This will remove all current vehicles but keep the vehicle history for autocomplete.
+                        Are you sure you want to reset all spots in this lot? This will remove current vehicles here but keep vehicle history for autocomplete.
                       </p>
                     </div>
                   </div>

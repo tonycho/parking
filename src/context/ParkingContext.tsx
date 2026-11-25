@@ -16,8 +16,44 @@ type ArrivalFlags = Pick<Vehicle, 'notifyOnArrival' | 'arrivalNote'>;
 const initialParkingLot: ParkingLot = {
   id: 'main',
   name: 'Cumberland Parking',
+  tabLabel: 'Bank',
+  mapSortOrder: 0,
   spots: [],
 };
+
+function mapSpotRow(spot: Record<string, unknown>): ParkingSpot {
+  return {
+    id: spot.id as string,
+    label: spot.label as string,
+    status: spot.status as ParkingSpot['status'],
+    position: { x: spot.position_x as number, y: spot.position_y as number },
+    size: { width: spot.width as number, height: spot.height as number },
+    rotation: spot.rotation as number,
+    priority: (spot.priority as number) || 1,
+    order: spot.order as number,
+  };
+}
+
+function mapLotRow(
+  lot: Record<string, unknown>,
+  spots: ParkingSpot[],
+): ParkingLot {
+  return {
+    id: lot.id as string,
+    name: lot.name as string,
+    tabLabel: (lot.tab_label as string | null) ?? null,
+    mapSortOrder: (lot.map_sort_order as number) ?? 0,
+    spots,
+  };
+}
+
+function sortParkingLots(lots: ParkingLot[]): ParkingLot[] {
+  return [...lots].sort(
+    (a, b) =>
+      (a.mapSortOrder ?? 0) - (b.mapSortOrder ?? 0) ||
+      a.name.localeCompare(b.name),
+  );
+}
 
 function mapVpsRowToVehicle(row: Record<string, unknown>): Vehicle {
   return {
@@ -34,6 +70,8 @@ function mapVpsRowToVehicle(row: Record<string, unknown>): Vehicle {
 }
 
 type ParkingContextValue = {
+  parkingLots: ParkingLot[];
+  /** Primary lot (first by map sort) — used on Vehicles/Violations until those pages are multi-lot. */
   parkingLot: ParkingLot;
   vehicles: Vehicle[];
   selectedSpot: ParkingSpot | null;
@@ -43,13 +81,13 @@ type ParkingContextValue = {
   getVehicleBySpotId: (spotId: string) => Vehicle | undefined;
   searchQuery: string;
   setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
-  filteredResults: () => {
+  filteredResultsForLot: (lotId: string) => {
     spots: (ParkingSpot & { highlighted?: boolean })[];
     filteredVehicles: Vehicle[];
   };
-  availableSpots: number;
-  occupiedSpots: number;
-  resetParking: () => Promise<void>;
+  availableSpotsForLot: (lotId: string) => number;
+  occupiedSpotsForLot: (lotId: string) => number;
+  resetParking: (lotId?: string) => Promise<void>;
   knownVehicles: Omit<Vehicle, 'id' | 'timeParked' | 'parkingSpotId'>[];
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -62,7 +100,7 @@ const ParkingContext = createContext<ParkingContextValue | null>(null);
 const REALTIME_RELOAD_MS = 250;
 
 export function ParkingProvider({ children }: { children: React.ReactNode }) {
-  const [parkingLot, setParkingLot] = useState<ParkingLot>(initialParkingLot);
+  const [parkingLots, setParkingLots] = useState<ParkingLot[]>([initialParkingLot]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -88,37 +126,60 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
 
   const loadParkingData = useCallback(async () => {
     try {
-      // Get parking lots
-      let { data: parkingLots, error: parkingLotError } = await supabase
+      let { data: lotRows, error: parkingLotError } = await supabase
         .from('parking_lots')
-        .select('*');
+        .select('*')
+        .order('map_sort_order', { ascending: true })
+        .order('name', { ascending: true });
 
       if (parkingLotError) throw parkingLotError;
 
-      let currentParkingLot = parkingLots?.[0];
-
-      if (!currentParkingLot) {
+      if (!lotRows?.length) {
         const { data: newParkingLot, error: createError } = await supabase
           .from('parking_lots')
           .insert({
             name: initialParkingLot.name,
+            map_sort_order: 0,
+            tab_label: initialParkingLot.tabLabel,
           })
           .select()
           .single();
 
         if (createError) throw createError;
-        currentParkingLot = newParkingLot;
+        lotRows = [newParkingLot];
       }
 
-      const { data: spots, error: spotsError } = await supabase
+      const lotIds = lotRows.map((l: { id: string }) => l.id);
+
+      const { data: allSpots, error: spotsError } = await supabase
         .from('parking_spots')
         .select('*')
-        .eq('parking_lot_id', currentParkingLot.id)
+        .in('parking_lot_id', lotIds)
         .order('order');
 
       if (spotsError) throw spotsError;
 
-      const spotIds = (spots || []).map((s: { id: string }) => s.id);
+      const spotsByLot = new Map<string, ParkingSpot[]>();
+      for (const lotId of lotIds) {
+        spotsByLot.set(lotId, []);
+      }
+      for (const spot of allSpots || []) {
+        const lotId = spot.parking_lot_id as string;
+        const list = spotsByLot.get(lotId);
+        if (list) {
+          list.push(mapSpotRow(spot as Record<string, unknown>));
+        }
+      }
+
+      const mappedLots = sortParkingLots(
+        lotRows.map((lot: Record<string, unknown>) =>
+          mapLotRow(lot, spotsByLot.get(lot.id as string) ?? []),
+        ),
+      );
+
+      setParkingLots(mappedLots);
+
+      const spotIds = (allSpots || []).map((s: { id: string }) => s.id);
 
       const parkedQuery =
         spotIds.length === 0
@@ -140,21 +201,6 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
           },
         ])
       );
-
-      setParkingLot({
-        id: currentParkingLot.id,
-        name: currentParkingLot.name,
-        spots: (spots || []).map((spot: Record<string, unknown>) => ({
-          id: spot.id as string,
-          label: spot.label as string,
-          status: spot.status as ParkingSpot['status'],
-          position: { x: spot.position_x as number, y: spot.position_y as number },
-          size: { width: spot.width as number, height: spot.height as number },
-          rotation: spot.rotation as number,
-          priority: (spot.priority as number) || 1,
-          order: spot.order as number,
-        })),
-      });
 
       const mappedVehicles = (parkedVehicles || []).map(
         (vehicle: Record<string, unknown>) => ({
@@ -338,7 +384,9 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
       if (vehiclesError) throw vehiclesError;
 
       if (spotId) {
-        const spot = parkingLot.spots.find((s) => s.id === spotId);
+        const spot = parkingLots
+          .flatMap((lot) => lot.spots)
+          .find((s) => s.id === spotId);
         if (!spot) return;
 
         const currentVehicle = vehicles.find((v) => v.licensePlate === vehicleData.licensePlate);
@@ -404,16 +452,18 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
           }).catch((err) => console.error('Error sending arrival alert:', err));
         }
 
-        setParkingLot((prev) => ({
-          ...prev,
-          spots: prev.spots.map((s) => {
-            if (s.id === spotId) return { ...s, status: 'occupied' as const };
-            if (currentVehicle && s.id === currentVehicle.parkingSpotId) {
-              return { ...s, status: 'available' as const };
-            }
-            return s;
-          }),
-        }));
+        setParkingLots((prev) =>
+          prev.map((lot) => ({
+            ...lot,
+            spots: lot.spots.map((s) => {
+              if (s.id === spotId) return { ...s, status: 'occupied' as const };
+              if (currentVehicle && s.id === currentVehicle.parkingSpotId) {
+                return { ...s, status: 'available' as const };
+              }
+              return s;
+            }),
+          })),
+        );
 
         setVehicles((prev) => {
           const without = currentVehicle
@@ -508,7 +558,7 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const resetParking = async () => {
+  const resetParking = async (lotId?: string) => {
     try {
       const {
         data: { session },
@@ -521,10 +571,13 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      const targetLotId = lotId ?? parkingLots[0]?.id;
+      if (!targetLotId) return;
+
       const { data: spots, error: spotsError } = await supabase
         .from('parking_spots')
         .select('id')
-        .eq('parking_lot_id', parkingLot.id);
+        .eq('parking_lot_id', targetLotId);
 
       if (spotsError) throw spotsError;
 
@@ -533,7 +586,7 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
       const { error: spotError } = await supabase
         .from('parking_spots')
         .update({ status: 'available' })
-        .eq('parking_lot_id', parkingLot.id);
+        .eq('parking_lot_id', targetLotId);
 
       if (spotError) throw spotError;
 
@@ -557,35 +610,69 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
     return vehicles.find((v) => v.parkingSpotId === spotId);
   };
 
-  const filteredResults = () => {
-    if (!searchQuery.trim()) return { spots: parkingLot.spots, filteredVehicles: vehicles };
+  const lotById = useCallback(
+    (lotId: string) => parkingLots.find((lot) => lot.id === lotId),
+    [parkingLots],
+  );
 
-    const query = searchQuery.toLowerCase();
-    const filteredVehicles = vehicles.filter(
-      (vehicle) =>
-        vehicle.contact.toLowerCase().includes(query) ||
-        vehicle.licensePlate.toLowerCase().includes(query) ||
-        vehicle.make.toLowerCase().includes(query) ||
-        (vehicle.model && vehicle.model.toLowerCase().includes(query)) ||
-        vehicle.color.toLowerCase().includes(query) ||
-        vehicle.phoneNumber.includes(query)
-    );
+  const vehiclesForLot = useCallback(
+    (lotId: string) => {
+      const lot = lotById(lotId);
+      if (!lot) return [];
+      const spotIds = new Set(lot.spots.map((s) => s.id));
+      return vehicles.filter((v) => spotIds.has(v.parkingSpotId));
+    },
+    [lotById, vehicles],
+  );
 
-    const spotIds = filteredVehicles.map((v) => v.parkingSpotId);
-    const spots = parkingLot.spots.map((spot) => ({
-      ...spot,
-      highlighted: spotIds.includes(spot.id),
-    }));
+  const filteredResultsForLot = useCallback(
+    (lotId: string) => {
+      const lot = lotById(lotId);
+      if (!lot) return { spots: [] as ParkingSpot[], filteredVehicles: [] as Vehicle[] };
 
-    return { spots, filteredVehicles };
-  };
+      const lotVehicles = vehiclesForLot(lotId);
+      if (!searchQuery.trim()) {
+        return { spots: lot.spots, filteredVehicles: lotVehicles };
+      }
+
+      const query = searchQuery.toLowerCase();
+      const filteredVehicles = lotVehicles.filter(
+        (vehicle) =>
+          vehicle.contact.toLowerCase().includes(query) ||
+          vehicle.licensePlate.toLowerCase().includes(query) ||
+          vehicle.make.toLowerCase().includes(query) ||
+          (vehicle.model && vehicle.model.toLowerCase().includes(query)) ||
+          vehicle.color.toLowerCase().includes(query) ||
+          vehicle.phoneNumber.includes(query),
+      );
+
+      const spotIds = filteredVehicles.map((v) => v.parkingSpotId);
+      const spots = lot.spots.map((spot) => ({
+        ...spot,
+        highlighted: spotIds.includes(spot.id),
+      }));
+
+      return { spots, filteredVehicles };
+    },
+    [lotById, searchQuery, vehiclesForLot],
+  );
+
+  const availableSpotsForLot = useCallback(
+    (lotId: string) => lotById(lotId)?.spots.filter((s) => s.status === 'available').length ?? 0,
+    [lotById],
+  );
+
+  const occupiedSpotsForLot = useCallback(
+    (lotId: string) => lotById(lotId)?.spots.filter((s) => s.status === 'occupied').length ?? 0,
+    [lotById],
+  );
 
   const handleLogout = useCallback(async () => {
     try {
       await supabase.auth.signOut();
       setIsAuthenticated(false);
       setVehicles([]);
-      setParkingLot(initialParkingLot);
+      setParkingLots([initialParkingLot]);
       setSelectedSpot(null);
       setSearchQuery('');
       setKnownVehicles([]);
@@ -597,7 +684,10 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
     }
   }, [navigate]);
 
+  const parkingLot = parkingLots[0] ?? initialParkingLot;
+
   const value: ParkingContextValue = {
+    parkingLots,
     parkingLot,
     vehicles,
     selectedSpot,
@@ -607,9 +697,9 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
     getVehicleBySpotId,
     searchQuery,
     setSearchQuery,
-    filteredResults,
-    availableSpots: parkingLot.spots.filter((s) => s.status === 'available').length,
-    occupiedSpots: parkingLot.spots.filter((s) => s.status === 'occupied').length,
+    filteredResultsForLot,
+    availableSpotsForLot,
+    occupiedSpotsForLot,
     resetParking,
     knownVehicles,
     isAuthenticated,

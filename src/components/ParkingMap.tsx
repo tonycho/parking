@@ -10,21 +10,28 @@ interface ParkingMapProps {
   onSpotClick: (spot: ParkingSpotType) => void;
   selectedSpotId?: string;
   getDriverName: (spotId: string) => string | undefined;
+  /** School / C-only lot: single green vacancy count, no hour-based legend or orange spots. */
+  simpleLegend?: boolean;
 }
 
-const ParkingMap: React.FC<ParkingMapProps> = ({ 
-  spots, 
-  onSpotClick, 
-  selectedSpotId, 
-  getDriverName 
+const ParkingMap: React.FC<ParkingMapProps> = ({
+  spots,
+  onSpotClick,
+  selectedSpotId,
+  getDriverName,
+  simpleLegend = false,
 }) => {
-  const getSpotColor = useCallback((spot: ParkingSpotType) => {
-    if (spot.id === selectedSpotId) return 'bg-blue-500 border-blue-600';
-    if (spot.status === 'occupied') return 'bg-red-500 border-red-600';
-    return spot.priority === 2
-      ? parkingSpotMapGreenClass
-      : parkingSpotMapOrangeClass;
-  }, [selectedSpotId]);
+  const getSpotColor = useCallback(
+    (spot: ParkingSpotType) => {
+      if (spot.id === selectedSpotId) return 'bg-blue-500 border-blue-600';
+      if (spot.status === 'occupied') return 'bg-red-500 border-red-600';
+      if (simpleLegend) return parkingSpotMapGreenClass;
+      return spot.priority === 2
+        ? parkingSpotMapGreenClass
+        : parkingSpotMapOrangeClass;
+    },
+    [selectedSpotId, simpleLegend],
+  );
 
   // Sort spots by order
   const sortedSpots = [...spots].sort((a, b) => a.order - b.order);
@@ -52,9 +59,8 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
 
   return (
     <div className="relative flex h-full w-full flex-col">
-      <div className="relative min-h-0 flex-1 bg-primary">
-        {/* Inset plot so %-positioned spots get left breathing room without changing stored coordinates */}
-        <div className="absolute inset-0">
+      <div className="relative min-h-0 flex-1 overflow-visible bg-primary">
+        <div className={`absolute inset-0 overflow-visible ${simpleLegend ? 'px-[1px]' : ''}`}>
           {sortedSpots.map((spot) => {
             const driverName = getDriverName(spot.id);
             const colorClasses = getSpotColor(spot);
@@ -63,7 +69,7 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
             return (
               <div
                 key={spot.id}
-                className={`absolute cursor-pointer transition-all duration-300 ease-in-out ${colorClasses} 
+                className={`absolute box-border cursor-pointer transition-all duration-300 ease-in-out ${colorClasses} 
                        border-2 rounded-xs flex flex-col items-center justify-center font-semibold text-white
                        hover:scale-105 overflow-hidden`}
                 style={{
@@ -98,28 +104,41 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
 
       {/* Legend — counts match map spots (filtered view when search is active) */}
       <div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2 px-3 py-2">
-        <div className="flex max-w-[min(100%,20rem)] items-center gap-1.5">
-          <div
-            className={`h-3.5 w-3.5 shrink-0 rounded-xs border-2 ${parkingSpotMapGreenClass}`}
-          />
-          <span className="text-left text-xs leading-snug tabular-nums text-secondary">
-            {legendCounts.secondHourVacant}/{legendCounts.secondHourTotal} (Stay for second hour)
-          </span>
-        </div>
-        <div className="flex max-w-[min(100%,20rem)] items-center gap-1.5">
-          <div
-            className={`h-3.5 w-3.5 shrink-0 rounded-xs border-2 ${parkingSpotMapOrangeClass}`}
-          />
-          <span className="text-left text-xs leading-snug tabular-nums text-secondary">
-            {legendCounts.firstHourVacant}/{legendCounts.firstHourTotal} (First hour only)
-          </span>
-        </div>
-        <div className="flex max-w-[min(100%,20rem)] items-center gap-1.5">
-          <div className="h-3.5 w-3.5 shrink-0 rounded-xs border-2 border-red-600 bg-red-500" />
-          <span className="text-left text-xs leading-snug tabular-nums text-secondary">
-            {legendCounts.occupied}/{legendCounts.total} (Occupied)
-          </span>
-        </div>
+        {simpleLegend ? (
+          <div className="flex max-w-[min(100%,20rem)] items-center gap-1.5">
+            <div
+              className={`h-3.5 w-3.5 shrink-0 rounded-xs border-2 ${parkingSpotMapGreenClass}`}
+            />
+            <span className="text-left text-xs leading-snug tabular-nums text-secondary">
+              {legendCounts.total - legendCounts.occupied}/{legendCounts.total}
+            </span>
+          </div>
+        ) : (
+          <>
+            <div className="flex max-w-[min(100%,20rem)] items-center gap-1.5">
+              <div
+                className={`h-3.5 w-3.5 shrink-0 rounded-xs border-2 ${parkingSpotMapGreenClass}`}
+              />
+              <span className="text-left text-xs leading-snug tabular-nums text-secondary">
+                {legendCounts.secondHourVacant}/{legendCounts.secondHourTotal} (Stay for second hour)
+              </span>
+            </div>
+            <div className="flex max-w-[min(100%,20rem)] items-center gap-1.5">
+              <div
+                className={`h-3.5 w-3.5 shrink-0 rounded-xs border-2 ${parkingSpotMapOrangeClass}`}
+              />
+              <span className="text-left text-xs leading-snug tabular-nums text-secondary">
+                {legendCounts.firstHourVacant}/{legendCounts.firstHourTotal} (First hour only)
+              </span>
+            </div>
+            <div className="flex max-w-[min(100%,20rem)] items-center gap-1.5">
+              <div className="h-3.5 w-3.5 shrink-0 rounded-xs border-2 border-red-600 bg-red-500" />
+              <span className="text-left text-xs leading-snug tabular-nums text-secondary">
+                {legendCounts.occupied}/{legendCounts.total} (Occupied)
+              </span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

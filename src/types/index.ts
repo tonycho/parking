@@ -42,6 +42,8 @@ export interface ParkingSpot {
 export interface ParkingLot {
   id: string;
   name: string;
+  tabLabel?: string | null;
+  mapSortOrder?: number;
   spots: ParkingSpot[];
 }
 
