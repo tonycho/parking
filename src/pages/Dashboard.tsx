@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Map as MapIcon, Menu, X, RotateCcw, Image } from 'lucide-react';
+import { Menu, X, RotateCcw, Image } from 'lucide-react';
 import { useParking } from '../hooks/useParking';
 import ParkingMap from '../components/ParkingMap';
 import VehicleForm from '../components/VehicleForm';
 import SearchBar from '../components/SearchBar';
 import VehicleList from '../components/VehicleList';
-import { PageHeader } from '../components/PageHeader/PageHeader';
+import {
+  PageHeader,
+  pageBodyScrollClassName,
+} from '../components/PageHeader/PageHeader';
 
 function Dashboard() {
   const {
@@ -134,16 +137,13 @@ function Dashboard() {
       <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden items-stretch">
         {/* Left column — title + map stack (does not span the sidebar) */}
         <div className="flex-1 flex flex-col min-h-0 min-w-0 lg:overflow-hidden">
-          <div className="flex-1 flex flex-col min-h-0 overflow-y-auto px-4 md:px-8 pb-6 max-w-7xl mx-auto w-full">
-          <div className="w-full">
-            <PageHeader
-              title="Parking map"
-              subtitle="Tap a spot to assign or edit a vehicle."
-              icon={MapIcon}
-            />
-          </div>
+          <PageHeader
+            title="Parking map"
+            subtitle="Tap a spot to assign or edit a vehicle."
+          />
 
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 pt-2">
+          <div className={`${pageBodyScrollClassName} pt-0`}>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <button
                 type="button"

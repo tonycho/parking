@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { HeartHandshake, Loader2, MessageSquare, Pencil, Phone, Users as UsersIcon, X } from 'lucide-react';
-import { PageHeader } from '../components/PageHeader/PageHeader';
+import { HeartHandshake, Loader2, MessageSquare, Pencil, Phone, X } from 'lucide-react';
+import { PageHeader, pageBodyScrollClassName } from '../components/PageHeader/PageHeader';
 import SearchBar from '../components/SearchBar';
 import { supabase } from '../lib/supabase';
 import { apiFetchJson } from '../lib/apiFetch';
@@ -148,18 +148,17 @@ function Users() {
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col bg-secondary">
-      <div className="flex min-h-0 flex-1 flex-col px-4 py-6 md:px-8 max-w-7xl w-full mx-auto overflow-y-auto">
-        <PageHeader
-          title="Users"
-          subtitle="Manage who can sign in and who is on the welcome team. Welcome team members get a text when a flagged vehicle parks."
-          icon={UsersIcon}
-          rightContent={
-            <span className="text-sm text-secondary">
-              {welcomeTeamCount} welcome team {welcomeTeamCount === 1 ? 'member' : 'members'} can receive texts
-            </span>
-          }
-        />
+      <PageHeader
+        title="Users"
+        subtitle="Manage who can sign in and who is on the welcome team. Welcome team members get a text when a flagged vehicle parks."
+        rightContent={
+          <span className="text-sm text-secondary">
+            {welcomeTeamCount} welcome team {welcomeTeamCount === 1 ? 'member' : 'members'} can receive texts
+          </span>
+        }
+      />
 
+      <div className={pageBodyScrollClassName}>
         <div className="mb-6 shrink-0">
           <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search by name, email, phone..." />
         </div>

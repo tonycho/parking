@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AlertTriangle, Plus, Tag, Trash2, X } from 'lucide-react';
 import { useParking } from '../hooks/useParking';
 import { useViolations } from '../hooks/useViolations';
-import { PageHeader } from '../components/PageHeader/PageHeader';
+import { PageHeader, pageBodyClassName } from '../components/PageHeader/PageHeader';
 import SearchBar from '../components/SearchBar';
 import ViolationRecordForm from '../components/ViolationRecordForm';
 import { Violation } from '../types';
@@ -129,12 +129,10 @@ function Violations() {
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col bg-secondary">
-      <div className="flex min-h-0 flex-1 flex-col px-4 py-6 md:px-8 max-w-7xl w-full mx-auto">
-        <PageHeader
-          title="Violations"
-          subtitle="Loading zone violation tracking and repeat offender management."
-          icon={AlertTriangle}
-          rightContent={
+      <PageHeader
+        title="Violations"
+        subtitle="Loading zone violation tracking and repeat offender management."
+        rightContent={
             <button
               type="button"
               onClick={() => setShowRecordModal(true)}
@@ -143,9 +141,10 @@ function Violations() {
               <Plus className="w-4 h-4 mr-2" />
               Record Violation
             </button>
-          }
-        />
+        }
+      />
 
+      <div className={pageBodyClassName}>
         <div className="mb-6 shrink-0">
           <SearchBar 
             value={searchQuery}

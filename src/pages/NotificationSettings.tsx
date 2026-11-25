@@ -15,7 +15,7 @@ import { CHURCH_NOTIFICATION_TIMEZONE } from '../lib/churchNotification';
 import { supabase } from '../lib/supabase';
 import { apiFetchJson } from '../lib/apiFetch';
 import type { NotificationJobLogRow, NotificationSettingsRow, RecurrenceType } from '../types';
-import { PageHeader } from '../components/PageHeader/PageHeader';
+import { PageHeader, pageBodyScrollClassName } from '../components/PageHeader/PageHeader';
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -332,10 +332,9 @@ function NotificationSettings() {
       <PageHeader
         title="Notification settings"
         subtitle="RingCentral SMS, schedules, and job logs for church reminders."
-        icon={Bell}
       />
 
-      <main className="flex-1 overflow-y-auto max-w-4xl w-full mx-auto px-4 md:px-8 py-6 space-y-6">
+      <main className={`${pageBodyScrollClassName} space-y-6`}>
         {banner && (
           <div
             className={`rounded-sm border px-4 py-3 text-sm ${

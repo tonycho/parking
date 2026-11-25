@@ -6,10 +6,10 @@ import {
 import { useParking } from '../hooks/useParking';
 import { useViolations } from '../hooks/useViolations';
 import SearchBar from '../components/SearchBar';
-import { Car, Phone, Tag, Database, X, Trash2, Plus, ParkingSquare, MessageSquare, Loader2, AlertTriangle, BellRing } from 'lucide-react';
+import { Car, Phone, Tag, X, Trash2, Plus, ParkingSquare, MessageSquare, Loader2, AlertTriangle, BellRing } from 'lucide-react';
 import VehicleForm from '../components/VehicleForm';
 import { apiFetchJson } from '../lib/apiFetch';
-import { PageHeader } from '../components/PageHeader/PageHeader';
+import { PageHeader, pageBodyClassName } from '../components/PageHeader/PageHeader';
 
 function Vehicles() {
   const { knownVehicles, parkingLot, updateVehicle, removeVehicle, deleteVehicle, vehicles } = useParking();
@@ -198,12 +198,10 @@ function Vehicles() {
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col bg-secondary">
-      <div className="flex min-h-0 flex-1 flex-col px-4 py-6 md:px-8 max-w-7xl w-full mx-auto">
-        <PageHeader
-          title="Vehicles"
-          subtitle="Manage the vehicle directory, parking assignments, and SMS reminders."
-          icon={Database}
-          rightContent={
+      <PageHeader
+        title="Vehicles"
+        subtitle="Manage the vehicle directory, parking assignments, and SMS reminders."
+        rightContent={
             <button
               type="button"
               onClick={() => setShowAddVehicleModal(true)}
@@ -212,9 +210,10 @@ function Vehicles() {
               <Plus className="w-4 h-4 mr-2" />
               Add vehicle
             </button>
-          }
-        />
+        }
+      />
 
+      <div className={pageBodyClassName}>
         <div className="mb-6 shrink-0">
           <SearchBar 
             value={searchQuery}
