@@ -15,7 +15,11 @@ import { CHURCH_NOTIFICATION_TIMEZONE } from '../lib/churchNotification';
 import { supabase } from '../lib/supabase';
 import { apiFetchJson } from '../lib/apiFetch';
 import type { NotificationJobLogRow, NotificationSettingsRow, RecurrenceType } from '../types';
-import { PageHeader, pageBodyScrollClassName } from '../components/PageHeader/PageHeader';
+import {
+  PageHeader,
+  pageBodyScrollClassName,
+  pageBodyScrollInnerClassName,
+} from '../components/PageHeader/PageHeader';
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -328,13 +332,14 @@ function NotificationSettings() {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col bg-secondary">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-secondary">
       <PageHeader
         title="Notification settings"
         subtitle="RingCentral SMS, schedules, and job logs for church reminders."
       />
 
-      <main className={`${pageBodyScrollClassName} space-y-6`}>
+      <main className={pageBodyScrollClassName}>
+        <div className={`${pageBodyScrollInnerClassName} space-y-6`}>
         {banner && (
           <div
             className={`rounded-sm border px-4 py-3 text-sm ${
@@ -435,11 +440,11 @@ function NotificationSettings() {
               Validate connection
             </button>
           </div>
-          <div className="mt-4 flex flex-wrap gap-3 items-end">
-            <div>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+            <div className="w-full min-w-0 sm:w-auto">
               <label className="block text-xs font-medium text-gray-500 mb-1">Test phone (10 digits)</label>
               <input
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm w-44"
+                className="w-full min-h-11 max-w-xs rounded-md border border-gray-300 px-3 py-2 text-sm sm:w-44"
                 value={testPhone}
                 onChange={(e) => setTestPhone(e.target.value)}
                 placeholder="5551234567"
@@ -569,12 +574,12 @@ function NotificationSettings() {
             </div>
           )}
 
-          <div className="flex flex-wrap gap-3 pt-2">
+          <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:flex-wrap sm:gap-3">
             <button
               type="button"
               onClick={() => void save()}
               disabled={saving}
-              className="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 sm:w-auto"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Save settings
@@ -583,7 +588,7 @@ function NotificationSettings() {
               type="button"
               onClick={() => void runPreview()}
               disabled={busy !== null}
-              className="inline-flex items-center px-4 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:w-auto"
             >
               Preview recipient count
             </button>
@@ -594,7 +599,7 @@ function NotificationSettings() {
               type="button"
               onClick={() => void runJob(true)}
               disabled={busy !== null}
-              className="inline-flex items-center px-4 py-2 rounded-md border border-amber-300 text-sm font-medium text-amber-900 bg-amber-50 hover:bg-amber-100"
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-md border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-900 hover:bg-amber-100 sm:w-auto"
             >
               {busy === 'dry' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Dry run
@@ -603,7 +608,7 @@ function NotificationSettings() {
               type="button"
               onClick={() => void runJob(false)}
               disabled={busy !== null}
-              className="inline-flex items-center px-4 py-2 rounded-md bg-red-600 text-white text-sm font-medium hover:bg-red-700"
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 sm:w-auto"
             >
               {busy === 'run' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
               Run now
@@ -614,41 +619,67 @@ function NotificationSettings() {
         <section className="c3-card">
           <h2 className="text-sm font-semibold text-primary mb-1">Recent job logs</h2>
           <p className="text-xs text-secondary mb-4">Latest runs from the notification worker.</p>
-          <div className="overflow-x-auto text-sm">
-            <table className="min-w-full divide-y divide-border-weak">
-              <thead>
-                <tr>
-                  <th className="text-left py-2 pr-4 text-gray-500 font-medium">Time</th>
-                  <th className="text-left py-2 pr-4 text-gray-500 font-medium">Phone</th>
-                  <th className="text-left py-2 pr-4 text-gray-500 font-medium">Spot</th>
-                  <th className="text-left py-2 pr-4 text-gray-500 font-medium">Status</th>
-                  <th className="text-left py-2 text-gray-500 font-medium">Error</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-weak">
-                {logs.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-4 text-gray-500">
-                      No logs yet.
-                    </td>
-                  </tr>
-                ) : (
-                  logs.map((log) => (
-                    <tr key={log.id}>
-                      <td className="py-2 pr-4 whitespace-nowrap text-gray-800">
-                        {new Date(log.created_at).toLocaleString()}
-                      </td>
-                      <td className="py-2 pr-4">{log.recipient_phone}</td>
-                      <td className="py-2 pr-4">{log.spot_name || '—'}</td>
-                      <td className="py-2 pr-4">{log.status}</td>
-                      <td className="py-2 text-red-600 max-w-xs truncate">{log.error_message || '—'}</td>
+          {logs.length === 0 ? (
+            <div className="py-8 text-center text-sm text-secondary">No logs yet.</div>
+          ) : (
+            <>
+              <div className="divide-y divide-border-weak text-sm md:hidden">
+                {logs.map((log) => (
+                  <div key={log.id} className="space-y-1 px-1 py-3">
+                    <p className="text-primary">{new Date(log.created_at).toLocaleString()}</p>
+                    <p className="text-secondary">
+                      {log.recipient_phone}
+                      {log.spot_name ? ` · spot ${log.spot_name}` : ''}
+                    </p>
+                    <p className="flex flex-wrap items-center gap-2 text-xs">
+                      <span
+                        className={
+                          log.status === 'success'
+                            ? 'text-success'
+                            : log.status === 'error'
+                              ? 'text-danger'
+                              : 'text-secondary'
+                        }
+                      >
+                        {log.status}
+                      </span>
+                      {log.error_message ? (
+                        <span className="text-danger">{log.error_message}</span>
+                      ) : null}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div className="hidden overflow-x-auto text-sm md:block">
+                <table className="min-w-full divide-y divide-border-weak">
+                  <thead>
+                    <tr>
+                      <th className="py-2 pr-4 text-left font-medium text-gray-500">Time</th>
+                      <th className="py-2 pr-4 text-left font-medium text-gray-500">Phone</th>
+                      <th className="py-2 pr-4 text-left font-medium text-gray-500">Spot</th>
+                      <th className="py-2 pr-4 text-left font-medium text-gray-500">Status</th>
+                      <th className="py-2 text-left font-medium text-gray-500">Error</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody className="divide-y divide-border-weak">
+                    {logs.map((log) => (
+                      <tr key={log.id}>
+                        <td className="whitespace-nowrap py-2 pr-4 text-gray-800">
+                          {new Date(log.created_at).toLocaleString()}
+                        </td>
+                        <td className="py-2 pr-4">{log.recipient_phone}</td>
+                        <td className="py-2 pr-4">{log.spot_name || '—'}</td>
+                        <td className="py-2 pr-4">{log.status}</td>
+                        <td className="max-w-xs truncate py-2 text-red-600">{log.error_message || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </section>
+        </div>
       </main>
     </div>
   );

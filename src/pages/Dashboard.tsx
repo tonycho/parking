@@ -9,6 +9,7 @@ import { ParkingLotTabs } from '../components/ParkingLotTabs';
 import {
   PageHeader,
   pageBodyScrollClassName,
+  pageBodyScrollInnerClassName,
 } from '../components/PageHeader/PageHeader';
 
 function Dashboard() {
@@ -113,7 +114,7 @@ function Dashboard() {
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col bg-secondary">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-secondary">
       {/* Sidebar for mobile — slides in from the right */}
       <div
         className={`fixed inset-0 z-40 lg:hidden ${
@@ -170,7 +171,8 @@ function Dashboard() {
             subtitle="Tap a spot to assign or edit a vehicle."
           />
 
-          <div className={`${pageBodyScrollClassName} pt-0`}>
+          <div className={pageBodyScrollClassName}>
+            <div className={`${pageBodyScrollInnerClassName} pt-0`}>
           <ParkingLotTabs
             lots={parkingLots}
             value={activeMapLot?.id ?? ''}
@@ -210,7 +212,7 @@ function Dashboard() {
           </div>
 
           
-          <div className="flex-1 min-h-[280px] relative rounded-sm border border-weak bg-primary overflow-x-hidden overflow-y-visible">
+          <div className="relative min-h-[min(55vh,24rem)] flex-1 rounded-sm border border-weak bg-primary overflow-x-hidden overflow-y-visible sm:min-h-[280px]">
             <div className="absolute inset-0">
               <ParkingMap
                 spots={spots}
@@ -221,6 +223,7 @@ function Dashboard() {
               />
             </div>
           </div>
+            </div>
           </div>
         </div>
         

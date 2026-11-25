@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { LogOut, Moon, Sun } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
@@ -12,8 +12,35 @@ export type AppSideNavProps = {
 export function AppSideNav({ onLogout }: AppSideNavProps) {
   const { currentTheme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const openMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const closeMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const wasMenuOpenRef = useRef(false);
 
   const closeMenu = () => setIsMenuOpen(false);
+
+  useEffect(() => {
+    if (isMenuOpen) {
+      wasMenuOpenRef.current = true;
+      const focusClose = () => closeMenuButtonRef.current?.focus();
+      const id = window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(focusClose);
+      });
+      return () => window.cancelAnimationFrame(id);
+    }
+    if (wasMenuOpenRef.current) {
+      wasMenuOpenRef.current = false;
+      openMenuButtonRef.current?.focus();
+    }
+  }, [isMenuOpen]);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeMenu();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isMenuOpen]);
 
   const navItemClasses = (active: boolean) =>
     active ? 'bg-secondary text-primary' : 'text-secondary hover:text-primary';
@@ -21,13 +48,10 @@ export function AppSideNav({ onLogout }: AppSideNavProps) {
   return (
     <>
       <nav
-        className="hidden sm:flex w-16 shrink-0 flex-col items-center border-r border-weak bg-primary z-20"
+        className="hidden sm:flex h-full w-16 shrink-0 flex-col items-center border-r border-weak bg-primary z-20"
         aria-label="Primary"
       >
-        <div className="mt-3 mb-2 flex w-full justify-center px-1">
-          <div className="c3-logo" aria-hidden />
-        </div>
-        <ul className="flex w-full flex-1 flex-col gap-1">
+        <ul className="mt-3 flex w-full flex-1 flex-col gap-1 px-1">
           {navigationConfig.map((item) => {
             const Icon = item.iconActive ?? item.icon;
             return (
@@ -54,7 +78,7 @@ export function AppSideNav({ onLogout }: AppSideNavProps) {
             );
           })}
         </ul>
-        <div className="mb-3 mt-auto flex w-full flex-col items-center gap-2 px-1">
+        <div className="mb-3 mt-auto flex w-full shrink-0 flex-col items-center gap-2 px-1">
           <button
             type="button"
             className="flex w-full flex-col items-center py-1 text-secondary hover:text-primary"
@@ -85,38 +109,44 @@ export function AppSideNav({ onLogout }: AppSideNavProps) {
       </nav>
 
       <button
+        ref={openMenuButtonRef}
         type="button"
         onClick={() => setIsMenuOpen(true)}
-        className="fixed left-0 top-1 z-50 px-1 text-secondary transition-colors hover:text-primary sm:hidden"
+        className={`fixed left-0 top-0 flex h-[2.25rem] items-center px-1 text-secondary transition-colors hover:text-primary sm:hidden ${
+          isMenuOpen ? 'z-20' : 'z-50'
+        }`}
         aria-label="Open navigation menu"
+        aria-expanded={isMenuOpen}
+        aria-controls="app-mobile-nav"
       >
         <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
 
-      {isMenuOpen ? (
+      <div
+        className={`fixed inset-0 z-50 sm:hidden ${isMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      >
         <div
-          className="fixed inset-0 z-40 bg-black/50 sm:hidden"
+          className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ease-out ${
+            isMenuOpen ? 'opacity-100' : 'opacity-0'
+          }`}
           onClick={closeMenu}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') closeMenu();
-          }}
-          role="button"
-          tabIndex={0}
-          aria-label="Close navigation menu"
+          aria-hidden={!isMenuOpen}
         />
-      ) : null}
-
-      {isMenuOpen ? (
         <nav
-          className="fixed left-0 top-0 z-50 h-full w-80 overflow-y-auto border-r border-weak bg-primary sm:hidden"
+          id="app-mobile-nav"
+          className={`absolute left-0 top-0 flex h-full w-80 max-w-[85vw] flex-col overflow-y-auto border-r border-weak bg-primary transition-transform duration-300 ease-out ${
+            isMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
           aria-label="Primary mobile"
+          aria-hidden={!isMenuOpen}
         >
           <div className="p-4">
             <div className="mb-6 flex items-center justify-between">
-              <div className="c3-logo" aria-hidden />
+              <span className="text-base font-semibold text-primary">Menu</span>
               <button
+                ref={closeMenuButtonRef}
                 type="button"
                 onClick={closeMenu}
                 className="p-2 text-secondary transition-colors hover:text-primary"
@@ -182,7 +212,7 @@ export function AppSideNav({ onLogout }: AppSideNavProps) {
             </div>
           </div>
         </nav>
-      ) : null}
+      </div>
     </>
   );
 }

@@ -6,11 +6,15 @@ import {
 import { useParking } from '../hooks/useParking';
 import { useViolations } from '../hooks/useViolations';
 import SearchBar from '../components/SearchBar';
+import {
+  SortableTableHeader,
+  SortDirection,
+  compareStrings,
+  mobileSortDirectionClassName,
+  mobileSortSelectClassName,
+} from '../components/SortableTableHeader';
 import { formatLicensePlate } from '../lib/formatLicensePlate';
 import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
   Car,
   Phone,
   Tag,
@@ -25,58 +29,13 @@ import {
 } from 'lucide-react';
 import VehicleForm from '../components/VehicleForm';
 import { apiFetchJson } from '../lib/apiFetch';
-import { PageHeader, pageBodyClassName } from '../components/PageHeader/PageHeader';
+import {
+  PageHeader,
+  pageBodyScrollClassName,
+  pageBodyScrollInnerClassName,
+} from '../components/PageHeader/PageHeader';
 
 type VehicleSortKey = 'licensePlate' | 'vehicle' | 'contact' | 'phone' | 'spot' | 'violations';
-type SortDirection = 'asc' | 'desc';
-
-function compareStrings(a: string, b: string) {
-  return a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true });
-}
-
-function SortableTableHeader({
-  label,
-  sortKey,
-  activeKey,
-  direction,
-  onSort,
-  className = 'text-left',
-}: {
-  label: string;
-  sortKey: VehicleSortKey;
-  activeKey: VehicleSortKey;
-  direction: SortDirection;
-  onSort: (key: VehicleSortKey) => void;
-  className?: string;
-}) {
-  const active = activeKey === sortKey;
-  return (
-    <th
-      scope="col"
-      aria-sort={active ? (direction === 'asc' ? 'ascending' : 'descending') : 'none'}
-      className={`bg-primary px-6 py-3 ${className}`}
-    >
-      <button
-        type="button"
-        onClick={() => onSort(sortKey)}
-        className={`inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wider transition-colors ${
-          active ? 'text-primary' : 'text-secondary hover:text-primary'
-        }`}
-      >
-        {label}
-        {active ? (
-          direction === 'asc' ? (
-            <ArrowUp className="h-3.5 w-3.5 shrink-0" aria-hidden />
-          ) : (
-            <ArrowDown className="h-3.5 w-3.5 shrink-0" aria-hidden />
-          )
-        ) : (
-          <ArrowUpDown className="h-3.5 w-3.5 shrink-0 opacity-40" aria-hidden />
-        )}
-      </button>
-    </th>
-  );
-}
 
 function Vehicles() {
   const { knownVehicles, parkingLot, updateVehicle, removeVehicle, deleteVehicle, vehicles } = useParking();
@@ -310,7 +269,7 @@ function Vehicles() {
   }, [knownVehicles, searchQuery, sort, violations, vehicles, parkingLot]);
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col bg-secondary">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-secondary">
       <PageHeader
         title="Vehicles"
         subtitle="Manage the vehicle directory, parking assignments, and SMS reminders."
@@ -326,8 +285,9 @@ function Vehicles() {
         }
       />
 
-      <div className={pageBodyClassName}>
-        <div className="mb-6 shrink-0">
+      <div className={pageBodyScrollClassName}>
+        <div className={pageBodyScrollInnerClassName}>
+        <div className="mb-4 shrink-0 sm:mb-6">
           <SearchBar 
             value={searchQuery}
             onChange={setSearchQuery}
@@ -335,202 +295,388 @@ function Vehicles() {
           />
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col bg-primary border border-weak rounded-sm overflow-hidden">
-          <div className="min-h-0 flex-1 overflow-auto">
-            <table className="min-w-full divide-y divide-border-weak">
-              <thead className="sticky top-0 z-10 border-b border-weak bg-primary">
-                <tr>
-                  <SortableTableHeader
-                    label="License Plate"
-                    sortKey="licensePlate"
-                    activeKey={sort.key}
-                    direction={sort.direction}
-                    onSort={handleSort}
-                  />
-                  <SortableTableHeader
-                    label="Vehicle"
-                    sortKey="vehicle"
-                    activeKey={sort.key}
-                    direction={sort.direction}
-                    onSort={handleSort}
-                  />
-                  <SortableTableHeader
-                    label="Contact"
-                    sortKey="contact"
-                    activeKey={sort.key}
-                    direction={sort.direction}
-                    onSort={handleSort}
-                  />
-                  <SortableTableHeader
-                    label="Phone"
-                    sortKey="phone"
-                    activeKey={sort.key}
-                    direction={sort.direction}
-                    onSort={handleSort}
-                  />
-                  <SortableTableHeader
-                    label="Current Spot"
-                    sortKey="spot"
-                    activeKey={sort.key}
-                    direction={sort.direction}
-                    onSort={handleSort}
-                  />
-                  <SortableTableHeader
-                    label="Violations"
-                    sortKey="violations"
-                    activeKey={sort.key}
-                    direction={sort.direction}
-                    onSort={handleSort}
-                  />
-                  <th
-                    scope="col"
-                    className="bg-primary px-6 py-3 text-right text-xs font-medium text-secondary uppercase tracking-wider"
+        <div className="overflow-hidden rounded-sm border border-weak bg-primary">
+            {filteredVehicles.length === 0 ? (
+              <div className="flex items-center justify-center py-16 text-sm text-secondary">
+                No vehicles found
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-wrap items-center gap-2 border-b border-weak px-4 py-3 md:hidden">
+                  <span className="text-xs font-medium uppercase tracking-wider text-secondary">Sort by</span>
+                  <select
+                    value={sort.key}
+                    onChange={(e) =>
+                      setSort((prev) => ({ ...prev, key: e.target.value as VehicleSortKey }))
+                    }
+                    className={mobileSortSelectClassName}
+                    aria-label="Sort vehicles by"
                   >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-weak">
-                {filteredVehicles.map((vehicle) => {
-                  const parkedSpot = getParkedSpot(vehicle.licensePlate);
-                  const colorHex = getColorHex(vehicle.color);
-                  
-                  return (
-                    <tr key={vehicle.licensePlate} className="bg-primary hover:bg-tertiary transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        <div className="flex items-center">
-                          <Tag className="h-4 w-4 text-gray-400 mr-2" />
+                    <option value="licensePlate">License plate</option>
+                    <option value="vehicle">Vehicle</option>
+                    <option value="contact">Contact</option>
+                    <option value="phone">Phone</option>
+                    <option value="spot">Current spot</option>
+                    <option value="violations">Violations</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSort((prev) => ({
+                        ...prev,
+                        direction: prev.direction === 'asc' ? 'desc' : 'asc',
+                      }))
+                    }
+                    className={mobileSortDirectionClassName}
+                    aria-label={sort.direction === 'asc' ? 'Sort ascending' : 'Sort descending'}
+                  >
+                    {sort.direction === 'asc' ? 'A → Z' : 'Z → A'}
+                  </button>
+                </div>
+
+                <div className="divide-y divide-border-weak md:hidden">
+                  {filteredVehicles.map((vehicle) => {
+                    const parkedSpot = getParkedSpot(vehicle.licensePlate);
+                    const colorHex = getColorHex(vehicle.color);
+                    const violationCount = getViolationCountForVehicle(vehicle.licensePlate);
+
+                    return (
+                      <div key={vehicle.licensePlate} className="space-y-3 p-4">
+                        <div className="flex items-start justify-between gap-2">
                           <button
+                            type="button"
                             onClick={() => {
                               setSelectedVehicle(vehicle);
                               setShowEditModal(true);
                             }}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="inline-flex min-w-0 items-center gap-1.5 text-left text-sm font-medium text-blue-600 hover:text-blue-800"
                           >
+                            <Tag className="h-4 w-4 shrink-0 text-secondary" aria-hidden />
                             {formatLicensePlate(vehicle.licensePlate)}
                           </button>
+                          <span
+                            className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-medium ${getViolationSeverityClass(violationCount)}`}
+                          >
+                            <AlertTriangle className="mr-1 h-3 w-3" aria-hidden />
+                            {violationCount}
+                          </span>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div className="flex items-center">
-                          <Car className="h-4 w-4 text-gray-400 mr-2" />
+                        <p className="inline-flex items-center text-sm text-secondary">
+                          <Car className="mr-1.5 h-4 w-4 shrink-0" aria-hidden />
                           {vehicle.make} {vehicle.model}
-                          <div 
-                            className="ml-2 w-4 h-4 rounded-full" 
-                            style={{ 
+                          <span
+                            className="ml-2 inline-block h-4 w-4 shrink-0 rounded-full"
+                            style={{
                               backgroundColor: colorHex,
-                              border: vehicle.color === 'White' ? '1px solid #e5e7eb' : 'none'
+                              border: vehicle.color === 'White' ? '1px solid #e5e7eb' : 'none',
                             }}
                             title={vehicle.color}
                           />
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div className="flex items-center">
+                        </p>
+                        <p className="text-sm text-secondary">
                           {vehicle.contact || '-'}
                           {vehicle.notifyOnArrival && (
-                            <span title={vehicle.arrivalNote || 'Welcome team is notified when this vehicle parks'}>
-                              <BellRing className="ml-2 h-4 w-4 text-accent" aria-label="Welcome team alert on" />
-                            </span>
+                            <BellRing
+                              className="ml-2 inline h-4 w-4 text-accent"
+                              aria-label="Welcome team alert on"
+                              title={vehicle.arrivalNote || 'Welcome team is notified when this vehicle parks'}
+                            />
                           )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div className="flex items-center">
-                          <Phone className="h-4 w-4 text-gray-400 mr-2" />
+                        </p>
+                        <p className="inline-flex items-center text-sm text-secondary">
+                          <Phone className="mr-1.5 h-4 w-4 shrink-0" aria-hidden />
                           {vehicle.phoneNumber ? (
-                            <a 
+                            <a
                               href={`tel:${vehicle.phoneNumber}`}
                               className="text-blue-600 hover:text-blue-800"
-                              onClick={(e) => e.stopPropagation()}
                             >
                               {vehicle.phoneNumber}
                             </a>
                           ) : (
                             '-'
                           )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div className="flex items-center space-x-2">
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2">
                           <button
                             type="button"
                             onClick={() => handlePark(vehicle)}
-                            className={`inline-flex items-center px-3 py-1.5 rounded-sm border border-weak transition-colors ${
+                            className={`inline-flex items-center rounded-sm border border-weak px-3 py-1.5 text-sm transition-colors ${
                               parkedSpot
                                 ? parkedSpot.priority === 2
-                                  ? 'text-green-700 bg-green-100 hover:bg-green-200'
-                                  : 'text-orange-700 bg-orange-100 hover:bg-orange-200'
-                                : 'text-blue-700 bg-blue-100 hover:bg-blue-200'
+                                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                  : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                             }`}
                           >
-                            <ParkingSquare className="h-4 w-4 mr-1" />
-                            {parkedSpot ? `Spot ${parkedSpot.label}` : 'Park Vehicle'}
+                            <ParkingSquare className="mr-1 h-4 w-4" aria-hidden />
+                            {parkedSpot ? `Spot ${parkedSpot.label}` : 'Park vehicle'}
                           </button>
                           {parkedSpot && (
                             <button
+                              type="button"
                               onClick={() => handleRemoveFromSpot(parkedSpot.id)}
-                              className="inline-flex items-center text-gray-500 hover:text-gray-700 transition-colors"
+                              className="inline-flex items-center rounded-xs p-1.5 text-secondary hover:text-primary"
                               title="Remove from spot"
+                              aria-label="Remove from spot"
                             >
                               <X className="h-4 w-4" />
                             </button>
                           )}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {(() => {
-                          const violationCount = getViolationCountForVehicle(vehicle.licensePlate);
-                          return (
-                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getViolationSeverityClass(violationCount)}`}>
-                              <AlertTriangle className="h-3 w-3 mr-1" />
-                              {violationCount}
-                            </span>
-                          );
-                        })()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end space-x-2">
-                          {/* Send Reminder Button */}
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
                           {vehicle.phoneNumber && vehicle.phoneNumber.length === 10 && (
-                            <div className="flex items-center space-x-2">
-                              <button
-                                onClick={() => handleSendReminder(vehicle)}
-                                disabled={sendingReminder === vehicle.licensePlate}
-                                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-green-600 bg-green-100 rounded-md hover:bg-green-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                title="Send move reminder SMS"
-                              >
-                                {sendingReminder === vehicle.licensePlate ? (
-                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                                ) : (
-                                  <MessageSquare className="h-4 w-4 mr-1" />
-                                )}
-                                {sendingReminder === vehicle.licensePlate ? 'Sending...' : 'Remind'}
-                              </button>
-                              {reminderStatus?.licensePlate === vehicle.licensePlate && (
-                                <span className={`text-xs ${
-                                  reminderStatus.type === 'success' ? 'text-green-600' : 'text-red-600'
-                                }`}>
-                                  {reminderStatus.message}
-                                </span>
+                            <button
+                              type="button"
+                              onClick={() => handleSendReminder(vehicle)}
+                              disabled={sendingReminder === vehicle.licensePlate}
+                              className="inline-flex items-center rounded-md bg-green-100 px-3 py-1.5 text-xs font-medium text-green-600 transition-colors hover:bg-green-200 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              {sendingReminder === vehicle.licensePlate ? (
+                                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                              ) : (
+                                <MessageSquare className="mr-1 h-4 w-4" />
                               )}
-                            </div>
+                              {sendingReminder === vehicle.licensePlate ? 'Sending…' : 'Remind'}
+                            </button>
+                          )}
+                          {reminderStatus?.licensePlate === vehicle.licensePlate && (
+                            <span
+                              className={`text-xs ${
+                                reminderStatus.type === 'success' ? 'text-green-600' : 'text-red-600'
+                              }`}
+                            >
+                              {reminderStatus.message}
+                            </span>
                           )}
                           <button
+                            type="button"
                             onClick={() => setShowDeleteConfirm(vehicle.licensePlate)}
-                            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200 transition-colors"
+                            className="inline-flex items-center rounded-md bg-red-100 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-200"
                           >
-                            <Trash2 className="h-4 w-4 mr-1" />
+                            <Trash2 className="mr-1 h-4 w-4" />
                             Delete
                           </button>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="hidden overflow-x-auto md:block">
+                  <table className="min-w-full divide-y divide-border-weak">
+                    <thead className="sticky top-0 z-10 border-b border-weak bg-primary">
+                      <tr>
+                        <SortableTableHeader
+                          label="License Plate"
+                          sortKey="licensePlate"
+                          activeKey={sort.key}
+                          direction={sort.direction}
+                          onSort={handleSort}
+                        />
+                        <SortableTableHeader
+                          label="Vehicle"
+                          sortKey="vehicle"
+                          activeKey={sort.key}
+                          direction={sort.direction}
+                          onSort={handleSort}
+                        />
+                        <SortableTableHeader
+                          label="Contact"
+                          sortKey="contact"
+                          activeKey={sort.key}
+                          direction={sort.direction}
+                          onSort={handleSort}
+                        />
+                        <SortableTableHeader
+                          label="Phone"
+                          sortKey="phone"
+                          activeKey={sort.key}
+                          direction={sort.direction}
+                          onSort={handleSort}
+                        />
+                        <SortableTableHeader
+                          label="Current Spot"
+                          sortKey="spot"
+                          activeKey={sort.key}
+                          direction={sort.direction}
+                          onSort={handleSort}
+                        />
+                        <SortableTableHeader
+                          label="Violations"
+                          sortKey="violations"
+                          activeKey={sort.key}
+                          direction={sort.direction}
+                          onSort={handleSort}
+                        />
+                        <th
+                          scope="col"
+                          className="bg-primary px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-secondary"
+                        >
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border-weak">
+                      {filteredVehicles.map((vehicle) => {
+                        const parkedSpot = getParkedSpot(vehicle.licensePlate);
+                        const colorHex = getColorHex(vehicle.color);
+
+                        return (
+                          <tr key={vehicle.licensePlate} className="bg-primary transition-colors hover:bg-tertiary">
+                            <td className="whitespace-nowrap px-4 py-4 text-sm font-medium text-gray-900 lg:px-6">
+                              <div className="flex items-center">
+                                <Tag className="mr-2 h-4 w-4 text-gray-400" aria-hidden />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedVehicle(vehicle);
+                                    setShowEditModal(true);
+                                  }}
+                                  className="text-blue-600 hover:text-blue-900"
+                                >
+                                  {formatLicensePlate(vehicle.licensePlate)}
+                                </button>
+                              </div>
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-500 lg:px-6">
+                              <div className="flex items-center">
+                                <Car className="mr-2 h-4 w-4 text-gray-400" aria-hidden />
+                                {vehicle.make} {vehicle.model}
+                                <div
+                                  className="ml-2 h-4 w-4 rounded-full"
+                                  style={{
+                                    backgroundColor: colorHex,
+                                    border: vehicle.color === 'White' ? '1px solid #e5e7eb' : 'none',
+                                  }}
+                                  title={vehicle.color}
+                                />
+                              </div>
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-500 lg:px-6">
+                              <div className="flex items-center">
+                                {vehicle.contact || '-'}
+                                {vehicle.notifyOnArrival && (
+                                  <span
+                                    title={
+                                      vehicle.arrivalNote ||
+                                      'Welcome team is notified when this vehicle parks'
+                                    }
+                                  >
+                                    <BellRing
+                                      className="ml-2 h-4 w-4 text-accent"
+                                      aria-label="Welcome team alert on"
+                                    />
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-500 lg:px-6">
+                              <div className="flex items-center">
+                                <Phone className="mr-2 h-4 w-4 text-gray-400" aria-hidden />
+                                {vehicle.phoneNumber ? (
+                                  <a
+                                    href={`tel:${vehicle.phoneNumber}`}
+                                    className="text-blue-600 hover:text-blue-800"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    {vehicle.phoneNumber}
+                                  </a>
+                                ) : (
+                                  '-'
+                                )}
+                              </div>
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-500 lg:px-6">
+                              <div className="flex items-center space-x-2">
+                                <button
+                                  type="button"
+                                  onClick={() => handlePark(vehicle)}
+                                  className={`inline-flex items-center rounded-sm border border-weak px-3 py-1.5 transition-colors ${
+                                    parkedSpot
+                                      ? parkedSpot.priority === 2
+                                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                        : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                  }`}
+                                >
+                                  <ParkingSquare className="mr-1 h-4 w-4" />
+                                  {parkedSpot ? `Spot ${parkedSpot.label}` : 'Park Vehicle'}
+                                </button>
+                                {parkedSpot && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveFromSpot(parkedSpot.id)}
+                                    className="inline-flex items-center text-gray-500 transition-colors hover:text-gray-700"
+                                    title="Remove from spot"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-4 text-sm lg:px-6">
+                              {(() => {
+                                const violationCount = getViolationCountForVehicle(vehicle.licensePlate);
+                                return (
+                                  <span
+                                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${getViolationSeverityClass(violationCount)}`}
+                                  >
+                                    <AlertTriangle className="mr-1 h-3 w-3" />
+                                    {violationCount}
+                                  </span>
+                                );
+                              })()}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-4 text-right text-sm font-medium lg:px-6">
+                              <div className="flex items-center justify-end space-x-2">
+                                {vehicle.phoneNumber && vehicle.phoneNumber.length === 10 && (
+                                  <div className="flex items-center space-x-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSendReminder(vehicle)}
+                                      disabled={sendingReminder === vehicle.licensePlate}
+                                      className="inline-flex items-center rounded-md bg-green-100 px-3 py-1.5 text-sm font-medium text-green-600 transition-colors hover:bg-green-200 disabled:cursor-not-allowed disabled:opacity-50"
+                                      title="Send move reminder SMS"
+                                    >
+                                      {sendingReminder === vehicle.licensePlate ? (
+                                        <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <MessageSquare className="mr-1 h-4 w-4" />
+                                      )}
+                                      {sendingReminder === vehicle.licensePlate ? 'Sending...' : 'Remind'}
+                                    </button>
+                                    {reminderStatus?.licensePlate === vehicle.licensePlate && (
+                                      <span
+                                        className={`text-xs ${
+                                          reminderStatus.type === 'success'
+                                            ? 'text-green-600'
+                                            : 'text-red-600'
+                                        }`}
+                                      >
+                                        {reminderStatus.message}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => setShowDeleteConfirm(vehicle.licensePlate)}
+                                  className="inline-flex items-center rounded-md bg-red-100 px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-200"
+                                >
+                                  <Trash2 className="mr-1 h-4 w-4" />
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+        </div>
         </div>
       </div>
 

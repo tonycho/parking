@@ -15,7 +15,7 @@ export function ParkingLotTabs({ lots, value, onChange, className = '' }: Parkin
 
   return (
     <div
-      className={`flex flex-wrap gap-2 ${className}`}
+      className={`flex w-full gap-2 max-sm:[&>button]:min-h-11 max-sm:[&>button]:flex-1 sm:flex-wrap ${className}`}
       role="tablist"
       aria-label="Parking lot"
     >

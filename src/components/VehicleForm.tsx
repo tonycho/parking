@@ -106,6 +106,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
 
   const formRef = useRef<HTMLFormElement>(null);
   const licensePlateRef = useRef<HTMLDivElement>(null);
+  const licensePlateInputRef = useRef<HTMLInputElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
   const makeRef = useRef<HTMLDivElement>(null);
   const modelRef = useRef<HTMLDivElement>(null);
@@ -130,6 +131,15 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       });
     }
   }, [existingVehicle]);
+
+  useEffect(() => {
+    const id = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        licensePlateInputRef.current?.focus();
+      });
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -400,6 +410,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
               License Plate
             </label>
             <input
+              ref={licensePlateInputRef}
               type="text"
               name="licensePlate"
               value={formData.licensePlate}

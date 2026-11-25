@@ -1,7 +1,17 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { HeartHandshake, Loader2, MessageSquare, Pencil, Phone, X } from 'lucide-react';
-import { PageHeader, pageBodyScrollClassName } from '../components/PageHeader/PageHeader';
+import {
+  PageHeader,
+  pageBodyScrollClassName,
+  pageBodyScrollInnerClassName,
+} from '../components/PageHeader/PageHeader';
 import SearchBar from '../components/SearchBar';
+import {
+  SortableTableHeader,
+  compareStrings,
+  mobileSortDirectionClassName,
+  mobileSortSelectClassName,
+} from '../components/SortableTableHeader';
 import { supabase } from '../lib/supabase';
 import { apiFetchJson } from '../lib/apiFetch';
 import { formatLicensePlate } from '../lib/formatLicensePlate';
@@ -18,6 +28,9 @@ type ArrivalAlertLog = {
 };
 
 type RowStatus = { userId: string; type: 'success' | 'error'; message: string };
+
+type UserSortKey = 'name' | 'email' | 'phone' | 'welcomeTeam';
+type SortDirection = 'asc' | 'desc';
 
 function mapUserRow(row: Record<string, unknown>): AppUser {
   return {
@@ -49,6 +62,35 @@ function formatDateTime(value: string): string {
   });
 }
 
+function UserNameDisplay({
+  user,
+  currentUserId,
+}: {
+  user: AppUser;
+  currentUserId: string | null;
+}) {
+  const welcomeTeamTitle = user.isWelcomeTeam
+    ? user.phoneNumber
+      ? 'Welcome team — receives arrival texts'
+      : 'Welcome team — add a phone number to receive texts'
+    : undefined;
+
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      {user.name || <span className="text-secondary">-</span>}
+      {user.isWelcomeTeam && welcomeTeamTitle ? (
+        <span className="inline-flex" role="img" aria-label={welcomeTeamTitle} title={welcomeTeamTitle}>
+          <HeartHandshake
+            className={`h-4 w-4 shrink-0 ${user.phoneNumber ? 'text-accent' : 'text-warning'}`}
+            aria-hidden
+          />
+        </span>
+      ) : null}
+      {user.id === currentUserId && <span className="text-xs text-secondary">(you)</span>}
+    </span>
+  );
+}
+
 function Users() {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [logs, setLogs] = useState<ArrivalAlertLog[]>([]);
@@ -59,6 +101,18 @@ function Users() {
   const [editingUser, setEditingUser] = useState<AppUser | null>(null);
   const [rowStatus, setRowStatus] = useState<RowStatus | null>(null);
   const [busyUserId, setBusyUserId] = useState<string | null>(null);
+  const [sort, setSort] = useState<{ key: UserSortKey; direction: SortDirection }>({
+    key: 'email',
+    direction: 'asc',
+  });
+
+  const handleSort = (key: UserSortKey) => {
+    setSort((prev) =>
+      prev.key === key
+        ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+        : { key, direction: 'asc' }
+    );
+  };
 
   const loadData = useCallback(async () => {
     try {
@@ -135,32 +189,50 @@ function Users() {
     }
   };
 
-  const filteredUsers = users.filter((user) => {
+  const sortedUsers = useMemo(() => {
     const query = searchQuery.toLowerCase();
-    return (
-      user.email.toLowerCase().includes(query) ||
-      (user.name ?? '').toLowerCase().includes(query) ||
-      (user.phoneNumber ?? '').includes(query)
-    );
-  });
+    const filtered = users.filter((user) => {
+      return (
+        user.email.toLowerCase().includes(query) ||
+        (user.name ?? '').toLowerCase().includes(query) ||
+        (user.phoneNumber ?? '').includes(query)
+      );
+    });
 
-  const welcomeTeamCount = users.filter((u) => u.isWelcomeTeam && u.phoneNumber).length;
+    const dir = sort.direction === 'asc' ? 1 : -1;
+
+    return [...filtered].sort((a, b) => {
+      let cmp = 0;
+      switch (sort.key) {
+        case 'name':
+          cmp = compareStrings(a.name ?? '', b.name ?? '');
+          break;
+        case 'email':
+          cmp = compareStrings(a.email, b.email);
+          break;
+        case 'phone':
+          cmp = compareStrings(a.phoneNumber ?? '', b.phoneNumber ?? '');
+          break;
+        case 'welcomeTeam':
+          cmp = Number(a.isWelcomeTeam) - Number(b.isWelcomeTeam);
+          break;
+      }
+      return cmp * dir;
+    });
+  }, [users, searchQuery, sort]);
+
   const nameByPhone = new Map(users.filter((u) => u.phoneNumber).map((u) => [u.phoneNumber!, u.name || u.email]));
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col bg-secondary">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-secondary">
       <PageHeader
         title="Users"
         subtitle="Manage who can sign in and who is on the welcome team. Welcome team members get a text when a flagged vehicle parks."
-        rightContent={
-          <span className="text-sm text-secondary">
-            {welcomeTeamCount} welcome team {welcomeTeamCount === 1 ? 'member' : 'members'} can receive texts
-          </span>
-        }
       />
 
       <div className={pageBodyScrollClassName}>
-        <div className="mb-6 shrink-0">
+        <div className={pageBodyScrollInnerClassName}>
+        <div className="mb-4 shrink-0 sm:mb-6">
           <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search by name, email, phone..." />
         </div>
 
@@ -168,98 +240,229 @@ function Users() {
           <div className="mb-4 rounded-sm border border-weak bg-danger-weak p-3 text-sm text-danger">{loadError}</div>
         )}
 
-        <div className="bg-primary border border-weak rounded-sm overflow-x-auto">
+        <div className="bg-primary border border-weak rounded-sm overflow-hidden">
           {loading ? (
             <div className="space-y-2 p-4">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="h-11 bg-tertiary rounded-sm animate-pulse" />
               ))}
             </div>
-          ) : filteredUsers.length === 0 ? (
+          ) : sortedUsers.length === 0 ? (
             <div className="flex items-center justify-center py-16 text-sm text-secondary">No users found.</div>
           ) : (
-            <table className="min-w-full divide-y divide-border-weak">
-              <thead className="bg-primary">
-                <tr>
-                  {['Name', 'Email', 'Phone', 'Welcome team', ''].map((heading) => (
-                    <th
-                      key={heading}
-                      className="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider last:text-right"
-                    >
-                      {heading}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-weak">
-                {filteredUsers.map((user) => {
+            <>
+              <div className="flex flex-wrap items-center gap-2 border-b border-weak px-4 py-3 md:hidden">
+                <span className="text-xs font-medium uppercase tracking-wider text-secondary">Sort by</span>
+                <select
+                  value={sort.key}
+                  onChange={(e) =>
+                    setSort((prev) => ({ ...prev, key: e.target.value as UserSortKey }))
+                  }
+                  className={mobileSortSelectClassName}
+                  aria-label="Sort users by"
+                >
+                  <option value="name">Name</option>
+                  <option value="email">Email</option>
+                  <option value="phone">Phone</option>
+                  <option value="welcomeTeam">Welcome team</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSort((prev) => ({
+                      ...prev,
+                      direction: prev.direction === 'asc' ? 'desc' : 'asc',
+                    }))
+                  }
+                  className={mobileSortDirectionClassName}
+                  aria-label={sort.direction === 'asc' ? 'Sort ascending' : 'Sort descending'}
+                >
+                  {sort.direction === 'asc' ? 'A → Z' : 'Z → A'}
+                </button>
+              </div>
+              <div className="divide-y divide-border-weak md:hidden">
+                {sortedUsers.map((user) => {
                   const isBusy = busyUserId === user.id;
                   const status = rowStatus?.userId === user.id ? rowStatus : null;
                   return (
-                    <tr key={user.id} className="hover:bg-tertiary transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-primary">
-                        {user.name || <span className="text-secondary">-</span>}
-                        {user.id === currentUserId && <span className="ml-2 text-xs text-secondary">(you)</span>}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">{user.email}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary">
-                        <span className="inline-flex items-center">
-                          <Phone className="mr-2 h-4 w-4" aria-hidden />
-                          {formatPhone(user.phoneNumber)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <select
-                          value={user.isWelcomeTeam ? 'yes' : 'no'}
-                          disabled={isBusy}
-                          onChange={(e) => void handleSetWelcomeTeam(user, e.target.value === 'yes')}
-                          className={selectClass}
-                          aria-label={`Welcome team for ${user.email}`}
+                    <div key={user.id} className="space-y-3 p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-primary">
+                            <UserNameDisplay user={user} currentUserId={currentUserId} />
+                          </p>
+                          <p className="mt-0.5 truncate text-sm text-secondary">{user.email}</p>
+                          <p className="mt-1 inline-flex items-center text-sm text-secondary">
+                            <Phone className="mr-1.5 h-4 w-4 shrink-0" aria-hidden />
+                            {formatPhone(user.phoneNumber)}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setEditingUser(user)}
+                          className="shrink-0 rounded-xs p-1.5 text-secondary transition-colors hover:bg-hover hover:text-primary"
+                          aria-label={`Edit ${user.email}`}
                         >
-                          <option value="no">No</option>
-                          <option value="yes">Yes</option>
-                        </select>
-                        {user.isWelcomeTeam && !user.phoneNumber && (
-                          <p className="mt-1 text-xs text-warning">Add a phone number to receive texts</p>
+                          <Pencil size={16} />
+                        </button>
+                      </div>
+                      <p className="text-xs font-medium uppercase tracking-wider text-secondary">Welcome team</p>
+                      <select
+                        value={user.isWelcomeTeam ? 'yes' : 'no'}
+                        disabled={isBusy}
+                        onChange={(e) => void handleSetWelcomeTeam(user, e.target.value === 'yes')}
+                        className={`${selectClass} w-full max-w-xs`}
+                        aria-label={`Welcome team for ${user.email}`}
+                      >
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                      </select>
+                      {user.isWelcomeTeam && !user.phoneNumber && (
+                        <p className="text-xs text-warning">Add a phone number to receive texts</p>
+                      )}
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        {status && (
+                          <span
+                            className={`text-xs ${status.type === 'success' ? 'text-success' : 'text-danger'}`}
+                          >
+                            {status.message}
+                          </span>
                         )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                        <div className="flex items-center justify-end gap-2">
-                          {status && (
-                            <span className={`text-xs ${status.type === 'success' ? 'text-success' : 'text-danger'}`}>
-                              {status.message}
-                            </span>
-                          )}
-                          {user.isWelcomeTeam && user.phoneNumber && (
-                            <button
-                              type="button"
-                              onClick={() => void handleSendTest(user)}
-                              disabled={isBusy}
-                              className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-primary border border-weak rounded-xs hover:bg-hover transition-colors disabled:opacity-50"
-                            >
-                              {isBusy ? (
-                                <Loader2 className="mr-1 animate-spin" size={14} />
-                              ) : (
-                                <MessageSquare className="mr-1" size={14} />
-                              )}
-                              Send test
-                            </button>
-                          )}
+                        {user.isWelcomeTeam && user.phoneNumber && (
                           <button
                             type="button"
-                            onClick={() => setEditingUser(user)}
-                            className="p-1.5 rounded-xs text-secondary hover:bg-hover hover:text-primary transition-colors"
-                            aria-label={`Edit ${user.email}`}
+                            onClick={() => void handleSendTest(user)}
+                            disabled={isBusy}
+                            className="inline-flex items-center rounded-xs border border-weak px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-hover disabled:opacity-50"
                           >
-                            <Pencil size={16} />
+                            {isBusy ? (
+                              <Loader2 className="mr-1 animate-spin" size={14} />
+                            ) : (
+                              <MessageSquare className="mr-1" size={14} />
+                            )}
+                            Send test
                           </button>
-                        </div>
-                      </td>
-                    </tr>
+                        )}
+                      </div>
+                    </div>
                   );
                 })}
-              </tbody>
-            </table>
+              </div>
+
+              <div className="hidden overflow-x-auto md:block">
+                <table className="min-w-full divide-y divide-border-weak">
+                  <thead className="sticky top-0 z-10 border-b border-weak bg-primary">
+                    <tr>
+                      <SortableTableHeader
+                        label="Name"
+                        sortKey="name"
+                        activeKey={sort.key}
+                        direction={sort.direction}
+                        onSort={handleSort}
+                      />
+                      <SortableTableHeader
+                        label="Email"
+                        sortKey="email"
+                        activeKey={sort.key}
+                        direction={sort.direction}
+                        onSort={handleSort}
+                      />
+                      <SortableTableHeader
+                        label="Phone"
+                        sortKey="phone"
+                        activeKey={sort.key}
+                        direction={sort.direction}
+                        onSort={handleSort}
+                      />
+                      <SortableTableHeader
+                        label="Welcome team"
+                        sortKey="welcomeTeam"
+                        activeKey={sort.key}
+                        direction={sort.direction}
+                        onSort={handleSort}
+                      />
+                      <th
+                        scope="col"
+                        className="bg-primary px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-secondary"
+                      >
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border-weak">
+                    {sortedUsers.map((user) => {
+                      const isBusy = busyUserId === user.id;
+                      const status = rowStatus?.userId === user.id ? rowStatus : null;
+                      return (
+                        <tr key={user.id} className="transition-colors hover:bg-tertiary">
+                          <td className="whitespace-nowrap px-4 py-4 text-sm text-primary lg:px-6">
+                            <UserNameDisplay user={user} currentUserId={currentUserId} />
+                          </td>
+                          <td className="max-w-[12rem] truncate whitespace-nowrap px-4 py-4 text-sm text-secondary lg:max-w-none lg:px-6">
+                            {user.email}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-4 text-sm text-secondary lg:px-6">
+                            <span className="inline-flex items-center">
+                              <Phone className="mr-2 h-4 w-4" aria-hidden />
+                              {formatPhone(user.phoneNumber)}
+                            </span>
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-4 text-sm lg:px-6">
+                            <select
+                              value={user.isWelcomeTeam ? 'yes' : 'no'}
+                              disabled={isBusy}
+                              onChange={(e) => void handleSetWelcomeTeam(user, e.target.value === 'yes')}
+                              className={selectClass}
+                              aria-label={`Welcome team for ${user.email}`}
+                            >
+                              <option value="no">No</option>
+                              <option value="yes">Yes</option>
+                            </select>
+                            {user.isWelcomeTeam && !user.phoneNumber && (
+                              <p className="mt-1 text-xs text-warning">Add a phone number to receive texts</p>
+                            )}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-4 text-right text-sm lg:px-6">
+                            <div className="flex items-center justify-end gap-2">
+                              {status && (
+                                <span
+                                  className={`text-xs ${status.type === 'success' ? 'text-success' : 'text-danger'}`}
+                                >
+                                  {status.message}
+                                </span>
+                              )}
+                              {user.isWelcomeTeam && user.phoneNumber && (
+                                <button
+                                  type="button"
+                                  onClick={() => void handleSendTest(user)}
+                                  disabled={isBusy}
+                                  className="inline-flex items-center rounded-xs border border-weak px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-hover disabled:opacity-50"
+                                >
+                                  {isBusy ? (
+                                    <Loader2 className="mr-1 animate-spin" size={14} />
+                                  ) : (
+                                    <MessageSquare className="mr-1" size={14} />
+                                  )}
+                                  Send test
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => setEditingUser(user)}
+                                className="rounded-xs p-1.5 text-secondary transition-colors hover:bg-hover hover:text-primary"
+                                aria-label={`Edit ${user.email}`}
+                              >
+                                <Pencil size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
 
@@ -304,6 +507,7 @@ function Users() {
             </div>
           )}
         </section>
+        </div>
       </div>
 
       {editingUser && (

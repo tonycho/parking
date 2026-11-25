@@ -68,7 +68,6 @@ const Login = () => {
     <div className="min-h-screen h-full bg-secondary flex flex-col items-center justify-center px-4 py-8">
       <div className="c3-card w-full max-w-sm">
         <div className="flex flex-col items-center mb-6">
-          <div className="c3-logo mb-3" aria-hidden />
           <Lock className="h-10 w-10 text-accent" aria-hidden />
         </div>
         <h2 className="text-center text-xl font-semibold text-primary mb-6">ParkSmart Login</h2>
@@ -85,7 +84,7 @@ const Login = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-weak rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full min-h-11 border border-weak rounded-sm px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter email"
               required
             />
@@ -102,7 +101,7 @@ const Login = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-weak rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full min-h-11 border border-weak rounded-sm px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter password"
               required
             />
@@ -113,7 +112,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full rounded-sm py-2.5 px-4 text-sm font-medium text-inverse bg-accent hover:bg-accent-hover transition-colors ${
+            className={`w-full min-h-11 rounded-sm px-4 py-2.5 text-sm font-medium text-inverse bg-accent hover:bg-accent-hover transition-colors ${
               loading ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
