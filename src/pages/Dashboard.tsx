@@ -235,7 +235,7 @@ function Dashboard() {
                 </button>
               </div>
               <img 
-                src="/image.png" 
+                src="/image.jpg" 
                 alt="Parking Map" 
                 className="w-full h-auto"
               />

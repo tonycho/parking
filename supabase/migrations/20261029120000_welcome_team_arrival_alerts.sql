@@ -12,13 +12,15 @@ ALTER TABLE vehicles
   ADD COLUMN IF NOT EXISTS arrival_note text;
 
 -- The Users page lists and edits every user; previously users could only read their own row.
+DROP POLICY IF EXISTS "Authenticated users can view all users" ON users;
 CREATE POLICY "Authenticated users can view all users"
   ON users FOR SELECT TO authenticated USING (true);
 
+DROP POLICY IF EXISTS "Authenticated users can update users" ON users;
 CREATE POLICY "Authenticated users can update users"
   ON users FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
 
-CREATE TABLE arrival_alert_logs (
+CREATE TABLE IF NOT EXISTS arrival_alert_logs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   vehicle_id uuid REFERENCES vehicles(id) ON DELETE SET NULL,
   license_plate text NOT NULL,
@@ -31,14 +33,15 @@ CREATE TABLE arrival_alert_logs (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE UNIQUE INDEX idx_arrival_alert_logs_once_per_day
+CREATE UNIQUE INDEX IF NOT EXISTS idx_arrival_alert_logs_once_per_day
   ON arrival_alert_logs (license_plate, recipient_phone, local_date);
 
-CREATE INDEX idx_arrival_alert_logs_created
+CREATE INDEX IF NOT EXISTS idx_arrival_alert_logs_created
   ON arrival_alert_logs (created_at DESC);
 
 -- Rows are written only by the API (service role); signed-in users can read the history.
 ALTER TABLE arrival_alert_logs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "authenticated read arrival_alert_logs" ON arrival_alert_logs;
 CREATE POLICY "authenticated read arrival_alert_logs"
   ON arrival_alert_logs FOR SELECT TO authenticated USING (true);

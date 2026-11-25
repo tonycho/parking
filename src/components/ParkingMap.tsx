@@ -54,7 +54,7 @@ const ParkingMap: React.FC<ParkingMapProps> = ({
     <div className="relative flex h-full w-full flex-col">
       <div className="relative min-h-0 flex-1 bg-primary">
         {/* Inset plot so %-positioned spots get left breathing room without changing stored coordinates */}
-        <div className="absolute inset-y-0 left-3 right-0 md:left-4">
+        <div className="absolute inset-0">
           {sortedSpots.map((spot) => {
             const driverName = getDriverName(spot.id);
             const colorClasses = getSpotColor(spot);
