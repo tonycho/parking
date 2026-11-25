@@ -31,19 +31,19 @@ export function PageHeader({
   return (
     <div className={`bg-secondary py-6 min-w-0 shrink-0 ${className}`}>
       <div className={contentWrapperClassName}>
-        <div className="flex min-w-0 flex-col items-center gap-4 text-center md:flex-row md:items-start md:justify-between md:text-left">
-          <h1 className="shrink-0 text-2xl font-medium text-primary">{title}</h1>
+        <div className="flex min-w-0 flex-col items-start gap-4 text-left sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-medium text-primary">{title}</h1>
+            {subtitle ? (
+              <p className="mt-1 text-sm text-secondary">{subtitle}</p>
+            ) : null}
+          </div>
           {rightContent ? (
-            <div className="flex w-full min-w-0 flex-col items-center gap-3 md:w-auto md:flex-row md:flex-wrap md:items-center md:justify-end md:gap-4 lg:flex-1 lg:flex-nowrap">
+            <div className="flex w-full min-w-0 shrink-0 flex-col items-start gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-4 lg:flex-1 lg:flex-nowrap">
               {rightContent}
             </div>
           ) : null}
         </div>
-        {subtitle ? (
-          <p className="mt-1 text-sm text-secondary mx-auto text-center md:mx-0 md:text-left">
-            {subtitle}
-          </p>
-        ) : null}
       </div>
     </div>
   );

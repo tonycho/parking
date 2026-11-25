@@ -6,6 +6,7 @@ import { PageHeader, pageBodyClassName } from '../components/PageHeader/PageHead
 import SearchBar from '../components/SearchBar';
 import ViolationRecordForm from '../components/ViolationRecordForm';
 import { Violation } from '../types';
+import { formatLicensePlate } from '../lib/formatLicensePlate';
 
 function Violations() {
   const { knownVehicles, parkingLot } = useParking();
@@ -72,7 +73,7 @@ function Violations() {
     const plate = violation.licensePlate.toLowerCase();
     if (!acc[plate]) {
       acc[plate] = {
-        licensePlate: violation.licensePlate,
+        licensePlate: formatLicensePlate(violation.licensePlate),
         make: violation.make,
         model: violation.model,
         color: violation.color,
@@ -166,12 +167,15 @@ function Violations() {
                 <p className="text-sm mt-2">Click "Record Violation" to add a new violation</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),20rem))] sm:justify-start">
                 {groupedViolationsArray.map((group) => {
                   const totalCount = group.violations.length;
                   
                   return (
-                    <div key={group.licensePlate} className="bg-primary border border-border-weak rounded-sm p-4 hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
+                    <div
+                      key={group.licensePlate}
+                      className="bg-primary border border-border-weak rounded-sm p-4 hover:border-gray-400 dark:hover:border-gray-500 transition-colors w-full min-w-0"
+                    >
                       {/* License Plate - Header */}
                       <div className="flex items-center justify-between mb-3 pb-3 border-b border-border-weak">
                         <button
@@ -179,7 +183,7 @@ function Violations() {
                           className="flex items-center text-blue-600 dark:text-blue-400 font-medium text-lg hover:text-blue-800 dark:hover:text-blue-300"
                         >
                           <Tag className="h-5 w-5 mr-2" />
-                          {group.licensePlate}
+                          {formatLicensePlate(group.licensePlate)}
                         </button>
                         <button
                           onClick={() => handleViewHistory(group.licensePlate)}
@@ -190,7 +194,7 @@ function Violations() {
                         </button>
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-3">
                         {/* Vehicle Info */}
                         {(group.make || group.model) && (
                           <div>
@@ -281,7 +285,9 @@ function Violations() {
                       <AlertTriangle className="mr-2" size={20} />
                       Violation History
                     </h3>
-                    <p className="text-sm opacity-90 mt-0.5">License Plate: {historyLicensePlate}</p>
+                    <p className="text-sm opacity-90 mt-0.5">
+                      License Plate: {formatLicensePlate(historyLicensePlate)}
+                    </p>
                   </div>
                   <button
                     type="button"

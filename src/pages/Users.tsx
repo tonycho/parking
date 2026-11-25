@@ -4,6 +4,7 @@ import { PageHeader, pageBodyScrollClassName } from '../components/PageHeader/Pa
 import SearchBar from '../components/SearchBar';
 import { supabase } from '../lib/supabase';
 import { apiFetchJson } from '../lib/apiFetch';
+import { formatLicensePlate } from '../lib/formatLicensePlate';
 import { AppUser } from '../types';
 
 type ArrivalAlertLog = {
@@ -279,7 +280,7 @@ function Users() {
               {logs.map((log) => (
                 <div key={log.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
                   <span className="text-primary">
-                    {log.license_plate}
+                    {formatLicensePlate(log.license_plate)}
                     {log.spot_label && <span className="text-secondary"> · spot {log.spot_label}</span>}
                     <span className="text-secondary"> → {nameByPhone.get(log.recipient_phone) ?? formatPhone(log.recipient_phone)}</span>
                   </span>

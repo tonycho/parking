@@ -4,6 +4,7 @@ import { ParkingSpot, Vehicle } from '../types';
 import { CarFront, User, Phone, Tag, Palette, MessageSquare, Loader2, AlertTriangle, BellRing } from 'lucide-react';
 import { useViolations } from '../hooks/useViolations';
 import { useParking } from '../hooks/useParking';
+import { formatLicensePlate } from '../lib/formatLicensePlate';
 
 const carManufacturers = [
   'Acura', 'Audi', 'BMW', 'Chevrolet', 'Chrysler', 'Dodge', 'Ford', 'Honda', 'Hyundai',
@@ -312,7 +313,13 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
       return;
     }
 
-    onSave(formData, spot.id);
+    onSave(
+      {
+        ...formData,
+        licensePlate: formatLicensePlate(formData.licensePlate),
+      },
+      spot.id
+    );
   };
 
   const handleRemove = () => {
@@ -343,7 +350,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
         body: {
           phoneNumber: formData.phoneNumber,
           contact: formData.contact,
-          licensePlate: formData.licensePlate,
+          licensePlate: formatLicensePlate(formData.licensePlate),
           spotLabel: spot.label,
         },
       });
@@ -409,7 +416,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                     onClick={() => handleSuggestionClick(vehicle)}
                   >
-                    <div className="font-medium text-gray-900 dark:text-gray-100">{vehicle.licensePlate}</div>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">
+                      {formatLicensePlate(vehicle.licensePlate)}
+                    </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       {vehicle.contact} - {vehicle.make} {vehicle.model} ({vehicle.color})
                     </div>
@@ -442,7 +451,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                   >
                     <div className="font-medium text-gray-900 dark:text-gray-100">{vehicle.contact}</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                      {vehicle.phoneNumber} - {vehicle.licensePlate}
+                      {vehicle.phoneNumber} - {formatLicensePlate(vehicle.licensePlate)}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-500">
                       {vehicle.make} {vehicle.model} ({vehicle.color})

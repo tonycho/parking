@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Tag, CarFront, Palette, FileText } from 'lucide-react';
 import { Vehicle, Violation } from '../types';
+import { formatLicensePlate } from '../lib/formatLicensePlate';
 
 const carManufacturers = [
   'Acura', 'Audi', 'BMW', 'Chevrolet', 'Chrysler', 'Dodge', 'Ford', 'Honda', 'Hyundai',
@@ -219,7 +220,7 @@ const ViolationRecordForm: React.FC<ViolationRecordFormProps> = ({
 
     try {
       await onSubmit({
-        licensePlate: formData.licensePlate,
+        licensePlate: formatLicensePlate(formData.licensePlate),
         make: formData.make || undefined,
         model: formData.model || undefined,
         color: formData.color || undefined,
@@ -267,7 +268,9 @@ const ViolationRecordForm: React.FC<ViolationRecordFormProps> = ({
                     onClick={() => handleSuggestionClick(suggestion)}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="font-medium text-gray-900 dark:text-gray-100">{suggestion.licensePlate}</div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100">
+                        {formatLicensePlate(suggestion.licensePlate)}
+                      </div>
                       <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
                         {suggestion.source === 'vehicle' ? 'Registered' : 'Violation'}
                       </span>

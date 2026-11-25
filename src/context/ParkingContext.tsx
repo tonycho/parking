@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { ParkingLot, ParkingSpot, Vehicle } from '../types';
 import { supabase } from '../lib/supabase';
 import { apiFetchJson } from '../lib/apiFetch';
+import { formatLicensePlate } from '../lib/formatLicensePlate';
 
 type ArrivalFlags = Pick<Vehicle, 'notifyOnArrival' | 'arrivalNote'>;
 
@@ -60,7 +61,7 @@ function mapVpsRowToVehicle(row: Record<string, unknown>): Vehicle {
     id: row.id as string,
     contact: row.contact as string,
     phoneNumber: (row.phone_number as string) ?? '',
-    licensePlate: row.license_plate as string,
+    licensePlate: formatLicensePlate(row.license_plate as string),
     make: row.make as string,
     model: (row.model as string) || '',
     color: row.color as string,
@@ -193,28 +194,34 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
       if (knownVehiclesError) throw knownVehiclesError;
 
       const arrivalFlagsByPlate = new Map<string, ArrivalFlags>(
-        (knownVehiclesData || []).map((vehicle: Record<string, unknown>) => [
-          vehicle.license_plate as string,
-          {
-            notifyOnArrival: Boolean(vehicle.notify_on_arrival),
-            arrivalNote: (vehicle.arrival_note as string) || '',
-          },
-        ])
+        (knownVehiclesData || []).map((vehicle: Record<string, unknown>) => {
+          const plate = formatLicensePlate(vehicle.license_plate as string);
+          return [
+            plate,
+            {
+              notifyOnArrival: Boolean(vehicle.notify_on_arrival),
+              arrivalNote: (vehicle.arrival_note as string) || '',
+            },
+          ];
+        })
       );
 
       const mappedVehicles = (parkedVehicles || []).map(
-        (vehicle: Record<string, unknown>) => ({
-          id: vehicle.id as string,
-          contact: vehicle.contact as string,
-          phoneNumber: vehicle.phone_number as string,
-          licensePlate: vehicle.license_plate as string,
-          make: vehicle.make as string,
-          model: (vehicle.model as string) || '',
-          color: vehicle.color as string,
-          parkingSpotId: vehicle.parking_spot_id as string,
-          timeParked: vehicle.time_parked as string,
-          ...arrivalFlagsByPlate.get(vehicle.license_plate as string),
-        })
+        (vehicle: Record<string, unknown>) => {
+          const plate = formatLicensePlate(vehicle.license_plate as string);
+          return {
+            id: vehicle.id as string,
+            contact: vehicle.contact as string,
+            phoneNumber: vehicle.phone_number as string,
+            licensePlate: plate,
+            make: vehicle.make as string,
+            model: (vehicle.model as string) || '',
+            color: vehicle.color as string,
+            parkingSpotId: vehicle.parking_spot_id as string,
+            timeParked: vehicle.time_parked as string,
+            ...arrivalFlagsByPlate.get(plate),
+          };
+        }
       );
 
       setVehicles(mappedVehicles);
@@ -238,7 +245,7 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
       });
 
       (knownVehiclesData || []).forEach((vehicle: Record<string, unknown>) => {
-        const plate = vehicle.license_plate as string;
+        const plate = formatLicensePlate(vehicle.license_plate as string);
         if (!knownVehiclesMap.has(plate)) {
           knownVehiclesMap.set(plate, {
             contact: vehicle.contact as string,
@@ -352,17 +359,20 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
       }
 
       const now = new Date().toISOString();
+      const normalizedPlate = formatLicensePlate(vehicleData.licensePlate);
 
       const dbVehicleData = {
         contact: vehicleData.contact,
         phone_number: vehicleData.phoneNumber.replace(/\D/g, ''),
-        license_plate: vehicleData.licensePlate,
+        license_plate: normalizedPlate,
         make: vehicleData.make,
         model: vehicleData.model || '',
         color: vehicleData.color,
       };
 
-      const knownFlags = knownVehicles.find((v) => v.licensePlate === vehicleData.licensePlate);
+      const knownFlags = knownVehicles.find(
+        (v) => v.licensePlate.toLowerCase() === normalizedPlate.toLowerCase()
+      );
       const arrivalFlags: ArrivalFlags = {
         notifyOnArrival: vehicleData.notifyOnArrival ?? knownFlags?.notifyOnArrival ?? false,
         arrivalNote: vehicleData.arrivalNote ?? knownFlags?.arrivalNote ?? '',
@@ -389,7 +399,9 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
           .find((s) => s.id === spotId);
         if (!spot) return;
 
-        const currentVehicle = vehicles.find((v) => v.licensePlate === vehicleData.licensePlate);
+        const currentVehicle = vehicles.find(
+          (v) => v.licensePlate.toLowerCase() === normalizedPlate.toLowerCase()
+        );
         if (currentVehicle) {
           const { error: oldSpotError } = await supabase
             .from('parking_spots')
@@ -448,7 +460,7 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
         if (arrivalFlags.notifyOnArrival) {
           apiFetchJson('/api/arrival-alerts/notify', {
             method: 'POST',
-            body: { licensePlate: vehicleData.licensePlate },
+            body: { licensePlate: normalizedPlate },
           }).catch((err) => console.error('Error sending arrival alert:', err));
         }
 
@@ -467,17 +479,19 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
 
         setVehicles((prev) => {
           const without = currentVehicle
-            ? prev.filter((v) => v.licensePlate !== vehicleData.licensePlate)
+            ? prev.filter(
+                (v) => v.licensePlate.toLowerCase() !== normalizedPlate.toLowerCase()
+              )
             : prev;
           return [...without, mapped];
         });
 
         setKnownVehicles((prev) => {
           const m = new Map(prev.map((v) => [v.licensePlate, v]));
-          m.set(vehicleData.licensePlate, {
+          m.set(normalizedPlate, {
             contact: vehicleData.contact,
             phoneNumber: vehicleData.phoneNumber,
-            licensePlate: vehicleData.licensePlate,
+            licensePlate: normalizedPlate,
             make: vehicleData.make,
             model: vehicleData.model || '',
             color: vehicleData.color,
@@ -513,7 +527,7 @@ export function ParkingProvider({ children }: { children: React.ReactNode }) {
       const { error: deleteError } = await supabase
         .from('vehicles')
         .delete()
-        .eq('license_plate', licensePlate);
+        .eq('license_plate', formatLicensePlate(licensePlate));
 
       if (deleteError) throw deleteError;
 

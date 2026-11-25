@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   parkingSpotPickerGreenClass,
   parkingSpotPickerOrangeClass,
@@ -6,10 +6,77 @@ import {
 import { useParking } from '../hooks/useParking';
 import { useViolations } from '../hooks/useViolations';
 import SearchBar from '../components/SearchBar';
-import { Car, Phone, Tag, X, Trash2, Plus, ParkingSquare, MessageSquare, Loader2, AlertTriangle, BellRing } from 'lucide-react';
+import { formatLicensePlate } from '../lib/formatLicensePlate';
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  Car,
+  Phone,
+  Tag,
+  X,
+  Trash2,
+  Plus,
+  ParkingSquare,
+  MessageSquare,
+  Loader2,
+  AlertTriangle,
+  BellRing,
+} from 'lucide-react';
 import VehicleForm from '../components/VehicleForm';
 import { apiFetchJson } from '../lib/apiFetch';
 import { PageHeader, pageBodyClassName } from '../components/PageHeader/PageHeader';
+
+type VehicleSortKey = 'licensePlate' | 'vehicle' | 'contact' | 'phone' | 'spot' | 'violations';
+type SortDirection = 'asc' | 'desc';
+
+function compareStrings(a: string, b: string) {
+  return a.localeCompare(b, undefined, { sensitivity: 'base', numeric: true });
+}
+
+function SortableTableHeader({
+  label,
+  sortKey,
+  activeKey,
+  direction,
+  onSort,
+  className = 'text-left',
+}: {
+  label: string;
+  sortKey: VehicleSortKey;
+  activeKey: VehicleSortKey;
+  direction: SortDirection;
+  onSort: (key: VehicleSortKey) => void;
+  className?: string;
+}) {
+  const active = activeKey === sortKey;
+  return (
+    <th
+      scope="col"
+      aria-sort={active ? (direction === 'asc' ? 'ascending' : 'descending') : 'none'}
+      className={`bg-primary px-6 py-3 ${className}`}
+    >
+      <button
+        type="button"
+        onClick={() => onSort(sortKey)}
+        className={`inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wider transition-colors ${
+          active ? 'text-primary' : 'text-secondary hover:text-primary'
+        }`}
+      >
+        {label}
+        {active ? (
+          direction === 'asc' ? (
+            <ArrowUp className="h-3.5 w-3.5 shrink-0" aria-hidden />
+          ) : (
+            <ArrowDown className="h-3.5 w-3.5 shrink-0" aria-hidden />
+          )
+        ) : (
+          <ArrowUpDown className="h-3.5 w-3.5 shrink-0 opacity-40" aria-hidden />
+        )}
+      </button>
+    </th>
+  );
+}
 
 function Vehicles() {
   const { knownVehicles, parkingLot, updateVehicle, removeVehicle, deleteVehicle, vehicles } = useParking();
@@ -22,6 +89,18 @@ function Vehicles() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
   const [reminderStatus, setReminderStatus] = useState<{ licensePlate: string; type: 'success' | 'error'; message: string } | null>(null);
+  const [sort, setSort] = useState<{ key: VehicleSortKey; direction: SortDirection }>({
+    key: 'licensePlate',
+    direction: 'asc',
+  });
+
+  const handleSort = (key: VehicleSortKey) => {
+    setSort((prev) =>
+      prev.key === key
+        ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+        : { key, direction: 'asc' }
+    );
+  };
 
   const getParkedSpot = (licensePlate: string) => {
     const parkedVehicle = vehicles.find(v => v.licensePlate === licensePlate);
@@ -123,7 +202,7 @@ function Vehicles() {
         body: {
           phoneNumber: vehicle.phoneNumber,
           contact: vehicle.contact,
-          licensePlate: vehicle.licensePlate,
+          licensePlate: formatLicensePlate(vehicle.licensePlate),
           spotLabel: parkedSpot?.label,
         },
       });
@@ -182,9 +261,9 @@ function Vehicles() {
     return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/30';
   };
 
-  const filteredVehicles = knownVehicles
-    .filter(vehicle => {
-      const query = searchQuery.toLowerCase();
+  const filteredVehicles = useMemo(() => {
+    const query = searchQuery.toLowerCase();
+    const filtered = knownVehicles.filter((vehicle) => {
       return (
         vehicle.contact.toLowerCase().includes(query) ||
         vehicle.licensePlate.toLowerCase().includes(query) ||
@@ -193,8 +272,42 @@ function Vehicles() {
         vehicle.color.toLowerCase().includes(query) ||
         vehicle.phoneNumber.includes(query)
       );
-    })
-    .sort((a, b) => a.licensePlate.localeCompare(b.licensePlate));
+    });
+
+    const dir = sort.direction === 'asc' ? 1 : -1;
+
+    return [...filtered].sort((a, b) => {
+      let cmp = 0;
+      switch (sort.key) {
+        case 'licensePlate':
+          cmp = compareStrings(a.licensePlate, b.licensePlate);
+          break;
+        case 'vehicle':
+          cmp = compareStrings(`${a.make} ${a.model}`.trim(), `${b.make} ${b.model}`.trim());
+          break;
+        case 'contact':
+          cmp = compareStrings(a.contact || '', b.contact || '');
+          break;
+        case 'phone':
+          cmp = compareStrings(a.phoneNumber || '', b.phoneNumber || '');
+          break;
+        case 'spot': {
+          const spotA = getParkedSpot(a.licensePlate)?.label ?? '';
+          const spotB = getParkedSpot(b.licensePlate)?.label ?? '';
+          if (!spotA && !spotB) cmp = 0;
+          else if (!spotA) cmp = 1;
+          else if (!spotB) cmp = -1;
+          else cmp = compareStrings(spotA, spotB);
+          break;
+        }
+        case 'violations':
+          cmp =
+            getViolationCountForVehicle(a.licensePlate) - getViolationCountForVehicle(b.licensePlate);
+          break;
+      }
+      return cmp * dir;
+    });
+  }, [knownVehicles, searchQuery, sort, violations, vehicles, parkingLot]);
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col bg-secondary">
@@ -227,25 +340,52 @@ function Vehicles() {
             <table className="min-w-full divide-y divide-border-weak">
               <thead className="sticky top-0 z-10 border-b border-weak bg-primary">
                 <tr>
-                  <th className="bg-primary px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
-                    License Plate
-                  </th>
-                  <th className="bg-primary px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
-                    Vehicle
-                  </th>
-                  <th className="bg-primary px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
-                    Contact
-                  </th>
-                  <th className="bg-primary px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
-                    Phone
-                  </th>
-                  <th className="bg-primary px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
-                    Current Spot
-                  </th>
-                  <th className="bg-primary px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">
-                    Violations
-                  </th>
-                  <th className="bg-primary px-6 py-3 text-right text-xs font-medium text-secondary uppercase tracking-wider">
+                  <SortableTableHeader
+                    label="License Plate"
+                    sortKey="licensePlate"
+                    activeKey={sort.key}
+                    direction={sort.direction}
+                    onSort={handleSort}
+                  />
+                  <SortableTableHeader
+                    label="Vehicle"
+                    sortKey="vehicle"
+                    activeKey={sort.key}
+                    direction={sort.direction}
+                    onSort={handleSort}
+                  />
+                  <SortableTableHeader
+                    label="Contact"
+                    sortKey="contact"
+                    activeKey={sort.key}
+                    direction={sort.direction}
+                    onSort={handleSort}
+                  />
+                  <SortableTableHeader
+                    label="Phone"
+                    sortKey="phone"
+                    activeKey={sort.key}
+                    direction={sort.direction}
+                    onSort={handleSort}
+                  />
+                  <SortableTableHeader
+                    label="Current Spot"
+                    sortKey="spot"
+                    activeKey={sort.key}
+                    direction={sort.direction}
+                    onSort={handleSort}
+                  />
+                  <SortableTableHeader
+                    label="Violations"
+                    sortKey="violations"
+                    activeKey={sort.key}
+                    direction={sort.direction}
+                    onSort={handleSort}
+                  />
+                  <th
+                    scope="col"
+                    className="bg-primary px-6 py-3 text-right text-xs font-medium text-secondary uppercase tracking-wider"
+                  >
                     Actions
                   </th>
                 </tr>
@@ -267,7 +407,7 @@ function Vehicles() {
                             }}
                             className="text-blue-600 hover:text-blue-900"
                           >
-                            {vehicle.licensePlate}
+                            {formatLicensePlate(vehicle.licensePlate)}
                           </button>
                         </div>
                       </td>
@@ -486,7 +626,8 @@ function Vehicles() {
                     
                     <div className="mt-2">
                       <div className="text-sm text-secondary mb-4">
-                        Vehicle: {selectedVehicle.make} {selectedVehicle.model} ({selectedVehicle.licensePlate})
+                        Vehicle: {selectedVehicle.make} {selectedVehicle.model} (
+                        {formatLicensePlate(selectedVehicle.licensePlate)})
                       </div>
                       
                       <div className="grid grid-cols-3 gap-4">

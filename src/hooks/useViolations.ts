@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Violation } from '../types';
+import { formatLicensePlate } from '../lib/formatLicensePlate';
 
 interface ViolationInsert {
   licensePlate: string;
@@ -42,7 +43,7 @@ export function useViolations(parkingLotId: string | null) {
 
       const formattedViolations: Violation[] = (data || []).map(v => ({
         id: v.id,
-        licensePlate: v.license_plate,
+        licensePlate: formatLicensePlate(v.license_plate),
         make: v.make,
         model: v.model,
         color: v.color,
@@ -77,7 +78,7 @@ export function useViolations(parkingLotId: string | null) {
       const { data, error: insertError } = await supabase
         .from('violations')
         .insert({
-          license_plate: violationData.licensePlate,
+          license_plate: formatLicensePlate(violationData.licensePlate),
           make: violationData.make,
           model: violationData.model,
           color: violationData.color,
@@ -95,7 +96,7 @@ export function useViolations(parkingLotId: string | null) {
 
       const newViolation: Violation = {
         id: data.id,
-        licensePlate: data.license_plate,
+        licensePlate: formatLicensePlate(data.license_plate),
         make: data.make,
         model: data.model,
         color: data.color,
@@ -132,7 +133,7 @@ export function useViolations(parkingLotId: string | null) {
 
       return (data || []).map(v => ({
         id: v.id,
-        licensePlate: v.license_plate,
+        licensePlate: formatLicensePlate(v.license_plate),
         make: v.make,
         model: v.model,
         color: v.color,

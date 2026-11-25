@@ -1,5 +1,6 @@
 import React from 'react';
 import { Vehicle, ParkingSpot } from '../types';
+import { formatLicensePlate } from '../lib/formatLicensePlate';
 import { CarFront, User, Phone, Tag, Clock } from 'lucide-react';
 
 interface VehicleListProps {
@@ -97,7 +98,7 @@ const VehicleList: React.FC<VehicleListProps> = ({ vehicles, onVehicleClick, spo
                       title={vehicle.color}
                     />
                   </div>
-                  <p className="text-sm text-gray-500">{vehicle.licensePlate}</p>
+                  <p className="text-sm text-gray-500">{formatLicensePlate(vehicle.licensePlate)}</p>
                 </div>
               </div>
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
